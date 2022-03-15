@@ -1454,4 +1454,40 @@ describe('ApiRequestEditorElement', () => {
       });
     });
   });
+
+  describe('a11y', () => {
+    /** @type AmfDocument */
+    let model;
+    before(async () => {
+      model = await loader.getGraph();
+      store.amf = model;
+    });
+
+    // this is result of the a11y audit on API Console
+    it('renders the * Required field label when has required query', async () => {
+      const method = loader.lookupOperation(model, '/query-params/string', 'get');
+      const element = await modelFixture(method['@id']);
+      const section = element.shadowRoot.querySelector('.params-section.parameter');
+      const label = section.querySelector('.required-field');
+      assert.ok(label, 'has the label');
+    });
+
+    // this is result of the a11y audit on API Console
+    it('does not render the * Required field label when has required header', async () => {
+      const method = loader.lookupOperation(model, '/required-headers', 'get');
+      const element = await modelFixture(method['@id']);
+      const section = element.shadowRoot.querySelector('.params-section.header');
+      const label = section.querySelector('.required-field');
+      assert.ok(label, 'has the label');
+    });
+
+    // this is result of the a11y audit on API Console
+    it('does not render the * Required field label when has no required header', async () => {
+      const method = loader.lookupOperation(model, '/optional-headers', 'get');
+      const element = await modelFixture(method['@id']);
+      const section = element.shadowRoot.querySelector('.params-section.header');
+      const label = section.querySelector('.required-field');
+      assert.notOk(label, 'has no label');
+    });
+  });
 });

@@ -1,7 +1,7 @@
 {
   "name": "@api-components/amf-components",
   "description": "A set of web components based on LitElement that creates the visualization layer on top of the AMF's graph model.",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "license": "Apache-2.0",
   "main": "index.js",
   "module": "index.js",

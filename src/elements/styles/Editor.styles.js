@@ -149,4 +149,10 @@ api-url-editor {
   flex: 1;
   margin: 0;
 }
+
+.required-field {
+  font-size: small;
+  margin: var(--arc-font-required-field-margin, 2px 8px);
+  color: var(--arc-font-required-field-color, inherit);
+}
 `;

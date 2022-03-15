@@ -1696,9 +1696,14 @@ export default class ApiRequestEditorElement extends AmfParameterMixin(EventsTar
     const qp = [];
     /** @type OperationParameter[] */
     const path = [];
+    // NOTE, the "* Required field" has been added after the a11y audit of API Console.
+    let hasRequired = false;
     this.parametersValue.forEach((item) => {
+      if (!hasRequired && item.parameter && item.parameter.required) {
+        hasRequired = true;
+      }
       if (item.binding === 'query') {
-        qp.push(item)
+        qp.push(item);
       } else if (item.binding === 'path') {
         path.push(item);
       }
@@ -1715,6 +1720,7 @@ export default class ApiRequestEditorElement extends AmfParameterMixin(EventsTar
     return html`
     <section class="params-section parameter">
       <div class="section-title"><span class="label">Parameters</span></div>
+      ${hasRequired ? html`<p class="required-field">* Required field</p>` : ''}
       <div class="path-params">
         ${path.map(param => this.parameterTemplate(param, pathOptions))}
       </div>
@@ -1728,7 +1734,17 @@ export default class ApiRequestEditorElement extends AmfParameterMixin(EventsTar
   }
 
   [headersTemplate]() {
-    const headers = this.parametersValue.filter(item => item.binding === 'header');
+    const headers = /** @type OperationParameter[] */ ([]);
+    // NOTE, the "* Required field" has been added after the a11y audit of API Console.
+    let hasRequired = false;
+    this.parametersValue.forEach((item) => {
+      if (item.binding === 'header') {
+        headers.push(item);
+        if (!hasRequired && item.parameter && item.parameter.required) {
+          hasRequired = true;
+        }
+      }
+    });
     const { allowCustom, openedOptional=[] } = this;
     if (!allowCustom && !headers.length) {
       return '';
@@ -1740,6 +1756,7 @@ export default class ApiRequestEditorElement extends AmfParameterMixin(EventsTar
     return html`
     <section class="params-section header">
       <div class="section-title"><span class="label">Headers</span></div>
+      ${hasRequired ? html`<p class="required-field">* Required field</p>` : ''}
       ${this[toggleOptionalTemplate]('header', headers)}
       <div class="${classMap(classes)}">
         ${headers.map(param => this.parameterTemplate(param))}
