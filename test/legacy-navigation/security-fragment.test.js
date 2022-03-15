@@ -24,55 +24,51 @@ describe('ApiNavigationLegacyElement', () => {
       return fixture(html`<api-navigation-legacy .amf="${amf}"></api-navigation-legacy>`);
     }
 
-    [false, true].forEach((compact) => {
-      describe(compact ? 'Compact model' : 'Full model', () => {
-        /** @type ApiNavigationElement */
-        let element;
+    /** @type ApiNavigationElement */
+    let element;
 
-        beforeEach(async () => {
-          const amf = await loader.getGraph(compact, 'oauth2-fragment');
-          element = await basicFixture();
-          element.amf = amf;
-          await nextFrame();
-        });
+    beforeEach(async () => {
+      const amf = await loader.getGraph('oauth2-fragment');
+      element = await basicFixture();
+      element.amf = amf;
+      await nextFrame();
+    });
 
-        it('Documentation is undefined', () => {
-          assert.isUndefined(element[docsValue]);
-        });
+    it('Documentation is undefined', () => {
+      assert.isUndefined(element[docsValue]);
+    });
 
-        it('Types is undefined', () => {
-          assert.isUndefined(element[typesValue]);
-        });
+    it('Types is undefined', () => {
+      assert.isUndefined(element[typesValue]);
+    });
 
-        it('Security is computed', () => {
-          const result = element[securityValue];
-          assert.lengthOf(result, 1);
-          assert.typeOf(result[0].id, 'string');
-          assert.equal(result[0].label, 'MyOauth - OAuth 2.0');
-        });
+    it('Security is computed', () => {
+      const result = element[securityValue];
+      assert.lengthOf(result, 1);
+      assert.typeOf(result[0].id, 'string');
+      assert.equal(result[0].label, 'MyOauth - OAuth 2.0');
+    });
 
-        it('Endpoints is undefined', () => {
-          assert.isUndefined(element[endpointsValue]);
-        });
+    it('Endpoints is undefined', () => {
+      assert.isUndefined(element[endpointsValue]);
+    });
 
-        it('Security is opened', () => {
-          assert.isTrue(element.securityOpened);
-        });
+    it('Security is opened', () => {
+      assert.isTrue(element.securityOpened);
+    });
 
-        it('[isFragmentValue] is set', () => {
-          assert.isTrue(element[isFragmentValue]);
-        });
+    it('[isFragmentValue] is set', () => {
+      assert.isTrue(element[isFragmentValue]);
+    });
 
-        it('summaryRendered is false', () => {
-          assert.isFalse(element.summaryRendered);
-        });
+    it('summaryRendered is false', () => {
+      assert.isFalse(element.summaryRendered);
+    });
 
-        it('summary is not rendered', async () => {
-          await nextFrame();
-          const panel = element.shadowRoot.querySelector('.summary');
-          assert.notOk(panel);
-        });
-      });
+    it('summary is not rendered', async () => {
+      await nextFrame();
+      const panel = element.shadowRoot.querySelector('.summary');
+      assert.notOk(panel);
     });
   });
 });

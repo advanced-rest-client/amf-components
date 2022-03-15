@@ -77,7 +77,7 @@ class ComponentDemo extends AmfDemoBase {
       ["no-servers-api", "No Servers API"],
     ].map(
       ([file, label]) => html`
-        <anypoint-item data-src="models/${file}-compact.json">${label}</anypoint-item>
+        <anypoint-item data-src="models/${file}.json">${label}</anypoint-item>
       `
     );
   }

@@ -15,7 +15,7 @@ describe('ApiSchemaValues', () => {
     let model;
 
     before(async () => {
-      model = await loader.getGraph(true, 'schema-api');
+      model = await loader.getGraph('schema-api');
     });
 
     it('generates the value for a string scalar with example', async () => {
@@ -66,7 +66,7 @@ describe('ApiSchemaValues', () => {
     let model;
 
     before(async () => {
-      model = await loader.getGraph(true, 'schema-api');
+      model = await loader.getGraph('schema-api');
     });
 
     it('returns type default value for a string', async () => {
@@ -280,7 +280,7 @@ describe('ApiSchemaValues', () => {
     let model;
 
     before(async () => {
-      model = await loader.getGraph(true, 'schema-api');
+      model = await loader.getGraph('schema-api');
       scalar = loader.getShape(model, 'ScalarNumber');
       array = loader.getShape(model, 'NumberArray');
     });
@@ -388,7 +388,7 @@ describe('ApiSchemaValues', () => {
     let model;
 
     before(async () => {
-      model = await loader.getGraph(true, 'schema-api');
+      model = await loader.getGraph('schema-api');
     });
 
     it('returns default value when no argument', () => {
@@ -425,7 +425,7 @@ describe('ApiSchemaValues', () => {
     let model;
 
     before(async () => {
-      model = await loader.getGraph(true, 'schema-api');
+      model = await loader.getGraph('schema-api');
     });
 
     it('returns default value when no argument', () => {

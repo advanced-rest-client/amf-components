@@ -94,7 +94,7 @@ class ComponentPage extends AmfDemoBase {
       ['Petstore-v2', 'Petstore OAS API'],
     ].forEach(([file, label]) => {
       result[result.length] = html`
-      <anypoint-item data-src="models/${file}-compact.json">${label}</anypoint-item>
+      <anypoint-item data-src="models/${file}.json">${label}</anypoint-item>
       `;
     });
     return result;

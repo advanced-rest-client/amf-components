@@ -297,769 +297,767 @@ describe('ApiRequestEditorElement', () => {
     });
   });
 
-  [true, false].forEach((compact) => {
-    describe(compact ? 'Compact model' : 'Full model', () => {
-      const httpbinApi = 'httpbin';
-      const driveApi = 'google-drive-api';
-      const demoApi = 'demo-api';
+  describe('Unit #1', () => {
+    const httpbinApi = 'httpbin';
+    const driveApi = 'google-drive-api';
+    const demoApi = 'demo-api';
 
-      describe('http method computation', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(compact, httpbinApi);
-          store.amf = model;
-        });
-
-        it('sets httpMethod property (get)', async () => {
-          const method = loader.lookupOperation(model, '/anything', 'get');
-          const element = await modelFixture(method['@id']);
-          assert.equal(element.httpMethod, 'get');
-        });
-
-        it('sets httpMethod property (post)', async () => {
-          const method = loader.lookupOperation(model, '/anything', 'post');
-          const element = await modelFixture(method['@id']);
-          assert.equal(element.httpMethod, 'post');
-        });
-
-        it('sets httpMethod property (put)', async () => {
-          const method = loader.lookupOperation(model, '/anything', 'put');
-          const element = await modelFixture(method['@id']);
-          assert.equal(element.httpMethod, 'put');
-        });
-
-        it('sets httpMethod property (delete)', async () => {
-          const method = loader.lookupOperation(model, '/anything', 'delete');
-          const element = await modelFixture(method['@id']);
-          assert.equal(element.httpMethod, 'delete');
-        });
+    describe('http method computation', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(httpbinApi);
+        store.amf = model;
       });
 
-      describe('#payloads and #payload', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(compact, driveApi);
-          store.amf = model;
-        });
-
-        it('sets the #payloads for the endpoint', async () => {
-          const method = loader.lookupOperation(model, '/files/{fileId}', 'patch');
-          const element = await modelFixture(method['@id']);
-          assert.typeOf(element.payloads, 'array');
-          assert.lengthOf(element.payloads, 1);
-        });
-
-        it('sets the #payload property', async () => {
-          const method = loader.lookupOperation(model, '/files/{fileId}', 'patch');
-          const element = await modelFixture(method['@id']);
-          assert.typeOf(element.payload, 'object');
-        });
+      it('sets httpMethod property (get)', async () => {
+        const method = loader.lookupOperation(model, '/anything', 'get');
+        const element = await modelFixture(method['@id']);
+        assert.equal(element.httpMethod, 'get');
       });
 
-      describe('Security computations', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(Boolean(compact), driveApi);
-          store.amf = model;
-        });
-
-        it('does not set variables when no security', async () => {
-          const element = await basicFixture();
-          assert.isUndefined(element.security);
-        });
-
-        it('sets the security value', async () => {
-          const method = loader.lookupOperation(model, '/files', 'get');
-          const element = await modelFixture(method['@id']);
-          assert.typeOf(element.security, 'array', 'has the security');
-          assert.lengthOf(element.security, 1, 'has the single scheme');
-          const [scheme] = element.security;
-          assert.deepEqual(scheme.types, ['OAuth 2.0'], 'has types definition');
-          assert.deepEqual(scheme.labels, ['oauth_2_0'], 'has labels definition');
-          assert.typeOf(scheme.security, 'object', 'has the security definition');
-        });
-
-        it('sets the selectedSecurity', async () => {
-          const method = loader.lookupOperation(model, '/files', 'get');
-          const element = await modelFixture(method['@id']);
-          assert.equal(element.selectedSecurity, 0);
-        });
+      it('sets httpMethod property (post)', async () => {
+        const method = loader.lookupOperation(model, '/anything', 'post');
+        const element = await modelFixture(method['@id']);
+        assert.equal(element.httpMethod, 'post');
       });
 
-      describe('RAML parameters computations', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(compact, demoApi);
-          store.amf = model;
-        });
-
-        it('sets server parameters when no operation', async () => {
-          const element = await basicFixture();
-          assert.lengthOf(element.parametersValue, 1, 'has a single parameter');
-          const [param] = element.parametersValue;
-          assert.equal(param.binding, 'path', 'has a path parameter');
-          assert.equal(param.source, 'server', 'the parameter was set by the server');
-        });
-
-        it('sets path parameters from the server and the endpoint', async () => {
-          const method = loader.lookupOperation(model, '/test-parameters/{feature}', 'get');
-          const element = await modelFixture(method['@id']);
-          const path = element.parametersValue.filter(p => p.binding === 'path')
-          assert.lengthOf(path, 2, 'has all parameters');
-          assert.typeOf(
-            path.find(p => p.parameter.name === 'feature'),
-            'object',
-            'has the endpoints path parameter'
-          );
-          assert.typeOf(
-            path.find(p => p.parameter.name === 'instance'),
-            'object',
-            'has the server path parameter'
-          );
-        });
-
-        it('sets query parameters', async () => {
-          const method = loader.lookupOperation(model, '/test-parameters/{feature}', 'get');
-          const element = await modelFixture(method['@id']);
-          const path = element.parametersValue.filter(p => p.binding === 'query')
-          assert.lengthOf(path, 3, 'has all parameters');
-          assert.typeOf(
-            path.find(p => p.parameter.name === 'testRepeatable'),
-            'object',
-            'has the testRepeatable parameter'
-          );
-          assert.typeOf(
-            path.find(p => p.parameter.name === 'numericRepeatable'),
-            'object',
-            'has the numericRepeatable parameter'
-          );
-          assert.typeOf(
-            path.find(p => p.parameter.name === 'notRequiredRepeatable'),
-            'object',
-            'has the notRequiredRepeatable parameter'
-          );
-        });
-
-        it('sets header parameters', async () => {
-          const method = loader.lookupOperation(model, '/people', 'get');
-          const element = await modelFixture(method['@id']);
-          const params = element.parametersValue.filter(p => p.binding === 'header');
-          assert.lengthOf(params, 2, 'has all parameters');
-          assert.typeOf(
-            params.find(p => p.parameter.name === 'x-people-op-id'),
-            'object',
-            'has the x-people-op-id parameter'
-          );
-        });
+      it('sets httpMethod property (put)', async () => {
+        const method = loader.lookupOperation(model, '/anything', 'put');
+        const element = await modelFixture(method['@id']);
+        assert.equal(element.httpMethod, 'put');
       });
 
-      describe('#mimeType', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(Boolean(compact), demoApi);
-          store.amf = model;
-        });
+      it('sets httpMethod property (delete)', async () => {
+        const method = loader.lookupOperation(model, '/anything', 'delete');
+        const element = await modelFixture(method['@id']);
+        assert.equal(element.httpMethod, 'delete');
+      });
+    });
 
-        it('sets content type from the body', async () => {
-          const method = loader.lookupOperation(model, '/content-type', 'post');
-          const element = await modelFixture(method['@id']);
-          assert.equal(element.mimeType, 'application/json');
-        });
+    describe('#payloads and #payload', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(driveApi);
+        store.amf = model;
       });
 
-      describe('ui state', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(Boolean(compact), demoApi);
-          store.amf = model;
-        });
-
-        it('renders the authorization editor when authorization is required', async () => {
-          const method = loader.lookupOperation(model, '/messages', 'get');
-          const element = await modelFixture(method['@id']);
-          const node = element.shadowRoot.querySelector('api-authorization-editor');
-          assert.ok(node);
-        });
-
-        it('renders query/uri forms when model is set', async () => {
-          const method = loader.lookupOperation(model, '/people', 'get');
-          const element = await modelFixture(method['@id']);
-          const node = element.shadowRoot.querySelector('.params-section.parameter');
-          assert.ok(node);
-        });
-
-        it('renders headers editor when model is set', async () => {
-          const method = loader.lookupOperation(model, '/people', 'get');
-          const element = await modelFixture(method['@id']);
-          const node = element.shadowRoot.querySelector('.params-section.header');
-          assert.ok(node);
-        });
-
-        it('renders the URL editor when urlEditor', async () => {
-          const method = loader.lookupOperation(model, '/people', 'get');
-          const element = await urlEditorFixture(method['@id']);
-          const node = element.shadowRoot.querySelector('.url-input');
-          assert.ok(node);
-        });
+      it('sets the #payloads for the endpoint', async () => {
+        const method = loader.lookupOperation(model, '/files/{fileId}', 'patch');
+        const element = await modelFixture(method['@id']);
+        assert.typeOf(element.payloads, 'array');
+        assert.lengthOf(element.payloads, 1);
       });
 
-      describe('execute()', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(Boolean(compact), demoApi);
-          store.amf = model;
-        });
+      it('sets the #payload property', async () => {
+        const method = loader.lookupOperation(model, '/files/{fileId}', 'patch');
+        const element = await modelFixture(method['@id']);
+        assert.typeOf(element.payload, 'object');
+      });
+    });
 
-        /** @type ApiRequestEditorElement */
-        let element;
-        beforeEach(async () => {
-          InputCache.globalValues.clear();
-          const method = loader.lookupOperation(model, '/people', 'get');
-          element = await modelFixture(method['@id']);
-        });
-
-        it('dispatches the legacy request event', () => {
-          const spy = sinon.spy();
-          element.addEventListener(EventTypes.Request.apiRequestLegacy, spy);
-          element.execute();
-          assert.isTrue(spy.called);
-        });
-
-        it('dispatches the request event', () => {
-          const spy = sinon.spy();
-          element.addEventListener(EventTypes.Request.apiRequest, spy);
-          element.execute();
-          assert.isTrue(spy.called);
-        });
-
-        it('sets loadingRequest property', () => {
-          element.execute();
-          assert.isTrue(element.loadingRequest);
-        });
-
-        it('sets requestId property', () => {
-          element.execute();
-          assert.typeOf(element.requestId, 'string');
-        });
-
-        it('calls the serialize() function', () => {
-          const spy = sinon.spy(element, 'serialize');
-          element.execute();
-          assert.isTrue(spy.called);
-        });
-
-        it('event has the serialized request', () => {
-          const spy = sinon.spy();
-          element.addEventListener(EventTypes.Request.apiRequest, spy);
-          element.execute();
-          const { detail } = spy.args[0][0];
-          assert.equal(detail.method, 'GET');
-          assert.equal(detail.url, 'http://production.domain.com/people');
-          assert.equal(detail.headers, 'x-people-op-id: 9719fa6f-c666-48e0-a191-290890760b30\nx-rate-client-id: ');
-          assert.typeOf(detail.id, 'string');
-          assert.typeOf(detail.authorization, 'array', 'has the authorization array');
-          assert.lengthOf(detail.authorization, 1, 'has as single authorization definition');
-        });
+    describe('Security computations', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(driveApi);
+        store.amf = model;
       });
 
-      describe('abort()', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(Boolean(compact), demoApi);
-          store.amf = model;
-        });
-        
-        let element = /** @type ApiRequestEditorElement */ (null);
-        beforeEach(async () => {
-          InputCache.globalValues.clear();
-          const method = loader.lookupOperation(model, '/people', 'get');
-          element = await modelFixture(method['@id']);
-          element[loadingRequestValue] = true;
-          element[requestIdValue] = 'test-request';
-          await element.requestUpdate();
-        });
-
-        it('dispatched the event when the abort button pressed', () => {
-          const spy = sinon.spy();
-          element.addEventListener(EventTypes.Request.abortApiRequest, spy);
-          const button = /** @type HTMLElement */ (element.shadowRoot.querySelector('.send-button.abort'));
-          button.click();
-          assert.isTrue(spy.calledOnce);
-        });
-
-        it('dispatched the legacy event when the abort button pressed', () => {
-          const spy = sinon.spy();
-          element.addEventListener(EventTypes.Request.abortApiRequestLegacy, spy);
-          const button = /** @type HTMLElement */ (element.shadowRoot.querySelector('.send-button.abort'));
-          button.click();
-          assert.isTrue(spy.calledOnce);
-        });
-
-        it('the event contains the url and the id', () => {
-          const spy = sinon.spy();
-          element.addEventListener(EventTypes.Request.abortApiRequest, spy);
-          element.abort();
-          const { detail } = spy.args[0][0];
-          assert.equal(detail.url, element.url, 'URL is set');
-          assert.equal(detail.id, 'test-request', 'id is set');
-        });
-
-        it('resets the loadingRequest property', () => {
-          element.abort();
-          assert.isFalse(element.loadingRequest);
-        });
-
-        it('resets the requestId property', () => {
-          element.abort();
-          assert.isUndefined(element.requestId);
-        });
+      it('does not set variables when no security', async () => {
+        const element = await basicFixture();
+        assert.isUndefined(element.security);
       });
 
-      describe('serialize()', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(Boolean(compact), demoApi);
-          store.amf = model;
-        });
+      it('sets the security value', async () => {
+        const method = loader.lookupOperation(model, '/files', 'get');
+        const element = await modelFixture(method['@id']);
+        assert.typeOf(element.security, 'array', 'has the security');
+        assert.lengthOf(element.security, 1, 'has the single scheme');
+        const [scheme] = element.security;
+        assert.deepEqual(scheme.types, ['OAuth 2.0'], 'has types definition');
+        assert.deepEqual(scheme.labels, ['oauth_2_0'], 'has labels definition');
+        assert.typeOf(scheme.security, 'object', 'has the security definition');
+      });
 
-        beforeEach(async () => {
-          InputCache.globalValues.clear();
-        });
+      it('sets the selectedSecurity', async () => {
+        const method = loader.lookupOperation(model, '/files', 'get');
+        const element = await modelFixture(method['@id']);
+        assert.equal(element.selectedSecurity, 0);
+      });
+    });
 
-        it('returns an object', async () => {
+    describe('RAML parameters computations', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(demoApi);
+        store.amf = model;
+      });
+
+      it('sets server parameters when no operation', async () => {
+        const element = await basicFixture();
+        assert.lengthOf(element.parametersValue, 1, 'has a single parameter');
+        const [param] = element.parametersValue;
+        assert.equal(param.binding, 'path', 'has a path parameter');
+        assert.equal(param.source, 'server', 'the parameter was set by the server');
+      });
+
+      it('sets path parameters from the server and the endpoint', async () => {
+        const method = loader.lookupOperation(model, '/test-parameters/{feature}', 'get');
+        const element = await modelFixture(method['@id']);
+        const path = element.parametersValue.filter(p => p.binding === 'path')
+        assert.lengthOf(path, 2, 'has all parameters');
+        assert.typeOf(
+          path.find(p => p.parameter.name === 'feature'),
+          'object',
+          'has the endpoints path parameter'
+        );
+        assert.typeOf(
+          path.find(p => p.parameter.name === 'instance'),
+          'object',
+          'has the server path parameter'
+        );
+      });
+
+      it('sets query parameters', async () => {
+        const method = loader.lookupOperation(model, '/test-parameters/{feature}', 'get');
+        const element = await modelFixture(method['@id']);
+        const path = element.parametersValue.filter(p => p.binding === 'query')
+        assert.lengthOf(path, 3, 'has all parameters');
+        assert.typeOf(
+          path.find(p => p.parameter.name === 'testRepeatable'),
+          'object',
+          'has the testRepeatable parameter'
+        );
+        assert.typeOf(
+          path.find(p => p.parameter.name === 'numericRepeatable'),
+          'object',
+          'has the numericRepeatable parameter'
+        );
+        assert.typeOf(
+          path.find(p => p.parameter.name === 'notRequiredRepeatable'),
+          'object',
+          'has the notRequiredRepeatable parameter'
+        );
+      });
+
+      it('sets header parameters', async () => {
+        const method = loader.lookupOperation(model, '/people', 'get');
+        const element = await modelFixture(method['@id']);
+        const params = element.parametersValue.filter(p => p.binding === 'header');
+        assert.lengthOf(params, 2, 'has all parameters');
+        assert.typeOf(
+          params.find(p => p.parameter.name === 'x-people-op-id'),
+          'object',
+          'has the x-people-op-id parameter'
+        );
+      });
+    });
+
+    describe('#mimeType', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(demoApi);
+        store.amf = model;
+      });
+
+      it('sets content type from the body', async () => {
+        const method = loader.lookupOperation(model, '/content-type', 'post');
+        const element = await modelFixture(method['@id']);
+        assert.equal(element.mimeType, 'application/json');
+      });
+    });
+
+    describe('ui state', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(demoApi);
+        store.amf = model;
+      });
+
+      it('renders the authorization editor when authorization is required', async () => {
+        const method = loader.lookupOperation(model, '/messages', 'get');
+        const element = await modelFixture(method['@id']);
+        const node = element.shadowRoot.querySelector('api-authorization-editor');
+        assert.ok(node);
+      });
+
+      it('renders query/uri forms when model is set', async () => {
+        const method = loader.lookupOperation(model, '/people', 'get');
+        const element = await modelFixture(method['@id']);
+        const node = element.shadowRoot.querySelector('.params-section.parameter');
+        assert.ok(node);
+      });
+
+      it('renders headers editor when model is set', async () => {
+        const method = loader.lookupOperation(model, '/people', 'get');
+        const element = await modelFixture(method['@id']);
+        const node = element.shadowRoot.querySelector('.params-section.header');
+        assert.ok(node);
+      });
+
+      it('renders the URL editor when urlEditor', async () => {
+        const method = loader.lookupOperation(model, '/people', 'get');
+        const element = await urlEditorFixture(method['@id']);
+        const node = element.shadowRoot.querySelector('.url-input');
+        assert.ok(node);
+      });
+    });
+
+    describe('execute()', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(demoApi);
+        store.amf = model;
+      });
+
+      /** @type ApiRequestEditorElement */
+      let element;
+      beforeEach(async () => {
+        InputCache.globalValues.clear();
+        const method = loader.lookupOperation(model, '/people', 'get');
+        element = await modelFixture(method['@id']);
+      });
+
+      it('dispatches the legacy request event', () => {
+        const spy = sinon.spy();
+        element.addEventListener(EventTypes.Request.apiRequestLegacy, spy);
+        element.execute();
+        assert.isTrue(spy.called);
+      });
+
+      it('dispatches the request event', () => {
+        const spy = sinon.spy();
+        element.addEventListener(EventTypes.Request.apiRequest, spy);
+        element.execute();
+        assert.isTrue(spy.called);
+      });
+
+      it('sets loadingRequest property', () => {
+        element.execute();
+        assert.isTrue(element.loadingRequest);
+      });
+
+      it('sets requestId property', () => {
+        element.execute();
+        assert.typeOf(element.requestId, 'string');
+      });
+
+      it('calls the serialize() function', () => {
+        const spy = sinon.spy(element, 'serialize');
+        element.execute();
+        assert.isTrue(spy.called);
+      });
+
+      it('the event has the serialized request', () => {
+        const spy = sinon.spy();
+        element.addEventListener(EventTypes.Request.apiRequest, spy);
+        element.execute();
+        const { detail } = spy.args[0][0];
+        assert.equal(detail.method, 'GET');
+        assert.equal(detail.url, 'http://production.domain.com/people');
+        assert.equal(detail.headers, 'x-people-op-id: 9719fa6f-c666-48e0-a191-290890760b30\nx-rate-client-id: 5757gh76');
+        assert.typeOf(detail.id, 'string');
+        assert.typeOf(detail.authorization, 'array', 'has the authorization array');
+        assert.lengthOf(detail.authorization, 1, 'has as single authorization definition');
+      });
+    });
+
+    describe('abort()', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(demoApi);
+        store.amf = model;
+      });
+      
+      let element = /** @type ApiRequestEditorElement */ (null);
+      beforeEach(async () => {
+        InputCache.globalValues.clear();
+        const method = loader.lookupOperation(model, '/people', 'get');
+        element = await modelFixture(method['@id']);
+        element[loadingRequestValue] = true;
+        element[requestIdValue] = 'test-request';
+        await element.requestUpdate();
+      });
+
+      it('dispatched the event when the abort button pressed', () => {
+        const spy = sinon.spy();
+        element.addEventListener(EventTypes.Request.abortApiRequest, spy);
+        const button = /** @type HTMLElement */ (element.shadowRoot.querySelector('.send-button.abort'));
+        button.click();
+        assert.isTrue(spy.calledOnce);
+      });
+
+      it('dispatched the legacy event when the abort button pressed', () => {
+        const spy = sinon.spy();
+        element.addEventListener(EventTypes.Request.abortApiRequestLegacy, spy);
+        const button = /** @type HTMLElement */ (element.shadowRoot.querySelector('.send-button.abort'));
+        button.click();
+        assert.isTrue(spy.calledOnce);
+      });
+
+      it('the event contains the url and the id', () => {
+        const spy = sinon.spy();
+        element.addEventListener(EventTypes.Request.abortApiRequest, spy);
+        element.abort();
+        const { detail } = spy.args[0][0];
+        assert.equal(detail.url, element.url, 'URL is set');
+        assert.equal(detail.id, 'test-request', 'id is set');
+      });
+
+      it('resets the loadingRequest property', () => {
+        element.abort();
+        assert.isFalse(element.loadingRequest);
+      });
+
+      it('resets the requestId property', () => {
+        element.abort();
+        assert.isUndefined(element.requestId);
+      });
+    });
+
+    describe('serialize()', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(demoApi);
+        store.amf = model;
+      });
+
+      beforeEach(async () => {
+        InputCache.globalValues.clear();
+      });
+
+      it('returns an object', async () => {
+        const method = loader.lookupOperation(model, '/people', 'get');
+        const element = await modelFixture(method['@id']);
+        const result = element.serialize();
+        assert.typeOf(result, 'object');
+      });
+
+      it('sets editor url', async () => {
+        const method = loader.lookupOperation(model, '/people', 'get');
+        const element = await modelFixture(method['@id']);
+        await nextFrame();
+        const result = element.serialize();
+        assert.equal(result.url, 'http://production.domain.com/people');
+      });
+
+      it('sets editor method', async () => {
+        const method = loader.lookupOperation(model, '/people', 'get');
+        const element = await modelFixture(method['@id']);
+        const result = element.serialize();
+        assert.equal(result.method, 'GET');
+      });
+
+      it('sets headers from the editor', async () => {
+        const method = loader.lookupOperation(model, '/post-headers', 'post');
+        const element = await modelFixture(method['@id']);
+        await aTimeout(10);
+        const result = element.serialize();
+        assert.equal(result.headers, 'x-string: my-value\ncontent-type: application/json');
+      });
+
+      it('sets editor payload', async () => {
+        const method = loader.lookupOperation(model, '/people', 'post');
+        const element = await modelFixture(method['@id']);
+        await aTimeout(0);
+        const result = element.serialize();
+        assert.typeOf(result.payload, 'string', 'has the payload');
+        const body = JSON.parse(String(result.payload));
+        // just any value, it's not important here.
+        assert.equal(body.etag, '', 'has payload values');
+      });
+
+      it('sets authorization data', async () => {
+        const method = loader.lookupOperation(model, '/people/{personId}', 'get');
+        const element = await modelFixture(method['@id']);
+        await aTimeout(0);
+        const result = element.serialize();
+        assert.typeOf(result.authorization, 'array');
+        assert.lengthOf(result.authorization, 1);
+        assert.equal(result.authorization[0].type, 'custom');
+      });
+
+      it('does not set editor payload when GET request', async () => {
+        const postMethod = loader.lookupOperation(model, '/people', 'post');
+        const element = await modelFixture(postMethod['@id']);
+        await aTimeout(0);
+        const getMethod = loader.lookupOperation(model, '/people', 'get');
+        element.domainId = getMethod['@id'];
+        await aTimeout(0);
+        const result = element.serialize();
+        assert.isUndefined(result.payload);
+      });
+
+      it('does not set editor payload when HEAD request', async () => {
+        const postMethod = loader.lookupOperation(model, '/people', 'post');
+        const element = await modelFixture(postMethod['@id']);
+        await aTimeout(0);
+        const getMethod = loader.lookupOperation(model, '/people', 'head');
+        element.domainId = getMethod['@id'];
+        await aTimeout(0);
+        const result = element.serialize();
+        assert.isUndefined(result.payload);
+      });
+
+      it('sets the content-type header if not present but set in component', async () => {
+        const method = loader.lookupOperation(model, '/people', 'post');
+        const element = await modelFixture(method['@id']);
+        element.parametersValue = element.parametersValue.filter(p => p.binding !== 'header');
+        const result = element.serialize();
+        assert.equal(result.headers, 'content-type: application/json');
+      });
+    });
+
+    describe('[sendHandler]()', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(demoApi);
+        store.amf = model;
+      });
+
+      // it('calls authAndExecute() when authorization is required', async () => {
+      //   const method = store.lookupOperation(model, '/messages', 'get');
+      //   const element = await modelFixture(method['@id']);
+      //   await aTimeout(5);
+      //   const spy = sinon.spy(element, 'authAndExecute');
+      //   const button = element.shadowRoot.querySelector('.send-button');
+      //   /** @type HTMLElement */ (button).click();
+      //   await aTimeout(25);
+      //   assert.isTrue(spy.called);
+      // });
+
+      it('calls execute() when authorization is not required', async () => {
+        const method = loader.lookupOperation(model, '/people', 'get');
+        const element = await modelFixture(method['@id']);
+        const spy = sinon.spy(element, 'execute');
+        const button = element.shadowRoot.querySelector('.send-button');
+        /** @type HTMLElement */ (button).click();
+        assert.isTrue(spy.called);
+      });
+    });
+
+    describe('#urlLabel', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(demoApi);
+        store.amf = model;
+      });
+
+      it('renders the url label', async () => {
+        const method = loader.lookupOperation(model, '/people', 'get');
+        const element = await urlLabelFixture(method['@id']);
+        const node = element.shadowRoot.querySelector('.url-label');
+        assert.ok(node);
+      });
+
+      it('renders the url value', async () => {
+        const method = loader.lookupOperation(model, '/people', 'get');
+        const element = await urlLabelFixture(method['@id']);
+        await nextFrame();
+        const node = element.shadowRoot.querySelector('.url-label');
+        const text = node.textContent.trim();
+        assert.equal(text, element.url);
+      });
+    });
+
+    describe('slotted servers', () => {
+      /** @type ApiRequestEditorElement */
+      let element;
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph();
+        store.amf = model;
+      });
+
+      beforeEach(async () => {
+        element = await customBaseUriSlotFixture();
+        const op = loader.lookupOperation(model, '/people/{personId}', 'get')
+        element.domainId = op['@id'];
+        await aTimeout(2);
+      });
+
+      it('should update api-url-editor value after selecting slotted base uri', async () => {
+        element[serverHandler](new CustomEvent('apiserverchanged', { detail: { value: 'http://customServer.com', type: 'custom' } }));
+        await aTimeout(2);
+        assert.equal(element.url, 'http://customServer.com/people/1234');
+      });
+
+      it('changing the URL in the url input changes the parameters', async () => {
+        console.clear();
+        element.urlEditor = true;
+        await nextFrame();
+        element[serverHandler](new CustomEvent('apiserverchanged', { detail: { value: 'http://customServer.com', type: 'custom' } }));
+        await aTimeout(2);
+        const input = /** @type HTMLInputElement */ (element.shadowRoot.querySelector('.url-input'));
+        input.value = 'http://customServer.com/people/5678';
+        input.dispatchEvent(new Event('change'));
+        await nextFrame();
+        assert.equal(element.url, 'http://customServer.com/people/5678', 'url value is changed');
+        const paramInput = /** @type HTMLInputElement */ (element.shadowRoot.querySelector('[name="personId"]'));
+        assert.equal(paramInput.value, '5678', 'the input is changed');
+      });
+    });
+
+    describe('#allowHideOptional', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(demoApi);
+        store.amf = model;
+      });
+
+      describe('query parameters', () => {
+        it('renders the optional toggle button', async () => {
           const method = loader.lookupOperation(model, '/people', 'get');
-          const element = await modelFixture(method['@id']);
-          const result = element.serialize();
-          assert.typeOf(result, 'object');
+          const element = await hideOptionalFixture(method['@id']);
+          const toggle = element.shadowRoot.querySelector('.query-params .toggle-optional-switch');
+          assert.ok(toggle);
         });
 
-        it('sets editor url', async () => {
+        it('optional parameters are hidden', async () => {
           const method = loader.lookupOperation(model, '/people', 'get');
-          const element = await modelFixture(method['@id']);
+          const element = await hideOptionalFixture(method['@id']);
+          const allItems = element.shadowRoot.querySelectorAll('.query-params .form-item.optional');
+          Array.from(allItems).forEach((node) => {
+            const { display } = getComputedStyle(node);
+            assert.equal(display, 'none');
+          });
+        });
+
+        it('toggles the visibility of the parameters', async () => {
+          const method = loader.lookupOperation(model, '/people', 'get');
+          const element = await hideOptionalFixture(method['@id']);
+          const toggle = /** @type HTMLElement */ (element.shadowRoot.querySelector('.query-params .toggle-optional-switch'));
+          toggle.click();
           await nextFrame();
-          const result = element.serialize();
-          assert.equal(result.url, 'http://production.domain.com/people');
+          assert.deepEqual(element.openedOptional, ['query'], 'adds query to the openedOptional');
+          const container = element.shadowRoot.querySelector('.query-params .form-item.optional');
+          const { display } = getComputedStyle(container);
+          assert.equal(display, 'flex');
         });
 
-        it('sets editor method', async () => {
-          const method = loader.lookupOperation(model, '/people', 'get');
-          const element = await modelFixture(method['@id']);
-          const result = element.serialize();
-          assert.equal(result.method, 'GET');
-        });
-
-        it('sets headers from the editor', async () => {
-          const method = loader.lookupOperation(model, '/post-headers', 'post');
-          const element = await modelFixture(method['@id']);
-          await aTimeout(10);
-          const result = element.serialize();
-          assert.equal(result.headers, 'x-string: my-value\ncontent-type: application/json');
-        });
-
-        it('sets editor payload', async () => {
-          const method = loader.lookupOperation(model, '/people', 'post');
-          const element = await modelFixture(method['@id']);
-          await aTimeout(0);
-          const result = element.serialize();
-          assert.typeOf(result.payload, 'string', 'has the payload');
-          const body = JSON.parse(String(result.payload));
-          // just any value, it's not important here.
-          assert.equal(body.etag, '', 'has payload values');
-        });
-
-        it('sets authorization data', async () => {
-          const method = loader.lookupOperation(model, '/people/{personId}', 'get');
-          const element = await modelFixture(method['@id']);
-          await aTimeout(0);
-          const result = element.serialize();
-          assert.typeOf(result.authorization, 'array');
-          assert.lengthOf(result.authorization, 1);
-          assert.equal(result.authorization[0].type, 'custom');
-        });
-
-        it('does not set editor payload when GET request', async () => {
-          const postMethod = loader.lookupOperation(model, '/people', 'post');
-          const element = await modelFixture(postMethod['@id']);
-          await aTimeout(0);
-          const getMethod = loader.lookupOperation(model, '/people', 'get');
-          element.domainId = getMethod['@id'];
-          await aTimeout(0);
-          const result = element.serialize();
-          assert.isUndefined(result.payload);
-        });
-
-        it('does not set editor payload when HEAD request', async () => {
-          const postMethod = loader.lookupOperation(model, '/people', 'post');
-          const element = await modelFixture(postMethod['@id']);
-          await aTimeout(0);
-          const getMethod = loader.lookupOperation(model, '/people', 'head');
-          element.domainId = getMethod['@id'];
-          await aTimeout(0);
-          const result = element.serialize();
-          assert.isUndefined(result.payload);
-        });
-
-        it('sets the content-type header if not present but set in component', async () => {
-          const method = loader.lookupOperation(model, '/people', 'post');
-          const element = await modelFixture(method['@id']);
-          element.parametersValue = element.parametersValue.filter(p => p.binding !== 'header');
-          const result = element.serialize();
-          assert.equal(result.headers, 'content-type: application/json');
+        it('does not render the toggle button for all required', async () => {
+          const method = loader.lookupOperation(model, '/required-query-parameters', 'get');
+          const element = await hideOptionalFixture(method['@id']);
+          const toggle = element.shadowRoot.querySelector('.query-params .toggle-optional-switch');
+          assert.notOk(toggle, 'toggle is not rendered');
+          const allItems = element.shadowRoot.querySelectorAll('.query-params .form-item');
+          Array.from(allItems).forEach((node) => {
+            const { display } = getComputedStyle(node);
+            assert.equal(display, 'flex');
+          });
         });
       });
 
-      describe('[sendHandler]()', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(Boolean(compact), demoApi);
-          store.amf = model;
+      describe('header parameters', () => {
+        it('renders the optional toggle button', async () => {
+          const method = loader.lookupOperation(model, '/optional-headers', 'get');
+          const element = await hideOptionalFixture(method['@id']);
+          const toggle = element.shadowRoot.querySelector('.params-section.header .toggle-optional-switch');
+          assert.ok(toggle);
         });
 
-        // it('calls authAndExecute() when authorization is required', async () => {
-        //   const method = store.lookupOperation(model, '/messages', 'get');
-        //   const element = await modelFixture(method['@id']);
-        //   await aTimeout(5);
-        //   const spy = sinon.spy(element, 'authAndExecute');
-        //   const button = element.shadowRoot.querySelector('.send-button');
-        //   /** @type HTMLElement */ (button).click();
-        //   await aTimeout(25);
-        //   assert.isTrue(spy.called);
-        // });
-
-        it('calls execute() when authorization is not required', async () => {
-          const method = loader.lookupOperation(model, '/people', 'get');
-          const element = await modelFixture(method['@id']);
-          const spy = sinon.spy(element, 'execute');
-          const button = element.shadowRoot.querySelector('.send-button');
-          /** @type HTMLElement */ (button).click();
-          assert.isTrue(spy.called);
-        });
-      });
-
-      describe('#urlLabel', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(Boolean(compact), demoApi);
-          store.amf = model;
+        it('optional parameters are hidden', async () => {
+          const method = loader.lookupOperation(model, '/optional-headers', 'get');
+          const element = await hideOptionalFixture(method['@id']);
+          const allItems = element.shadowRoot.querySelectorAll('.params-section.header .form-item.optional');
+          Array.from(allItems).forEach((node) => {
+            const { display } = getComputedStyle(node);
+            assert.equal(display, 'none');
+          });
         });
 
-        it('renders the url label', async () => {
-          const method = loader.lookupOperation(model, '/people', 'get');
-          const element = await urlLabelFixture(method['@id']);
-          const node = element.shadowRoot.querySelector('.url-label');
-          assert.ok(node);
-        });
-
-        it('renders the url value', async () => {
-          const method = loader.lookupOperation(model, '/people', 'get');
-          const element = await urlLabelFixture(method['@id']);
+        it('toggles the visibility of the parameters', async () => {
+          const method = loader.lookupOperation(model, '/optional-headers', 'get');
+          const element = await hideOptionalFixture(method['@id']);
+          const toggle = /** @type HTMLElement */ (element.shadowRoot.querySelector('.params-section.header .toggle-optional-switch'));
+          toggle.click();
           await nextFrame();
-          const node = element.shadowRoot.querySelector('.url-label');
-          const text = node.textContent.trim();
-          assert.equal(text, element.url);
+          assert.deepEqual(element.openedOptional, ['header'], 'adds query to the openedOptional');
+          const container = element.shadowRoot.querySelector('.params-section.header .form-item.optional');
+          const { display } = getComputedStyle(container);
+          assert.equal(display, 'flex');
+        });
+
+        it('does not render the toggle button for all required', async () => {
+          const method = loader.lookupOperation(model, '/required-headers', 'get');
+          const element = await hideOptionalFixture(method['@id']);
+          const toggle = element.shadowRoot.querySelector('.params-section.header .toggle-optional-switch');
+          assert.notOk(toggle, 'toggle is not rendered');
+          const allItems = element.shadowRoot.querySelectorAll('.params-section.header .form-item');
+          Array.from(allItems).forEach((node) => {
+            const { display } = getComputedStyle(node);
+            assert.equal(display, 'flex');
+          });
         });
       });
+    });
 
-      describe('slotted servers', () => {
-        /** @type ApiRequestEditorElement */
-        let element;
+    describe('Body editing', () => {
+      describe('Value settings', () => {
         /** @type AmfDocument */
         let model;
         before(async () => {
-          model = await loader.getGraph(Boolean(compact));
+          model = await loader.getGraph(demoApi);
           store.amf = model;
         });
 
-        beforeEach(async () => {
-          element = await customBaseUriSlotFixture();
-          const op = loader.lookupOperation(model, '/people/{personId}', 'get')
-          element.domainId = op['@id'];
-          await aTimeout(2);
+        it('sets value from a RAML example for a JSON body', async () => {
+          const method = loader.lookupOperation(model, '/body-types/json', 'post');
+          const element = await modelFixture(method['@id']);
+          const request = element.serialize();
+          const data = JSON.parse(String(request.payload));
+          assert.equal(data.name, 'Pawel Psztyc');
+
+          const bodyEditor = element.shadowRoot.querySelector('body-raw-editor');
+          assert.equal(bodyEditor.contentType, 'application/json', 'body editor has the content type');
         });
 
-        it('should update api-url-editor value after selecting slotted base uri', async () => {
-          element[serverHandler](new CustomEvent('apiserverchanged', { detail: { value: 'http://customServer.com', type: 'custom' } }));
-          await aTimeout(2);
-          assert.equal(element.url, 'http://customServer.com/people/1234');
+        it('sets value from a RAML example for an XML body', async () => {
+          const method = loader.lookupOperation(model, '/body-types/xml', 'post');
+          const element = await modelFixture(method['@id']);
+          const request = element.serialize();
+          const body = String(request.payload);
+          assert.include(body, '<name>Pawel Psztyc</name>');
+
+          const bodyEditor = element.shadowRoot.querySelector('body-raw-editor');
+          assert.equal(bodyEditor.contentType, 'application/xml', 'body editor has the content type');
         });
 
-        it('changing the URL in the url input changes the parameters', async () => {
-          console.clear();
-          element.urlEditor = true;
+        it('sets value from a RAML example for an x-www-form-urlencoded body', async () => {
+          const method = loader.lookupOperation(model, '/body-types/form', 'post');
+          const element = await modelFixture(method['@id']);
+          const request = element.serialize();
+          const body = String(request.payload);
+          assert.include(body, 'name=Pawel+Psztyc');
+
+          const bodyEditor = element.shadowRoot.querySelector('body-formdata-editor');
+          assert.ok(bodyEditor, 'renders the specialized form data editor');
+        });
+
+        // this can be done by adding support for a new media type in the `api-schema` module.
+        // for now an empty FormData instance is created
+        it('it has no example values for form data', async () => {
+          const method = loader.lookupOperation(model, '/body-types/multi-parts', 'post');
+          const element = await modelFixture(method['@id']);
+          const request = element.serialize();
+          assert.typeOf(request.payload, 'FormData');
+
+          const bodyEditor = element.shadowRoot.querySelector('body-multipart-editor');
+          assert.ok(bodyEditor, 'renders the specialized multipart editor');
+        });
+
+        it('sets a generated from schema example', async () => {
+          const method = loader.lookupOperation(model, '/generated-example', 'post');
+          const element = await modelFixture(method['@id']);
+          const request = element.serialize();
+          const data = JSON.parse(String(request.payload));
+          assert.typeOf(data.birthday, 'string', 'a date property is set');
+          assert.isNotEmpty(data.birthday, 'a date property has a value');
+          assert.equal(data.name, 'John Smith', 'has generated schema value');
+        });
+
+        it('renders media type selector', async () => {
+          const method = loader.lookupOperation(model, '/generated-example', 'post');
+          const element = await modelFixture(method['@id']);
+          
+          const container = element.shadowRoot.querySelector('.payload-mime-selector');
+          assert.ok(container, 'has the media selector container');
+
+          const options = container.querySelectorAll('anypoint-radio-button');
+          assert.lengthOf(options, 3, 'has all defined in the API media types');
+
+          assert.equal(options[0].textContent.trim(), 'application/json', 'has the application/json option');
+          assert.equal(options[1].textContent.trim(), 'application/xml', 'has the application/xml option');
+          assert.equal(options[2].textContent.trim(), 'application/x-www-form-urlencoded', 'has the application/x-www-form-urlencoded option');
+        });
+
+        it('changes selected mime type', async () => {
+          const method = loader.lookupOperation(model, '/generated-example', 'post');
+          const element = await modelFixture(method['@id']);
+          
+          const options = /** @type NodeListOf<HTMLElement> */ (element.shadowRoot.querySelectorAll('.payload-mime-selector anypoint-radio-button'));
+          options[1].click();
+
           await nextFrame();
-          element[serverHandler](new CustomEvent('apiserverchanged', { detail: { value: 'http://customServer.com', type: 'custom' } }));
-          await aTimeout(2);
-          const input = /** @type HTMLInputElement */ (element.shadowRoot.querySelector('.url-input'));
-          input.value = 'http://customServer.com/people/5678';
+
+          const request = element.serialize();
+          const body = String(request.payload);
+          assert.include(body, '<url></url>');
+
+          const bodyEditor = element.shadowRoot.querySelector('body-raw-editor');
+          assert.equal(bodyEditor.contentType, 'application/xml', 'body editor has the content type');
+        });
+      });
+
+      describe('apic-169', () => {
+        /** @type AmfDocument */
+        let model;
+        before(async () => {
+          model = await loader.getGraph('apic-169');
+          store.amf = model;
+        });
+
+        it('sets the value with optional and generated', async () => {
+          const method = loader.lookupOperation(model, '/new', 'post');
+          const element = await modelFixture(method['@id']);
+          const request = element.serialize();
+          const data = JSON.parse(String(request.payload));
+          assert.equal(data.name, 'MuleSoft');
+        });
+      });
+
+      describe('APIC-480', () => {
+        /** @type AmfDocument */
+        let model;
+        before(async () => {
+          model = await loader.getGraph('APIC-480');
+          store.amf = model;
+        });
+
+        it('sets the content type of the operation', async () => {
+          const method = loader.lookupOperation(model, '/accounts/{accountNumber}', 'patch');
+          const element = await modelFixture(method['@id']);
+          const request = element.serialize();
+          assert.equal(request.headers, 'content-type: application/json');
+        });
+      });
+
+      describe('APIC-613', () => {
+        /** @type AmfDocument */
+        let model;
+        before(async () => {
+          model = await loader.getGraph('APIC-613');
+          store.amf = model;
+        });
+
+        it('should not reset input fields when manipulating them', async () => {
+          const method = loader.lookupOperation(model, '/files', 'post');
+          const element = await modelFixture(method['@id']);
+          
+          const editor = element.shadowRoot.querySelector('body-multipart-editor');
+          /** @type HTMLElement */ (editor.shadowRoot.querySelector('.add-param.text-part')).click();
+          // waiting for the input to render.
+          await nextFrame();
+
+          const input = /** @type HTMLInputElement */ (editor.shadowRoot.querySelector('anypoint-input[data-property="name"]'));
+          input.value = 'Test';
+          input.dispatchEvent(new Event('input'));
           input.dispatchEvent(new Event('change'));
+
           await nextFrame();
-          assert.equal(element.url, 'http://customServer.com/people/5678', 'url value is changed');
-          const paramInput = /** @type HTMLInputElement */ (element.shadowRoot.querySelector('[name="personId"]'));
-          assert.equal(paramInput.value, '5678', 'the input is changed');
-        });
-      });
-
-      describe('#allowHideOptional', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(compact, demoApi);
-          store.amf = model;
-        });
-
-        describe('query parameters', () => {
-          it('renders the optional toggle button', async () => {
-            const method = loader.lookupOperation(model, '/people', 'get');
-            const element = await hideOptionalFixture(method['@id']);
-            const toggle = element.shadowRoot.querySelector('.query-params .toggle-optional-switch');
-            assert.ok(toggle);
-          });
-  
-          it('optional parameters are hidden', async () => {
-            const method = loader.lookupOperation(model, '/people', 'get');
-            const element = await hideOptionalFixture(method['@id']);
-            const allItems = element.shadowRoot.querySelectorAll('.query-params .form-item.optional');
-            Array.from(allItems).forEach((node) => {
-              const { display } = getComputedStyle(node);
-              assert.equal(display, 'none');
-            });
-          });
-  
-          it('toggles the visibility of the parameters', async () => {
-            const method = loader.lookupOperation(model, '/people', 'get');
-            const element = await hideOptionalFixture(method['@id']);
-            const toggle = /** @type HTMLElement */ (element.shadowRoot.querySelector('.query-params .toggle-optional-switch'));
-            toggle.click();
-            await nextFrame();
-            assert.deepEqual(element.openedOptional, ['query'], 'adds query to the openedOptional');
-            const container = element.shadowRoot.querySelector('.query-params .form-item.optional');
-            const { display } = getComputedStyle(container);
-            assert.equal(display, 'flex');
-          });
-  
-          it('does not render the toggle button for all required', async () => {
-            const method = loader.lookupOperation(model, '/required-query-parameters', 'get');
-            const element = await hideOptionalFixture(method['@id']);
-            const toggle = element.shadowRoot.querySelector('.query-params .toggle-optional-switch');
-            assert.notOk(toggle, 'toggle is not rendered');
-            const allItems = element.shadowRoot.querySelectorAll('.query-params .form-item');
-            Array.from(allItems).forEach((node) => {
-              const { display } = getComputedStyle(node);
-              assert.equal(display, 'flex');
-            });
-          });
-        });
-
-        describe('header parameters', () => {
-          it('renders the optional toggle button', async () => {
-            const method = loader.lookupOperation(model, '/optional-headers', 'get');
-            const element = await hideOptionalFixture(method['@id']);
-            const toggle = element.shadowRoot.querySelector('.params-section.header .toggle-optional-switch');
-            assert.ok(toggle);
-          });
-  
-          it('optional parameters are hidden', async () => {
-            const method = loader.lookupOperation(model, '/optional-headers', 'get');
-            const element = await hideOptionalFixture(method['@id']);
-            const allItems = element.shadowRoot.querySelectorAll('.params-section.header .form-item.optional');
-            Array.from(allItems).forEach((node) => {
-              const { display } = getComputedStyle(node);
-              assert.equal(display, 'none');
-            });
-          });
-  
-          it('toggles the visibility of the parameters', async () => {
-            const method = loader.lookupOperation(model, '/optional-headers', 'get');
-            const element = await hideOptionalFixture(method['@id']);
-            const toggle = /** @type HTMLElement */ (element.shadowRoot.querySelector('.params-section.header .toggle-optional-switch'));
-            toggle.click();
-            await nextFrame();
-            assert.deepEqual(element.openedOptional, ['header'], 'adds query to the openedOptional');
-            const container = element.shadowRoot.querySelector('.params-section.header .form-item.optional');
-            const { display } = getComputedStyle(container);
-            assert.equal(display, 'flex');
-          });
-  
-          it('does not render the toggle button for all required', async () => {
-            const method = loader.lookupOperation(model, '/required-headers', 'get');
-            const element = await hideOptionalFixture(method['@id']);
-            const toggle = element.shadowRoot.querySelector('.params-section.header .toggle-optional-switch');
-            assert.notOk(toggle, 'toggle is not rendered');
-            const allItems = element.shadowRoot.querySelectorAll('.params-section.header .form-item');
-            Array.from(allItems).forEach((node) => {
-              const { display } = getComputedStyle(node);
-              assert.equal(display, 'flex');
-            });
-          });
-        });
-      });
-
-      describe('Body editing', () => {
-        describe('Value settings', () => {
-          /** @type AmfDocument */
-          let model;
-          before(async () => {
-            model = await loader.getGraph(compact, demoApi);
-            store.amf = model;
-          });
-
-          it('sets value from a RAML example for a JSON body', async () => {
-            const method = loader.lookupOperation(model, '/body-types/json', 'post');
-            const element = await modelFixture(method['@id']);
-            const request = element.serialize();
-            const data = JSON.parse(String(request.payload));
-            assert.equal(data.name, 'Pawel Psztyc');
-
-            const bodyEditor = element.shadowRoot.querySelector('body-raw-editor');
-            assert.equal(bodyEditor.contentType, 'application/json', 'body editor has the content type');
-          });
-
-          it('sets value from a RAML example for an XML body', async () => {
-            const method = loader.lookupOperation(model, '/body-types/xml', 'post');
-            const element = await modelFixture(method['@id']);
-            const request = element.serialize();
-            const body = String(request.payload);
-            assert.include(body, '<name>Pawel Psztyc</name>');
-
-            const bodyEditor = element.shadowRoot.querySelector('body-raw-editor');
-            assert.equal(bodyEditor.contentType, 'application/xml', 'body editor has the content type');
-          });
-
-          it('sets value from a RAML example for an x-www-form-urlencoded body', async () => {
-            const method = loader.lookupOperation(model, '/body-types/form', 'post');
-            const element = await modelFixture(method['@id']);
-            const request = element.serialize();
-            const body = String(request.payload);
-            assert.include(body, 'name=Pawel+Psztyc');
-
-            const bodyEditor = element.shadowRoot.querySelector('body-formdata-editor');
-            assert.ok(bodyEditor, 'renders the specialized form data editor');
-          });
-
-          // this can be done by adding support for a new media type in the `api-schema` module.
-          // for now an empty FormData instance is created
-          it('it has no example values for form data', async () => {
-            const method = loader.lookupOperation(model, '/body-types/multi-parts', 'post');
-            const element = await modelFixture(method['@id']);
-            const request = element.serialize();
-            assert.typeOf(request.payload, 'FormData');
-
-            const bodyEditor = element.shadowRoot.querySelector('body-multipart-editor');
-            assert.ok(bodyEditor, 'renders the specialized multipart editor');
-          });
-
-          it('sets a generated from schema example', async () => {
-            const method = loader.lookupOperation(model, '/generated-example', 'post');
-            const element = await modelFixture(method['@id']);
-            const request = element.serialize();
-            const data = JSON.parse(String(request.payload));
-            assert.typeOf(data.birthday, 'string', 'a date property is set');
-            assert.isNotEmpty(data.birthday, 'a date property has a value');
-            assert.equal(data.name, 'John Smith', 'has generated schema value');
-          });
-
-          it('renders media type selector', async () => {
-            const method = loader.lookupOperation(model, '/generated-example', 'post');
-            const element = await modelFixture(method['@id']);
-            
-            const container = element.shadowRoot.querySelector('.payload-mime-selector');
-            assert.ok(container, 'has the media selector container');
-
-            const options = container.querySelectorAll('anypoint-radio-button');
-            assert.lengthOf(options, 3, 'has all defined in the API media types');
-
-            assert.equal(options[0].textContent.trim(), 'application/json', 'has the application/json option');
-            assert.equal(options[1].textContent.trim(), 'application/xml', 'has the application/xml option');
-            assert.equal(options[2].textContent.trim(), 'application/x-www-form-urlencoded', 'has the application/x-www-form-urlencoded option');
-          });
-
-          it('changes selected mime type', async () => {
-            const method = loader.lookupOperation(model, '/generated-example', 'post');
-            const element = await modelFixture(method['@id']);
-            
-            const options = /** @type NodeListOf<HTMLElement> */ (element.shadowRoot.querySelectorAll('.payload-mime-selector anypoint-radio-button'));
-            options[1].click();
-
-            await nextFrame();
-
-            const request = element.serialize();
-            const body = String(request.payload);
-            assert.include(body, '<url></url>');
-
-            const bodyEditor = element.shadowRoot.querySelector('body-raw-editor');
-            assert.equal(bodyEditor.contentType, 'application/xml', 'body editor has the content type');
-          });
-        });
-
-        describe('apic-169', () => {
-          /** @type AmfDocument */
-          let model;
-          before(async () => {
-            model = await loader.getGraph(compact, 'apic-169');
-            store.amf = model;
-          });
-
-          it('sets the value with optional and generated', async () => {
-            const method = loader.lookupOperation(model, '/new', 'post');
-            const element = await modelFixture(method['@id']);
-            const request = element.serialize();
-            const data = JSON.parse(String(request.payload));
-            assert.equal(data.name, 'MuleSoft');
-          });
-        });
-
-        describe('APIC-480', () => {
-          /** @type AmfDocument */
-          let model;
-          before(async () => {
-            model = await loader.getGraph(compact, 'APIC-480');
-            store.amf = model;
-          });
-
-          it('sets the content type of the operation', async () => {
-            const method = loader.lookupOperation(model, '/accounts/{accountNumber}', 'patch');
-            const element = await modelFixture(method['@id']);
-            const request = element.serialize();
-            assert.equal(request.headers, 'content-type: application/json');
-          });
-        });
-
-        describe('APIC-613', () => {
-          /** @type AmfDocument */
-          let model;
-          before(async () => {
-            model = await loader.getGraph(compact, 'APIC-613');
-            store.amf = model;
-          });
-
-          it('should not reset input fields when manipulating them', async () => {
-            const method = loader.lookupOperation(model, '/files', 'post');
-            const element = await modelFixture(method['@id']);
-            
-            const editor = element.shadowRoot.querySelector('body-multipart-editor');
-            /** @type HTMLElement */ (editor.shadowRoot.querySelector('.add-param.text-part')).click();
-            // waiting for the input to render.
-            await nextFrame();
-
-            const input = /** @type HTMLInputElement */ (editor.shadowRoot.querySelector('anypoint-input[data-property="name"]'));
-            input.value = 'Test';
-            input.dispatchEvent(new Event('input'));
-            input.dispatchEvent(new Event('change'));
-
-            await nextFrame();
-            assert.exists(editor.shadowRoot.querySelector('anypoint-input[data-property="name"]'));
-          });
+          assert.exists(editor.shadowRoot.querySelector('anypoint-input[data-property="name"]'));
         });
       });
     });
@@ -1139,330 +1137,320 @@ describe('ApiRequestEditorElement', () => {
     });
   });
 
-  [true, false].forEach((compact) => {
-    const multiServerApi = 'multi-server';
+  const multiServerApi = 'multi-server';
 
-    /**
-     * @param {HTMLElement} element
-     * @param {String} value
-     * @param {String} type
-     */
-    function dispatchSelectionEvent(element, value, type) {
-      const e = {
-        detail: {
-          value,
-          type,
-        },
-      };
-      const node = element.shadowRoot.querySelector('api-server-selector');
-      node.dispatchEvent(new CustomEvent('apiserverchanged', e));
-    }
+  /**
+   * @param {HTMLElement} element
+   * @param {String} value
+   * @param {String} type
+   */
+  function dispatchSelectionEvent(element, value, type) {
+    const e = {
+      detail: {
+        value,
+        type,
+      },
+    };
+    const node = element.shadowRoot.querySelector('api-server-selector');
+    node.dispatchEvent(new CustomEvent('apiserverchanged', e));
+  }
 
-    /**
-     * @param {ApiRequestEditorElement} element
-     * @param {string} domainId
-     */
-    async function changeSelection(element, domainId) {
-      element.domainId = domainId;
-      await aTimeout(2);
-      await nextFrame();
-    }
+  /**
+   * @param {ApiRequestEditorElement} element
+   * @param {string} domainId
+   */
+  async function changeSelection(element, domainId) {
+    element.domainId = domainId;
+    await aTimeout(2);
+    await nextFrame();
+  }
 
-    describe(compact ? 'Compact model' : 'Full model', () => {
-      describe('custom URI selection', () => {
-        
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(Boolean(compact), multiServerApi);
-          store.amf = model;
-        });
-
-        let element = /** @type ApiRequestEditorElement */ (null);
-        beforeEach(async () => {
-          element = await modelFixture();
-          // This is equivalent to Custom URI being selected, and 'https://www.google.com' being input
-          dispatchSelectionEvent(element, 'https://www.google.com', 'custom');
-        });
-
-        it('has servers computed', () => {
-          assert.lengthOf(element.servers, 4);
-        });
-
-        it('updates serverValue', () => {
-          assert.equal(element.serverValue, 'https://www.google.com');
-        });
-
-        it('renders selector for custom URI', () => {
-          assert.exists(element.shadowRoot.querySelector('api-server-selector'));
-        });
-
-        it('sets effectiveBaseUri to baseUri value', () => {
-          element.baseUri = 'https://example.org';
-          assert.equal(element.effectiveBaseUri, element.baseUri);
-          assert.equal(element.effectiveBaseUri, 'https://example.org');
-        });
-
-        it('sets effectiveBaseUri serverValue value', () => {
-          assert.equal(element.effectiveBaseUri, element.serverValue);
-          assert.equal(element.effectiveBaseUri, 'https://www.google.com');
-        });
-
-        it('updates computed server', async () => {
-          dispatchSelectionEvent(element, 'https://{customerId}.saas-app.com:{port}/v2', 'server');
-          await nextFrame();
-          assert.isDefined(element.server);
-        });
+  describe('Multi server', () => {
+    describe('custom URI selection', () => {
+      
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(multiServerApi);
+        store.amf = model;
       });
 
-      describe('from navigation events', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(Boolean(compact), multiServerApi);
-          store.amf = model;
-        });
-        
-        let element = /** @type ApiRequestEditorElement */ (null);
-        beforeEach(async () => {
-          element = await modelFixture();
-        });
+      let element = /** @type ApiRequestEditorElement */ (null);
+      beforeEach(async () => {
+        element = await modelFixture();
+        // This is equivalent to Custom URI being selected, and 'https://www.google.com' being input
+        dispatchSelectionEvent(element, 'https://www.google.com', 'custom');
+      });
 
-        it('has default number of servers', async () => {
-          assert.lengthOf(element.servers, 4);
-        });
+      it('has servers computed', () => {
+        assert.lengthOf(element.servers, 4);
+      });
 
-        it('computes servers when first navigation', async () => {
-          const method = loader.lookupOperation(model, '/default', 'get');
-          await changeSelection(element, method['@id']);
-          assert.lengthOf(element.servers, 4);
-        });
+      it('updates serverValue', () => {
+        assert.equal(element.serverValue, 'https://www.google.com');
+      });
 
-        it('computes servers after subsequent navigation', async () => {
-          // default navigation
-          await changeSelection(element, loader.lookupOperation(model, '/default', 'get')['@id']);
-          // other endpoint
-          await changeSelection(element, loader.lookupOperation(model, '/files', 'get')['@id']);
-          assert.lengthOf(element.servers, 1);
-        });
+      it('renders selector for custom URI', () => {
+        assert.exists(element.shadowRoot.querySelector('api-server-selector'));
+      });
 
-        it('automatically selects first available server', async () => {
-          await changeSelection(element, loader.lookupOperation(model, '/default', 'get')['@id']);
-          assert.equal(element.serverValue, 'https://{customerId}.saas-app.com:{port}/v2');
-        });
+      it('sets effectiveBaseUri to baseUri value', () => {
+        element.baseUri = 'https://example.org';
+        assert.equal(element.effectiveBaseUri, element.baseUri);
+        assert.equal(element.effectiveBaseUri, 'https://example.org');
+      });
 
-        it('auto change selected server', async () => {
-          await changeSelection(element, loader.lookupOperation(model, '/default', 'get')['@id']);
-          await changeSelection(element, loader.lookupOperation(model, '/files', 'get')['@id']);
-          assert.equal(element.serverValue, 'https://files.example.com');
-        });
+      it('sets effectiveBaseUri serverValue value', () => {
+        assert.equal(element.effectiveBaseUri, element.serverValue);
+        assert.equal(element.effectiveBaseUri, 'https://www.google.com');
+      });
 
-        it('keeps server selection when possible', async () => {
-          await changeSelection(element, loader.lookupOperation(model, '/default', 'get')['@id']);
+      it('updates computed server', async () => {
+        dispatchSelectionEvent(element, 'https://{customerId}.saas-app.com:{port}/v2', 'server');
+        await nextFrame();
+        assert.isDefined(element.server);
+      });
+    });
 
-          dispatchSelectionEvent(element, 'https://{region}.api.cognitive.microsoft.com', 'server');
+    describe('from navigation events', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(multiServerApi);
+        store.amf = model;
+      });
+      
+      let element = /** @type ApiRequestEditorElement */ (null);
+      beforeEach(async () => {
+        element = await modelFixture();
+      });
 
-          await changeSelection(element, loader.lookupOperation(model, '/copy', 'get')['@id']);
-          assert.equal(element.serverValue, 'https://{region}.api.cognitive.microsoft.com');
-        });
+      it('has default number of servers', async () => {
+        assert.lengthOf(element.servers, 4);
+      });
 
-        it('initializes with selected server', async () => {
-          const methodId = loader.lookupOperation(model, '/ping', 'get')['@id'];
-          element = await modelFixture(methodId);
-          await nextFrame();
-          assert.lengthOf(element.servers, 2);
-        });
+      it('computes servers when first navigation', async () => {
+        const method = loader.lookupOperation(model, '/default', 'get');
+        await changeSelection(element, method['@id']);
+        assert.lengthOf(element.servers, 4);
+      });
+
+      it('computes servers after subsequent navigation', async () => {
+        // default navigation
+        await changeSelection(element, loader.lookupOperation(model, '/default', 'get')['@id']);
+        // other endpoint
+        await changeSelection(element, loader.lookupOperation(model, '/files', 'get')['@id']);
+        assert.lengthOf(element.servers, 1);
+      });
+
+      it('automatically selects first available server', async () => {
+        await changeSelection(element, loader.lookupOperation(model, '/default', 'get')['@id']);
+        assert.equal(element.serverValue, 'https://{customerId}.saas-app.com:{port}/v2');
+      });
+
+      it('auto change selected server', async () => {
+        await changeSelection(element, loader.lookupOperation(model, '/default', 'get')['@id']);
+        await changeSelection(element, loader.lookupOperation(model, '/files', 'get')['@id']);
+        assert.equal(element.serverValue, 'https://files.example.com');
+      });
+
+      it('keeps server selection when possible', async () => {
+        await changeSelection(element, loader.lookupOperation(model, '/default', 'get')['@id']);
+
+        dispatchSelectionEvent(element, 'https://{region}.api.cognitive.microsoft.com', 'server');
+
+        await changeSelection(element, loader.lookupOperation(model, '/copy', 'get')['@id']);
+        assert.equal(element.serverValue, 'https://{region}.api.cognitive.microsoft.com');
+      });
+
+      it('initializes with selected server', async () => {
+        const methodId = loader.lookupOperation(model, '/ping', 'get')['@id'];
+        element = await modelFixture(methodId);
+        await nextFrame();
+        assert.lengthOf(element.servers, 2);
       });
     });
   });
 
-  [true, false].forEach((compact) => {
-    describe(compact ? 'Compact model' : 'Full model', () => {
-      describe(`Populating annotated fields`, () => {
-        const annotatedParametersApi = 'annotated-parameters';
-        
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(compact, annotatedParametersApi);
-          store.amf = model;
-        });
+  describe(`Populating annotated fields`, () => {
+    const annotatedParametersApi = 'annotated-parameters';
+    
+    /** @type AmfDocument */
+    let model;
+    before(async () => {
+      model = await loader.getGraph(annotatedParametersApi);
+      store.amf = model;
+    });
 
-        /** @type ApiRequestEditorElement */
-        let element;
-        beforeEach(async () => {
-          InputCache.globalValues.clear();
-          const selected = loader.lookupOperation(model, '/test', 'get')['@id'];
-          element = await modelFixture(selected);
-        });
-  
-        it('should populate annotated query parameter field', () => {
-          const detail = { values: [{ annotationName: 'credentialType', annotationValue: 'id', fieldValue: 'test value' }] };
-          document.dispatchEvent(new CustomEvent('populate_annotated_fields', { detail, bubbles: true }));
-          const values = [];
-          element.parametersValue.forEach((p) => {
-            if (p.parameter.binding !== 'query') {
-              return;
-            }
-            values[values.length] = InputCache.get(element, p.paramId, false);
-          })
-          assert.deepEqual(values, ['', 'test value']);
-        });
-  
-        it('should populate annotated header field', () => {
-          const detail = { values: [{ annotationName: 'credentialType', annotationValue: 'secret', fieldValue: 'test value' }] };
-          document.dispatchEvent(new CustomEvent('populate_annotated_fields', { detail, bubbles: true }));
-          const values = [];
-          element.parametersValue.forEach((p) => {
-            if (p.parameter.binding !== 'header') {
-              return;
-            }
-            values[values.length] = InputCache.get(element, p.paramId, false);
-          });
-          assert.deepEqual(values, [ 'test value', '' ]);
-          const { headers } = element.serialize();
-          assert.equal(headers, 'annotatedHeader: test value\nnormalHeader: ');
-        });
-  
-        it('should populate annotated query parameter and header fields', () => {
-          const detail = { values: [
-            { annotationName: 'credentialType', annotationValue: 'id', fieldValue: 'test value 1' },
-            { annotationName: 'credentialType', annotationValue: 'secret', fieldValue: 'test value 2' },
-          ] };
-          document.dispatchEvent(new CustomEvent('populate_annotated_fields', { detail, bubbles: true }));
-          const { headers, url } = element.serialize();
-          assert.equal(headers, 'annotatedHeader: test value 2\nnormalHeader: ');
-          assert.include(url, 'normalQueryparam=&annotatedQueryParam=test+value+1');
-        });
+    /** @type ApiRequestEditorElement */
+    let element;
+    beforeEach(async () => {
+      InputCache.globalValues.clear();
+      const selected = loader.lookupOperation(model, '/test', 'get')['@id'];
+      element = await modelFixture(selected);
+    });
+
+    it('should populate annotated query parameter field', () => {
+      const detail = { values: [{ annotationName: 'credentialType', annotationValue: 'id', fieldValue: 'test value' }] };
+      document.dispatchEvent(new CustomEvent('populate_annotated_fields', { detail, bubbles: true }));
+      const values = [];
+      element.parametersValue.forEach((p) => {
+        if (p.parameter.binding !== 'query') {
+          return;
+        }
+        values[values.length] = InputCache.get(element, p.paramId, false);
+      })
+      assert.deepEqual(values, ['', 'test value']);
+    });
+
+    it('should populate annotated header field', () => {
+      const detail = { values: [{ annotationName: 'credentialType', annotationValue: 'secret', fieldValue: 'test value' }] };
+      document.dispatchEvent(new CustomEvent('populate_annotated_fields', { detail, bubbles: true }));
+      const values = [];
+      element.parametersValue.forEach((p) => {
+        if (p.parameter.binding !== 'header') {
+          return;
+        }
+        values[values.length] = InputCache.get(element, p.paramId, false);
       });
+      assert.deepEqual(values, [ 'test value', '' ]);
+      const { headers } = element.serialize();
+      assert.equal(headers, 'annotatedHeader: test value\nnormalHeader: ');
+    });
+
+    it('should populate annotated query parameter and header fields', () => {
+      const detail = { values: [
+        { annotationName: 'credentialType', annotationValue: 'id', fieldValue: 'test value 1' },
+        { annotationName: 'credentialType', annotationValue: 'secret', fieldValue: 'test value 2' },
+      ] };
+      document.dispatchEvent(new CustomEvent('populate_annotated_fields', { detail, bubbles: true }));
+      const { headers, url } = element.serialize();
+      assert.equal(headers, 'annotatedHeader: test value 2\nnormalHeader: ');
+      assert.include(url, 'normalQueryparam=&annotatedQueryParam=test+value+1');
     });
   });
 
   describe('Authorization', () => {
-    [true, false].forEach((compact) => {
-      describe(compact ? 'Compact model' : 'Full model', () => {
-        const fileName = 'oas-demo';
+    const fileName = 'oas-demo';
 
-        describe(`Single method`, () => {
-          /** @type AmfDocument */
-          let model;
-          before(async () => {
-            model = await loader.getGraph(compact, fileName);
-            store.amf = model;
-          });
-          
-          /** @type ApiRequestEditorElement */
-          let element;
-          beforeEach(async () => {
-            const operation = loader.getOperation(model, '/single', 'get');
-            element = await modelFixture(operation.id);
-          });
+    describe(`Single method`, () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(fileName);
+        store.amf = model;
+      });
+      
+      /** @type ApiRequestEditorElement */
+      let element;
+      beforeEach(async () => {
+        const operation = loader.getOperation(model, '/single', 'get');
+        element = await modelFixture(operation.id);
+      });
 
-          it('sets the security value', async () => {
-            assert.typeOf(element.security, 'array', 'has the security');
-            assert.lengthOf(element.security, 1, 'has the single scheme');
-            const [scheme] = element.security;
-            assert.deepEqual(scheme.types, ['http'], 'has types definition');
-            assert.deepEqual(scheme.labels, ['BasicAuth'], 'has labels definition');
-            assert.typeOf(scheme.security, 'object', 'has the security definition');
-          });
-  
-          it('sets the selectedSecurity', async () => {
-            assert.equal(element.selectedSecurity, 0);
-          });
+      it('sets the security value', async () => {
+        assert.typeOf(element.security, 'array', 'has the security');
+        assert.lengthOf(element.security, 1, 'has the single scheme');
+        const [scheme] = element.security;
+        assert.deepEqual(scheme.types, ['http'], 'has types definition');
+        assert.deepEqual(scheme.labels, ['BasicAuth'], 'has labels definition');
+        assert.typeOf(scheme.security, 'object', 'has the security definition');
+      });
 
-          it('has no selector', () => {
-            const node = element.shadowRoot.querySelector('.auth-selector');
-            assert.notOk(node);
-          });
-        });
+      it('sets the selectedSecurity', async () => {
+        assert.equal(element.selectedSecurity, 0);
+      });
 
-        describe(`Single method with union`, () => {
-          /** @type AmfDocument */
-          let model;
-          before(async () => {
-            model = await loader.getGraph(compact, fileName);
-            store.amf = model;
-          });
-          
-          /** @type ApiRequestEditorElement */
-          let element;
-          beforeEach(async () => {
-            const operation = loader.getOperation(model, '/and-and-or-union', 'get');
-            element = await modelFixture(operation.id);
-          });
-  
-          it('sets the security value', async () => {
-            assert.typeOf(element.security, 'array', 'has the security');
-            assert.lengthOf(element.security, 2, 'has the both schemes');
-            const [scheme1] = element.security;
-            assert.deepEqual(scheme1.types, ['Api Key', 'Api Key'], 'has types definition');
-            assert.deepEqual(scheme1.labels, ['ApiKeyQuery', 'ApiKeyAuth'], 'has labels definition');
-            assert.typeOf(scheme1.security, 'object', 'has the security definition');
-          });
-  
-          it('has method selector', () => {
-            const node = element.shadowRoot.querySelector('.auth-selector');
-            assert.ok(node);
-          });
-  
-          it('renders combined label', () => {
-            const node = element.shadowRoot.querySelector('anypoint-item[data-label="ApiKeyQuery, ApiKeyAuth"]');
-            assert.ok(node);
-          });
-  
-          it('renders label with names and types', () => {
-            const node = element.shadowRoot.querySelector('anypoint-item[data-label="ApiKeyQuery, ApiKeyAuth"]');
-            const parts = node.textContent.trim().split('\n').map((item) => item.trim());
-            assert.equal(parts[0], 'ApiKeyQuery, ApiKeyAuth');
-            assert.equal(parts[1], 'Api Key, Api Key');
-          });
-  
-          it('renders as single editor', () => {
-            const nodes = element.shadowRoot.querySelectorAll('api-authorization-editor');
-            assert.lengthOf(nodes, 1);
-          });
-        });
+      it('has no selector', () => {
+        const node = element.shadowRoot.querySelector('.auth-selector');
+        assert.notOk(node);
+      });
+    });
 
-        describe(`Multiple unions`, () => {
-          /** @type AmfDocument */
-          let model;
-          before(async () => {
-            model = await loader.getGraph(compact, fileName);
-            store.amf = model;
-          });
-          
-          /** @type ApiRequestEditorElement */
-          let element;
-          beforeEach(async () => {
-            const operation = loader.getOperation(model, '/cross-union', 'get');
-            element = await modelFixture(operation.id);
-          });
-  
-          it('sets the security value', async () => {
-            assert.typeOf(element.security, 'array', 'has the security');
-            assert.lengthOf(element.security, 3, 'has the both schemes');
-            const [scheme1] = element.security;
-            assert.deepEqual(scheme1.types, ['Api Key', 'Api Key'], 'has types definition');
-            assert.deepEqual(scheme1.labels, ['ApiKeyQuery', 'ApiKeyAuth'], 'has labels definition');
-            assert.typeOf(scheme1.security, 'object', 'has the security definition');
-          });
-  
-          it('has method selector', () => {
-            const node = element.shadowRoot.querySelector('.auth-selector');
-            assert.ok(node);
-          });
-  
-          it('has no scheme label', () => {
-            const node = element.shadowRoot.querySelector('.auth-selector-label');
-            assert.notOk(node);
-          });
-  
-          it('does not render method labels for API Key', () => {
-            const nodes = element.shadowRoot.querySelectorAll('.auth-label');
-            assert.lengthOf(nodes, 0);
-          });
-        });
+    describe(`Single method with union`, () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(fileName);
+        store.amf = model;
+      });
+      
+      /** @type ApiRequestEditorElement */
+      let element;
+      beforeEach(async () => {
+        const operation = loader.getOperation(model, '/and-and-or-union', 'get');
+        element = await modelFixture(operation.id);
+      });
+
+      it('sets the security value', async () => {
+        assert.typeOf(element.security, 'array', 'has the security');
+        assert.lengthOf(element.security, 2, 'has the both schemes');
+        const [scheme1] = element.security;
+        assert.deepEqual(scheme1.types, ['Api Key', 'Api Key'], 'has types definition');
+        assert.deepEqual(scheme1.labels, ['ApiKeyQuery', 'ApiKeyAuth'], 'has labels definition');
+        assert.typeOf(scheme1.security, 'object', 'has the security definition');
+      });
+
+      it('has method selector', () => {
+        const node = element.shadowRoot.querySelector('.auth-selector');
+        assert.ok(node);
+      });
+
+      it('renders combined label', () => {
+        const node = element.shadowRoot.querySelector('anypoint-item[data-label="ApiKeyQuery, ApiKeyAuth"]');
+        assert.ok(node);
+      });
+
+      it('renders label with names and types', () => {
+        const node = element.shadowRoot.querySelector('anypoint-item[data-label="ApiKeyQuery, ApiKeyAuth"]');
+        const parts = node.textContent.trim().split('\n').map((item) => item.trim());
+        assert.equal(parts[0], 'ApiKeyQuery, ApiKeyAuth');
+        assert.equal(parts[1], 'Api Key, Api Key');
+      });
+
+      it('renders as single editor', () => {
+        const nodes = element.shadowRoot.querySelectorAll('api-authorization-editor');
+        assert.lengthOf(nodes, 1);
+      });
+    });
+
+    describe(`Multiple unions`, () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(fileName);
+        store.amf = model;
+      });
+      
+      /** @type ApiRequestEditorElement */
+      let element;
+      beforeEach(async () => {
+        const operation = loader.getOperation(model, '/cross-union', 'get');
+        element = await modelFixture(operation.id);
+      });
+
+      it('sets the security value', async () => {
+        assert.typeOf(element.security, 'array', 'has the security');
+        assert.lengthOf(element.security, 3, 'has the both schemes');
+        const [scheme1] = element.security;
+        assert.deepEqual(scheme1.types, ['Api Key', 'Api Key'], 'has types definition');
+        assert.deepEqual(scheme1.labels, ['ApiKeyQuery', 'ApiKeyAuth'], 'has labels definition');
+        assert.typeOf(scheme1.security, 'object', 'has the security definition');
+      });
+
+      it('has method selector', () => {
+        const node = element.shadowRoot.querySelector('.auth-selector');
+        assert.ok(node);
+      });
+
+      it('has no scheme label', () => {
+        const node = element.shadowRoot.querySelector('.auth-selector-label');
+        assert.notOk(node);
+      });
+
+      it('does not render method labels for API Key', () => {
+        const nodes = element.shadowRoot.querySelectorAll('.auth-label');
+        assert.lengthOf(nodes, 0);
       });
     });
   });

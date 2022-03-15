@@ -27,148 +27,146 @@ describe('ApiRequestDocumentElement', () => {
     await aTimeout(1);
     return /** @type ApiRequestDocumentElement */ (element);
   }
-
-  [false, true].forEach((compact) => {
-    describe('request headers', () => {
-      /** @type AmfDocument */
-      let model;
-      before(async () => {
-        model = await loader.getGraph(compact);
-        store.amf = model;
-      });
-
-      it('renders the request headers', async () => {
-        const data = loader.getRequest(model, '/people', 'get');
-        const element = await basicFixture(data);
-
-        assert.isTrue(element.hasHeaders, 'hasHeaders is true');
-
-        const section = element.shadowRoot.querySelector('.params-section [data-ctrl-property="headersOpened"]');
-        assert.ok(section, 'the section is rendered');
-
-        const params = element.shadowRoot.querySelectorAll('api-parameter-document[data-name="header"]');
-        assert.lengthOf(params, 2, 'has all parameters document');
-      });
-
-      it('ignores headers section when no headers', async () => {
-        const data = loader.getRequest(model, '/messages', 'get');
-        const element = await basicFixture(data);
-
-        assert.isFalse(element.hasHeaders, 'hasHeaders is true');
-
-        const section = element.shadowRoot.querySelector('.params-section [data-ctrl-property="headersOpened"]');
-        assert.notOk(section, 'the section is not rendered');
-      });
+  
+  describe('request headers', () => {
+    /** @type AmfDocument */
+    let model;
+    before(async () => {
+      model = await loader.getGraph();
+      store.amf = model;
     });
 
-    describe('payload rendering', () => {
-      /** @type AmfDocument */
-      let model;
-      before(async () => {
-        model = await loader.getGraph(compact);
-        store.amf = model;
-      });
+    it('renders the request headers', async () => {
+      const data = loader.getRequest(model, '/people', 'get');
+      const element = await basicFixture(data);
 
-      it('renders the payload schema', async () => {
-        const data = loader.getRequest(model, '/people', 'post');
-        const element = await basicFixture(data);
+      assert.isTrue(element.hasHeaders, 'hasHeaders is true');
 
-        const node = element.shadowRoot.querySelector('api-payload-document');
-        assert.ok(node, 'has the payload document');
-      });
+      const section = element.shadowRoot.querySelector('.params-section [data-ctrl-property="headersOpened"]');
+      assert.ok(section, 'the section is rendered');
 
-      it('ignores the payload when not defined', async () => {
-        const data = loader.getRequest(model, '/people', 'get');
-        const element = await basicFixture(data);
-
-        const node = element.shadowRoot.querySelector('api-payload-document');
-        assert.notOk(node);
-      });
+      const params = element.shadowRoot.querySelectorAll('api-parameter-document[data-name="header"]');
+      assert.lengthOf(params, 2, 'has all parameters document');
     });
 
-    describe('request media type selector', () => {
-      /** @type AmfDocument */
-      let model;
-      before(async () => {
-        model = await loader.getGraph(compact);
-        store.amf = model;
-      });
+    it('ignores headers section when no headers', async () => {
+      const data = loader.getRequest(model, '/messages', 'get');
+      const element = await basicFixture(data);
 
-      it('renders the request media type selector', async () => {
-        const data = loader.getRequest(model, '/people', 'put');
-        const element = await basicFixture(data);
+      assert.isFalse(element.hasHeaders, 'hasHeaders is true');
 
-        const section = element.shadowRoot.querySelector('.params-section[data-controlled-by="payloadOpened"]');
-        const selector = section.querySelector('.media-type-selector');
-        assert.ok(selector, 'has the payload document');
+      const section = element.shadowRoot.querySelector('.params-section [data-ctrl-property="headersOpened"]');
+      assert.notOk(section, 'the section is not rendered');
+    });
+  });
 
-        const buttons = selector.querySelectorAll('anypoint-radio-button');
-        assert.lengthOf(buttons, 2, 'has 2 media types to select');
-      });
-
-      it('ignores the media type when not defined', async () => {
-        const data = loader.getRequest(model, '/orgs/{orgId}', 'put');
-        const element = await basicFixture(data);
-
-        const section = element.shadowRoot.querySelector('.params-section[data-controlled-by="payloadOpened"]');
-        const selector = section.querySelector('.media-type-selector');
-        assert.notOk(selector, 'has the payload document');
-      });
-
-      it('selecting a mime type changes the payload', async () => {
-        const data = loader.getRequest(model, '/people', 'put');
-        const element = await basicFixture(data);
-
-        const section = element.shadowRoot.querySelector('.params-section[data-controlled-by="payloadOpened"]');
-        const selector = section.querySelector('.media-type-selector');
-
-        const buttons = selector.querySelectorAll('anypoint-radio-button');
-
-        buttons[1].click();
-
-        await nextFrame();
-
-        assert.equal(element.mimeType, 'application/xml', 'media type is changed');
-      });
+  describe('payload rendering', () => {
+    /** @type AmfDocument */
+    let model;
+    before(async () => {
+      model = await loader.getGraph();
+      store.amf = model;
     });
 
-    describe('APIC-463: request media type selector', () => {
-      /** @type AmfDocument */
-      let model;
-      before(async () => {
-        model = await loader.getGraph(compact, 'APIC-463');
-        store.amf = model;
-      });
+    it('renders the payload schema', async () => {
+      const data = loader.getRequest(model, '/people', 'post');
+      const element = await basicFixture(data);
 
-      it('renders the request media type selector', async () => {
-        const data = loader.getRequest(model, '/test', 'post');
-        const element = await basicFixture(data);
-
-        const section = element.shadowRoot.querySelector('.params-section[data-controlled-by="payloadOpened"]');
-        const selector = section.querySelector('.media-type-selector');
-        assert.ok(selector, 'has the payload document');
-
-        const buttons = selector.querySelectorAll('anypoint-radio-button');
-        assert.lengthOf(buttons, 2, 'has 2 media types to select');
-        assert.equal(buttons[0].textContent.trim(), 'binary/octet-stream');
-        assert.equal(buttons[1].textContent.trim(), 'multipart/form-data');
-      });
+      const node = element.shadowRoot.querySelector('api-payload-document');
+      assert.ok(node, 'has the payload document');
     });
 
-    describe('APIC-561: anyOf', () => {
-      /** @type AmfDocument */
-      let model;
-      before(async () => {
-        model = await loader.getGraph(compact, 'anyOf');
-        store.amf = model;
-      });
+    it('ignores the payload when not defined', async () => {
+      const data = loader.getRequest(model, '/people', 'get');
+      const element = await basicFixture(data);
 
-      it('renders the documentation for anyOf type', async () => {
-        const data = loader.getRequest(model, 'test', 'publish');
-        const element = await basicFixture(data);
-        const doc = element.shadowRoot.querySelector('api-payload-document');
-        assert.ok(doc);
-      });
+      const node = element.shadowRoot.querySelector('api-payload-document');
+      assert.notOk(node);
+    });
+  });
+
+  describe('request media type selector', () => {
+    /** @type AmfDocument */
+    let model;
+    before(async () => {
+      model = await loader.getGraph();
+      store.amf = model;
+    });
+
+    it('renders the request media type selector', async () => {
+      const data = loader.getRequest(model, '/people', 'put');
+      const element = await basicFixture(data);
+
+      const section = element.shadowRoot.querySelector('.params-section[data-controlled-by="payloadOpened"]');
+      const selector = section.querySelector('.media-type-selector');
+      assert.ok(selector, 'has the payload document');
+
+      const buttons = selector.querySelectorAll('anypoint-radio-button');
+      assert.lengthOf(buttons, 2, 'has 2 media types to select');
+    });
+
+    it('ignores the media type when not defined', async () => {
+      const data = loader.getRequest(model, '/orgs/{orgId}', 'put');
+      const element = await basicFixture(data);
+
+      const section = element.shadowRoot.querySelector('.params-section[data-controlled-by="payloadOpened"]');
+      const selector = section.querySelector('.media-type-selector');
+      assert.notOk(selector, 'has the payload document');
+    });
+
+    it('selecting a mime type changes the payload', async () => {
+      const data = loader.getRequest(model, '/people', 'put');
+      const element = await basicFixture(data);
+
+      const section = element.shadowRoot.querySelector('.params-section[data-controlled-by="payloadOpened"]');
+      const selector = section.querySelector('.media-type-selector');
+
+      const buttons = selector.querySelectorAll('anypoint-radio-button');
+
+      buttons[1].click();
+
+      await nextFrame();
+
+      assert.equal(element.mimeType, 'application/xml', 'media type is changed');
+    });
+  });
+
+  describe('APIC-463: request media type selector', () => {
+    /** @type AmfDocument */
+    let model;
+    before(async () => {
+      model = await loader.getGraph('APIC-463');
+      store.amf = model;
+    });
+
+    it('renders the request media type selector', async () => {
+      const data = loader.getRequest(model, '/test', 'post');
+      const element = await basicFixture(data);
+
+      const section = element.shadowRoot.querySelector('.params-section[data-controlled-by="payloadOpened"]');
+      const selector = section.querySelector('.media-type-selector');
+      assert.ok(selector, 'has the payload document');
+
+      const buttons = selector.querySelectorAll('anypoint-radio-button');
+      assert.lengthOf(buttons, 2, 'has 2 media types to select');
+      assert.equal(buttons[0].textContent.trim(), 'binary/octet-stream');
+      assert.equal(buttons[1].textContent.trim(), 'multipart/form-data');
+    });
+  });
+
+  describe('APIC-561: anyOf', () => {
+    /** @type AmfDocument */
+    let model;
+    before(async () => {
+      model = await loader.getGraph('anyOf');
+      store.amf = model;
+    });
+
+    it('renders the documentation for anyOf type', async () => {
+      const data = loader.getRequest(model, 'test', 'publish');
+      const element = await basicFixture(data);
+      const doc = element.shadowRoot.querySelector('api-payload-document');
+      assert.ok(doc);
     });
   });
 });

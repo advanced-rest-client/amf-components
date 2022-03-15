@@ -27,7 +27,7 @@ describe('OAuth 2', () => {
   let model;
   before(async () => {
     store = new AmfLoader();
-    model = await store.getGraph(true, 'secured-api');
+    model = await store.getGraph('secured-api');
   });
 
   /**

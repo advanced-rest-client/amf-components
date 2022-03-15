@@ -23,7 +23,7 @@ describe('AmfSerializer', () => {
     /** @type AmfSerializer */
     let serializer;
     before(async () => {
-      api = await loader.getGraph(true, fileName);
+      api = await loader.getGraph(fileName);
       serializer = new AmfSerializer();
       serializer.amf = api;
     });

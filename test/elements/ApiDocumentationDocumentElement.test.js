@@ -43,129 +43,128 @@ describe('ApiDocumentationDocumentElement', () => {
     return /** @type ApiDocumentationDocumentElement */ (element);
   }
 
-  [false, true].forEach((compact) => {
-    describe(compact ? 'Compact model' : 'Full model', () => {
-      describe('Initialization', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(compact, apiFile);
-          store.amf = model;
-        });
-
-        it('initializes the component with the domainId', async () => {
-          const docs = loader.getDocumentation(model, 'Test docs');
-          const element = await domainIdFixture(docs.id);
-          await nextFrame();
-          const title = element.shadowRoot.querySelector('.documentation-header');
-          assert.ok(title, 'has the documentation title');
-          const description = element.shadowRoot.querySelector('.api-description');
-          assert.ok(description, 'has the description');
-        });
-
-        it('initializes the component with the graph model', async () => {
-          const docs = loader.getDocumentation(model, 'Test docs');
-          const element = await graphFixture(docs);
-          const title = element.shadowRoot.querySelector('.documentation-header');
-          assert.ok(title, 'has the documentation title');
-          const description = element.shadowRoot.querySelector('.api-description');
-          assert.ok(description, 'has the description');
-        });
+  describe('Compact model', () => {
+    describe('Initialization', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(apiFile);
+        store.amf = model;
       });
 
-      describe('Basics', () => {
-        /** @type ApiDocumentationDocumentElement */
-        let element;
-        /** @type AmfDocument */
-        let model;
-        /** @type ApiDocumentation */
-        let docs;
-
-        before(async () => {
-          model = await loader.getGraph(compact, apiFile);
-          store.amf = model;
-          docs = loader.getDocumentation(model, 'Test docs');
-        });
-
-        beforeEach(async () => {
-          element = await graphFixture(docs);
-        });
-
-        it('has the #model', () => {
-          assert.typeOf(element.documentation, 'object');
-        });
-
-        it('renders the title', () => {
-          const title = element.shadowRoot.querySelector('.documentation-title .label');
-          assert.ok(title, 'has the label node');
-          assert.equal(title.textContent.trim(), 'Test docs', 'has the title value');
-        });
-
-        it('passes the markdown to the "arc-marked" element', () => {
-          const node = element.shadowRoot.querySelector('arc-marked');
-          assert.typeOf(node.markdown, 'string');
-        });
+      it('initializes the component with the domainId', async () => {
+        const docs = loader.getDocumentation(model, 'Test docs');
+        const element = await domainIdFixture(docs.id);
+        await nextFrame();
+        const title = element.shadowRoot.querySelector('.documentation-header');
+        assert.ok(title, 'has the documentation title');
+        const description = element.shadowRoot.querySelector('.api-description');
+        assert.ok(description, 'has the description');
       });
 
-      describe('Navigation', () => {
-        /** @type ApiDocumentationDocumentElement */
-        let element;
-        /** @type AmfDocument */
-        let model;
-        /** @type ApiDocumentation */
-        let docs;
-        /** @type NodeListOf<HTMLAnchorElement> */
-        let anchors;
+      it('initializes the component with the graph model', async () => {
+        const docs = loader.getDocumentation(model, 'Test docs');
+        const element = await graphFixture(docs);
+        const title = element.shadowRoot.querySelector('.documentation-header');
+        assert.ok(title, 'has the documentation title');
+        const description = element.shadowRoot.querySelector('.api-description');
+        assert.ok(description, 'has the description');
+      });
+    });
 
-        before(async () => {
-          model = await loader.getGraph(compact, apiFile);
-          store.amf = model;
-          docs = loader.getDocumentation(model, 'Read this!');
-        });
+    describe('Basics', () => {
+      /** @type ApiDocumentationDocumentElement */
+      let element;
+      /** @type AmfDocument */
+      let model;
+      /** @type ApiDocumentation */
+      let docs;
 
-        beforeEach(async () => {
-          element = await graphFixture(docs);
-          anchors = element.shadowRoot.querySelectorAll('a');
-        });
+      before(async () => {
+        model = await loader.getGraph(apiFile);
+        store.amf = model;
+        docs = loader.getDocumentation(model, 'Test docs');
+      });
 
-        it('cancels navigation to a relative path', () => {
-          const node = anchors[0];
-          const spy = sinon.spy();
-          element.addEventListener('click', spy);
-          node.click();
-          assert.isFalse(spy.called);
-        });
+      beforeEach(async () => {
+        element = await graphFixture(docs);
+      });
 
-        it('allows absolute paths', () => {
-          const node = anchors[1];
-          let called = false;
-          element.addEventListener('click', (e) => {
-            called = true;
-            e.preventDefault();
-          });
-          node.click();
-          assert.isTrue(called);
-        });
+      it('has the #model', () => {
+        assert.typeOf(element.documentation, 'object');
+      });
 
-        it('allows mailto: paths', () => {
-          const node = anchors[2];
-          let called = false;
-          element.addEventListener('click', (e) => {
-            called = true;
-            e.preventDefault();
-          });
-          node.click();
-          assert.isTrue(called);
-        });
+      it('renders the title', () => {
+        const title = element.shadowRoot.querySelector('.documentation-title .label');
+        assert.ok(title, 'has the label node');
+        assert.equal(title.textContent.trim(), 'Test docs', 'has the title value');
+      });
 
-        it('ignores other clicks', () => {
-          const spy = sinon.spy();
-          element.addEventListener('click', spy);
-          const node = /** @type HTMLElement */ (element.shadowRoot.querySelector('.markdown-body'));
-          node.click();
-          assert.isTrue(spy.called);
+      it('passes the markdown to the "arc-marked" element', () => {
+        const node = element.shadowRoot.querySelector('arc-marked');
+        assert.typeOf(node.markdown, 'string');
+      });
+    });
+
+    describe('Navigation', () => {
+      /** @type ApiDocumentationDocumentElement */
+      let element;
+      /** @type AmfDocument */
+      let model;
+      /** @type ApiDocumentation */
+      let docs;
+      /** @type NodeListOf<HTMLAnchorElement> */
+      let anchors;
+
+      before(async () => {
+        model = await loader.getGraph(apiFile);
+        store.amf = model;
+        docs = loader.getDocumentation(model, 'Read this!');
+      });
+
+      beforeEach(async () => {
+        element = await graphFixture(docs);
+        anchors = element.shadowRoot.querySelectorAll('a');
+      });
+
+      it('cancels navigation to a relative path', () => {
+        const node = anchors[0];
+        const spy = sinon.spy();
+        element.addEventListener('click', spy);
+        node.click();
+        assert.isFalse(spy.called);
+      });
+
+      it('allows absolute paths', () => {
+        const node = anchors[1];
+        let called = false;
+        element.addEventListener('click', (e) => {
+          called = true;
+          e.preventDefault();
         });
+        node.click();
+        assert.isTrue(called);
+      });
+
+      it('allows mailto: paths', () => {
+        const node = anchors[2];
+        let called = false;
+        element.addEventListener('click', (e) => {
+          called = true;
+          e.preventDefault();
+        });
+        node.click();
+        assert.isTrue(called);
+      });
+
+      it('ignores other clicks', () => {
+        const spy = sinon.spy();
+        element.addEventListener('click', spy);
+        const node = /** @type HTMLElement */ (element.shadowRoot.querySelector('.markdown-body'));
+        node.click();
+        assert.isTrue(spy.called);
       });
     });
   });
+
 });

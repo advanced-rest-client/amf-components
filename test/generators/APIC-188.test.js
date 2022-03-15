@@ -10,27 +10,23 @@ describe('APIC-188', () => {
   const jsonMime = 'application/json';
   const apiFile = 'APIC-188';
 
-  [ true, false ].forEach((compact) => {
-    describe(compact ? 'Compact model' : 'Full model', () => {
-      /** @type AmfDocument */
-      let model;
+  /** @type AmfDocument */
+  let model;
 
-      before(async () => {
-        model = await loader.getGraph(compact, apiFile);
-      });
+  before(async () => {
+    model = await loader.getGraph(apiFile);
+  });
 
-      it(`computes a false example`, () => {
-        const payload = loader.getPayloads(model, '/record', 'post')[0];
-        const anyShape = /** @type ApiAnyShape */ (payload.schema);
-        const result = ApiSchemaGenerator.asExample(anyShape, jsonMime, {
-          renderExamples: true,
-          renderOptional: true,
-        });
-
-        const data = JSON.parse(String(result.renderValue));
-        assert.isFalse(data.allOrNone);
-        assert.typeOf(data.records, 'array');
-      });
+  it(`computes a false example`, () => {
+    const payload = loader.getPayloads(model, '/record', 'post')[0];
+    const anyShape = /** @type ApiAnyShape */ (payload.schema);
+    const result = ApiSchemaGenerator.asExample(anyShape, jsonMime, {
+      renderExamples: true,
+      renderOptional: true,
     });
+
+    const data = JSON.parse(String(result.renderValue));
+    assert.isFalse(data.allOrNone);
+    assert.typeOf(data.records, 'array');
   });
 });

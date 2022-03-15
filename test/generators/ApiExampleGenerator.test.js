@@ -21,7 +21,7 @@ describe('ApiExampleGenerator', () => {
     let model;
 
     before(async () => {
-      model = await loader.getGraph(true, 'schema-api');
+      model = await loader.getGraph('schema-api');
       reader = new ApiExampleGenerator();
     });
 

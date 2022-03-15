@@ -178,7 +178,7 @@ export class ApiConsole extends ApplicationPage {
     this.route = name;
     if (name === 'api') {
       if (result.params.apiId && this.apiId !== result.params.apiId) {
-        this.loadFile(`models/${result.params.apiId}-compact.json`);
+        this.loadFile(`models/${result.params.apiId}.json`);
       }
       this.apiId = result.params.apiId;
       if (result.params.domainId) {
@@ -432,7 +432,7 @@ export class ApiConsole extends ApplicationPage {
     if (['selector'].includes(this.route)) {
       return '';
     }
-    const { model, isMobile, navigationOpened } = this;
+    const { isMobile, navigationOpened } = this;
     const classes = {
       navigation: true,
       toggle: isMobile,

@@ -49,6 +49,10 @@ interface AmfHelperMixin {
    * @param amf Current AMF model. Can be undefined.
    */
   __amfChanged(amf: AmfDocument): void
+  /**
+   * Expands flattened AMF model
+   */
+  _expand(amf: any): AmfDocument;
 
   /**
    * Returns compact model key for given value.

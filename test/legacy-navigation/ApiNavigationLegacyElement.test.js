@@ -507,7 +507,7 @@ describe('ApiNavigationLegacyElement', () => {
 
     beforeEach(async () => {
       element = await sortedFixture();
-      amf = await loader.getGraph(false, 'rearrange-api');
+      amf = await loader.getGraph('rearrange-api');
     });
 
     it('should sort endpoints', () => {
@@ -856,566 +856,562 @@ describe('ApiNavigationLegacyElement', () => {
     });
   });
 
-  [false, true].forEach((compact) => {
-    describe(compact ? 'Compact model' : 'Full model', () => {
-      describe('[toggleSectionHandler]()', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
+  describe('[toggleSectionHandler]()', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
 
-        beforeEach(async () => {
-          amf = await loader.getGraph(compact, 'navigation-api');
-          element = await basicFixture();
-          element.amf = amf;
-          await nextFrame();
-        });
+    beforeEach(async () => {
+      amf = await loader.getGraph('navigation-api');
+      element = await basicFixture();
+      element.amf = amf;
+      await nextFrame();
+    });
 
-        it('does nothing when node not found in path', () => {
-          const e = new MouseEvent('test');
-          e.composedPath = () => [];
+    it('does nothing when node not found in path', () => {
+      const e = new MouseEvent('test');
+      e.composedPath = () => [];
 
-          element[toggleSectionHandler](e);
-          // No error
-        });
+      element[toggleSectionHandler](e);
+      // No error
+    });
 
-        it('skips elements without dataset property', () => {
-          const e = new MouseEvent('test');
-          e.composedPath = () => [document.createTextNode('test')];
-          
-          element[toggleSectionHandler](e);
-        });
+    it('skips elements without dataset property', () => {
+      const e = new MouseEvent('test');
+      e.composedPath = () => [document.createTextNode('test')];
+      
+      element[toggleSectionHandler](e);
+    });
 
-        it('skips elements without data-section attribute', () => {
-          const node = document.createElement('span');
-          const e = new MouseEvent('test');
-          e.composedPath = () => [node];
+    it('skips elements without data-section attribute', () => {
+      const node = document.createElement('span');
+      const e = new MouseEvent('test');
+      e.composedPath = () => [node];
 
-          element[toggleSectionHandler](e);
-        });
+      element[toggleSectionHandler](e);
+    });
 
-        it('toggles the section', () => {
-          const node = document.createElement('span');
-          node.dataset.section = 'endpoints';
-          const e = new MouseEvent('test');
-          e.composedPath = () => [node];
+    it('toggles the section', () => {
+      const node = document.createElement('span');
+      node.dataset.section = 'endpoints';
+      const e = new MouseEvent('test');
+      e.composedPath = () => [node];
 
-          element[toggleSectionHandler](e);
-          assert.isTrue(element.endpointsOpened);
-        });
+      element[toggleSectionHandler](e);
+      assert.isTrue(element.endpointsOpened);
+    });
+  });
+
+  describe('[selectMethodPassive]()', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    beforeEach(async () => {
+      amf = await loader.getGraph('navigation-api');
+      element = await basicFixture();
+      element.amf = amf;
+      await nextFrame();
+    });
+
+    it('does nothing when the id is not in the DOM', () => {
+      element[selectMethodPassive]('some-id');
+      assert.isUndefined(element[hasPassiveSelection]);
+    });
+
+    it('adds the "passive-selected" class name to the method label', () => {
+      const { id } = element[endpointsValue][0].methods[0];
+      element[selectMethodPassive](id);
+      const node = element.shadowRoot.querySelector('.passive-selected');
+      // @ts-ignore
+      assert.equal(node.dataset.apiId, id);
+    });
+
+    it('sets the [hasPassiveSelection] flag', () => {
+      const { id } = element[endpointsValue][0].methods[0];
+      element[selectMethodPassive](id);
+      assert.isTrue(element[hasPassiveSelection]);
+    });
+
+    it('renders the toggle in the opened state', () => {
+      const { id } = element[endpointsValue][0].methods[0];
+      element[selectMethodPassive](id);
+      const node = element.shadowRoot.querySelector('.passive-selected');
+      // @ts-ignore
+      assert.isTrue(node.parentElement.opened);
+    });
+  });
+
+  describe('[itemClickHandler]()', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    beforeEach(async () => {
+      amf = await loader.getGraph('navigation-api');
+      element = await summaryFixture();
+      element.amf = amf;
+      await nextFrame();
+    });
+
+    it('Uses currentTarget as the target', () => {
+      const node = element.shadowRoot.querySelector('.list-item.summary');
+      const spy = sinon.spy(element, selectItem);
+
+      // @ts-ignore
+      element[itemClickHandler]({
+        currentTarget: node,
+      });
+      assert.isTrue(spy.called);
+      assert.isTrue(spy.args[0][0] === node);
+    });
+
+    it('Uses target as the target', () => {
+      const node = element.shadowRoot.querySelector('.list-item.summary');
+      const spy = sinon.spy(element, selectItem);
+      // @ts-ignore
+      element[itemClickHandler]({
+        target: node,
+      });
+      assert.isTrue(spy.called);
+      assert.isTrue(spy.args[0][0] === node);
+    });
+
+    it('Makes adjustments for method label', () => {
+      const node = element.shadowRoot.querySelector('.method-label');
+      const parent = node.parentNode;
+      const spy = sinon.spy(element, selectItem);
+      // @ts-ignore
+      element[itemClickHandler]({
+        target: node,
+      });
+      assert.isTrue(spy.called);
+      assert.isTrue(spy.args[0][0] === parent);
+    });
+  });
+
+  describe('[flushQuery]()', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    beforeEach(async () => {
+      amf = await loader.getGraph('navigation-api');
+      element = await summaryFixture();
+      element.amf = amf;
+      await nextFrame();
+    });
+
+    it('sets the [queryValue] as a lowercase query', () => {
+      element[queryDebouncer] = true;
+      element.query = 'Files';
+      element[flushQuery]();
+      assert.equal(element[queryValue], 'files');
+    });
+
+    it('Clear the query', () => {
+      element[queryDebouncer] = true;
+      element.query = '';
+      element[flushQuery]();
+      assert.equal(element[queryValue], '');
+    });
+  });
+
+  describe('computeRenderPath()', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    beforeEach(async () => {
+      amf = await loader.getGraph('navigation-api');
+      element = await summaryFixture();
+      element.amf = amf;
+      await nextFrame();
+    });
+
+    it('Returns true when both arguments are true', () => {
+      const result = computeRenderPath(true, true);
+      assert.isTrue(result);
+    });
+
+    it('Returns false when allowPaths is false', () => {
+      const result = computeRenderPath(false, true);
+      assert.isFalse(result);
+    });
+
+    it('Returns false when allowPaths is not set', () => {
+      const result = computeRenderPath(undefined, true);
+      assert.isFalse(result);
+    });
+
+    it('Returns false when renderPath is false', () => {
+      const result = computeRenderPath(true, false);
+      assert.isFalse(result);
+    });
+
+    it('Returns false when renderPath is not set', () => {
+      const result = computeRenderPath(true, undefined);
+      assert.isFalse(result);
+    });
+
+    it('Returns false when both undefined', () => {
+      const result = computeRenderPath(false, false);
+      assert.isFalse(result);
+    });
+
+    it('Paths are hidden by default', () => {
+      const endpoint = loader.lookupEndpoint(amf, '/about');
+      const id = endpoint['@id'];
+      const node = element.shadowRoot.querySelector(
+        `.endpoint[data-endpoint-id="${id}"] .path-name`
+      );
+      assert.notOk(node);
+    });
+
+    it('Renders paths when "allowPaths" is set', async () => {
+      element.allowPaths = true;
+      await nextFrame();
+      const endpoint = loader.lookupEndpoint(amf, '/about');
+      const id = endpoint['@id'];
+      const node = element.shadowRoot.querySelector(
+        `.endpoint[data-endpoint-id="${id}"] .path-name`
+      );
+      assert.ok(node);
+    });
+  });
+
+  describe('AsyncAPI', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    beforeEach(async () => {
+      amf = await loader.getGraph(asyncApi);
+      element = await basicFixture();
+      element.amf = amf;
+      await nextFrame();
+    });
+
+    it('should render channels', () => {
+      assert.lengthOf(element[endpointsValue], 2);
+    });
+
+    it('should render "Channels" label', () => {
+      assert.equal(
+        element.shadowRoot.querySelector('.endpoints div.title-h3')
+          .textContent,
+        'Channels'
+      );
+    });
+  });
+
+  describe('Unordered endpoints', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    beforeEach(async () => {
+      amf = await loader.getGraph(unorderedEndpoints);
+      element = await basicFixture();
+      element.amf = amf;
+      await nextFrame();
+    });
+
+    it('should render full path of third endpoint', () => {
+      const nodes = /** @type NodeListOf<HTMLElement> */ (element.shadowRoot.querySelectorAll(
+        '.list-item.endpoint .endpoint-name'
+      ));
+      
+      assert.equal(nodes[2].innerText, '/foo/bar');
+    });
+  });
+
+  describe('APIC-550', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    it('should render without errors', async () => {
+      amf = await loader.getGraph('APIC-550');
+      element = await modelFixture(amf);
+      await nextFrame();
+      assert.lengthOf(element[endpointsValue], 1);
+    });
+  });
+
+  describe('APIC-554', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    before(async () => {
+      amf = await loader.getGraph('APIC-554');
+    });
+
+    beforeEach(async () => {
+      element = await modelFixture(amf);
+    });
+
+    it('should compute endpoint names correctly', () => {
+      const labels = [
+        '/customer/{customerId}/chromeos',
+        '/deviceId',
+        '/customerId',
+      ];
+      assert.deepEqual(
+        element[endpointsValue].map(e => e.label),
+        labels
+      );
+    });
+  });
+
+  describe('APIC-554-ii', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    before(async () => {
+      amf = await loader.getGraph('APIC-554-ii');
+    });
+
+    beforeEach(async () => {
+      element = await modelFixture(amf);
+    });
+
+    it('should compute endpoint names correctly', () => {
+      const labels = [
+        '/customers/{customer}/chromeos/deviceId',
+        '/customer/{customer}/chromeos/deviceId',
+      ];
+      assert.deepEqual(
+        element[endpointsValue].map(e => e.label),
+        labels
+      );
+    });
+  });
+
+  describe('SE-19215', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    before(async () => {
+      amf = await loader.getGraph('SE-19215');
+    });
+
+    beforeEach(async () => {
+      element = await modelFixture(amf);
+    });
+
+    it('should compute endpoint names correctly', () => {
+      const labels = ['/omaha/transactionscall1', '/transactions/call2'];
+      assert.deepEqual(
+        element[endpointsValue].map(e => e.label),
+        labels
+      );
+    });
+  });
+
+  describe('operationsOpened', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    before(async () => {
+      amf = await loader.getGraph('navigation-api');
+    });
+
+    beforeEach(async () => {
+      element = await operationsOpenedFixture(amf, true);
+      await aTimeout(0);
+    });
+
+    it('should expand all operations when operationsOpened', () => {
+      const operations = element.shadowRoot.querySelectorAll('.list-item.endpoint');
+      assert.equal(operations.length, 32);
+
+      let openedOperations = 0;
+      operations.forEach(e => {
+        if (e.getAttribute('data-endpoint-opened') === '') {
+          openedOperations++;
+        }
+      });
+      assert.equal(openedOperations, 32);
+    });
+  });
+
+  describe('GH-27', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    before(async () => {
+      amf = await loader.getGraph('navigation-api');
+    });
+
+    beforeEach(async () => {
+      element = await modelFixture(amf);
+      await aTimeout(0);
+    });
+
+    it('selected operation should expand endpoint', async () => {
+      const operation = /** @type HTMLElement */ (element.shadowRoot.querySelector('.list-item.operation[data-shape="operation"]'));
+      element.domainId = operation.dataset.apiId;
+      element.domainType = 'operation';
+      await nextFrame();
+      assert.equal(operation.classList.contains('selected'), true);
+      assert.notEqual(operation.parentElement.getAttribute('data-endpoint-opened'), null);
+    });
+  });
+
+  describe('noOverview', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    before(async () => {
+      amf = await loader.getGraph('simple-api');
+    });
+
+    beforeEach(async () => {
+      element = await modelFixture(amf);
+    });
+
+    it('should set noOverview to false by default', () => {
+      assert.isFalse(element.noOverview)
+    });
+
+    it('should render endpoints overview by default', () => {
+      const endpoints = element.shadowRoot.querySelectorAll(
+        '.list-item.operation[data-shape="resource"]'
+      );
+      assert.equal(endpoints.length, 3);
+    });
+
+    it('should render endpoints name by default', () => {
+      const endpoints = element.shadowRoot.querySelectorAll(
+        '.endpoint-name'
+      );
+      assert.equal(endpoints.length, 3);
+    });
+
+    it('should set noOverview to true', async () => {
+      element.noOverview = true;
+      await aTimeout(0);
+
+      assert.isTrue(element.noOverview)
+    });
+
+    it('should not render endpoints overview when noOverview', async () => {
+      element.noOverview = true;
+      await aTimeout(0);
+
+      const endpoints = element.shadowRoot.querySelectorAll(
+        '.list-item.operation[data-shape="resource"]'
+      );
+      assert.equal(endpoints.length, 0);
+    });
+
+    it('should render clickable endpoints name when noOverview', async () => {
+      element.noOverview = true;
+      await aTimeout(0);
+
+      const endpoints = element.shadowRoot.querySelectorAll(
+        '.endpoint-name-overview'
+      );
+      assert.equal(endpoints.length, 3);
+    });
+
+    it('should select endpoint when clicking its name', async () => {
+      element.noOverview = true;
+      await aTimeout(0);
+
+      const endpointName = /** @type HTMLElement */ (element.shadowRoot.querySelector('.endpoint-name-overview'));
+      endpointName.click();
+      await aTimeout(0);
+
+      const endpoint = element.shadowRoot.querySelector(`.endpoint[data-endpoint-id="${endpointName.dataset.apiId}"]`);
+      assert.equal(endpoint.className, "list-item endpoint selected");
+    });
+
+    describe('menu keyboard navigation', () => {
+      it('should focus on endpoint path detail first', async () => {
+        element.noOverview = true;
+        element.endpointsOpened = true;
+        await aTimeout(5);
+        element.dispatchEvent(new Event('focus', { bubbles: false }));
+        await nextFrame();
+        // Key press down
+        element.dispatchEvent(keyboardEvent('ArrowDown', 40));
+        await nextFrame();
+        const node = element.shadowRoot.querySelector('div[data-endpoint-path="/one"] .path-details');
+        assert.equal(
+          element.focusedItem,
+          node,
+          'element.focusedItem is last item'
+        );
       });
 
-      describe('[selectMethodPassive]()', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        beforeEach(async () => {
-          amf = await loader.getGraph(compact, 'navigation-api');
-          element = await basicFixture();
-          element.amf = amf;
-          await nextFrame();
-        });
-
-        it('does nothing when the id is not in the DOM', () => {
-          element[selectMethodPassive]('some-id');
-          assert.isUndefined(element[hasPassiveSelection]);
-        });
-
-        it('adds the "passive-selected" class name to the method label', () => {
-          const { id } = element[endpointsValue][0].methods[0];
-          element[selectMethodPassive](id);
-          const node = element.shadowRoot.querySelector('.passive-selected');
-          // @ts-ignore
-          assert.equal(node.dataset.apiId, id);
-        });
-
-        it('sets the [hasPassiveSelection] flag', () => {
-          const { id } = element[endpointsValue][0].methods[0];
-          element[selectMethodPassive](id);
-          assert.isTrue(element[hasPassiveSelection]);
-        });
-
-        it('renders the toggle in the opened state', () => {
-          const { id } = element[endpointsValue][0].methods[0];
-          element[selectMethodPassive](id);
-          const node = element.shadowRoot.querySelector('.passive-selected');
-          // @ts-ignore
-          assert.isTrue(node.parentElement.opened);
-        });
+      it('should focus on endpoint toggle arrow second', async () => {
+        element.noOverview = true;
+        element.endpointsOpened = true;
+        await aTimeout(5);
+        element.dispatchEvent(new Event('focus', { bubbles: false }));
+        await nextFrame();
+        // Key press down
+        element.dispatchEvent(keyboardEvent('ArrowDown', 40));
+        element.dispatchEvent(keyboardEvent('ArrowDown', 40));
+        await nextFrame();
+        const node = element.shadowRoot.querySelector('div[data-endpoint-path="/one"] anypoint-icon-button');
+        assert.equal(
+          element.focusedItem,
+          node,
+          'element.focusedItem is last item'
+        );
       });
-
-      describe('[itemClickHandler]()', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        beforeEach(async () => {
-          amf = await loader.getGraph(compact, 'navigation-api');
-          element = await summaryFixture();
-          element.amf = amf;
-          await nextFrame();
-        });
-
-        it('Uses currentTarget as the target', () => {
-          const node = element.shadowRoot.querySelector('.list-item.summary');
-          const spy = sinon.spy(element, selectItem);
-
-          // @ts-ignore
-          element[itemClickHandler]({
-            currentTarget: node,
-          });
-          assert.isTrue(spy.called);
-          assert.isTrue(spy.args[0][0] === node);
-        });
-
-        it('Uses target as the target', () => {
-          const node = element.shadowRoot.querySelector('.list-item.summary');
-          const spy = sinon.spy(element, selectItem);
-          // @ts-ignore
-          element[itemClickHandler]({
-            target: node,
-          });
-          assert.isTrue(spy.called);
-          assert.isTrue(spy.args[0][0] === node);
-        });
-
-        it('Makes adjustments for method label', () => {
-          const node = element.shadowRoot.querySelector('.method-label');
-          const parent = node.parentNode;
-          const spy = sinon.spy(element, selectItem);
-          // @ts-ignore
-          element[itemClickHandler]({
-            target: node,
-          });
-          assert.isTrue(spy.called);
-          assert.isTrue(spy.args[0][0] === parent);
-        });
-      });
-
-      describe('[flushQuery]()', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        beforeEach(async () => {
-          amf = await loader.getGraph(compact, 'navigation-api');
-          element = await summaryFixture();
-          element.amf = amf;
-          await nextFrame();
-        });
-
-        it('sets the [queryValue] as a lowercase query', () => {
-          element[queryDebouncer] = true;
-          element.query = 'Files';
-          element[flushQuery]();
-          assert.equal(element[queryValue], 'files');
-        });
-
-        it('Clear the query', () => {
-          element[queryDebouncer] = true;
-          element.query = '';
-          element[flushQuery]();
-          assert.equal(element[queryValue], '');
-        });
-      });
-
-      describe('computeRenderPath()', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        beforeEach(async () => {
-          amf = await loader.getGraph(compact, 'navigation-api');
-          element = await summaryFixture();
-          element.amf = amf;
-          await nextFrame();
-        });
-
-        it('Returns true when both arguments are true', () => {
-          const result = computeRenderPath(true, true);
-          assert.isTrue(result);
-        });
-
-        it('Returns false when allowPaths is false', () => {
-          const result = computeRenderPath(false, true);
-          assert.isFalse(result);
-        });
-
-        it('Returns false when allowPaths is not set', () => {
-          const result = computeRenderPath(undefined, true);
-          assert.isFalse(result);
-        });
-
-        it('Returns false when renderPath is false', () => {
-          const result = computeRenderPath(true, false);
-          assert.isFalse(result);
-        });
-
-        it('Returns false when renderPath is not set', () => {
-          const result = computeRenderPath(true, undefined);
-          assert.isFalse(result);
-        });
-
-        it('Returns false when both undefined', () => {
-          const result = computeRenderPath(false, false);
-          assert.isFalse(result);
-        });
-
-        it('Paths are hidden by default', () => {
-          const endpoint = loader.lookupEndpoint(amf, '/about');
-          const id = endpoint['@id'];
-          const node = element.shadowRoot.querySelector(
-            `.endpoint[data-endpoint-id="${id}"] .path-name`
-          );
-          assert.notOk(node);
-        });
-
-        it('Renders paths when "allowPaths" is set', async () => {
-          element.allowPaths = true;
-          await nextFrame();
-          const endpoint = loader.lookupEndpoint(amf, '/about');
-          const id = endpoint['@id'];
-          const node = element.shadowRoot.querySelector(
-            `.endpoint[data-endpoint-id="${id}"] .path-name`
-          );
-          assert.ok(node);
-        });
-      });
-
-      describe('AsyncAPI', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        beforeEach(async () => {
-          amf = await loader.getGraph(compact, asyncApi);
-          element = await basicFixture();
-          element.amf = amf;
-          await nextFrame();
-        });
-
-        it('should render channels', () => {
-          assert.lengthOf(element[endpointsValue], 2);
-        });
-
-        it('should render "Channels" label', () => {
-          assert.equal(
-            element.shadowRoot.querySelector('.endpoints div.title-h3')
-              .textContent,
-            'Channels'
-          );
-        });
-      });
-
-      describe('Unordered endpoints', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        beforeEach(async () => {
-          amf = await loader.getGraph(compact, unorderedEndpoints);
-          element = await basicFixture();
-          element.amf = amf;
-          await nextFrame();
-        });
-
-        it('should render full path of third endpoint', () => {
-          const nodes = /** @type NodeListOf<HTMLElement> */ (element.shadowRoot.querySelectorAll(
-            '.list-item.endpoint .endpoint-name'
-          ));
-          
-          assert.equal(nodes[2].innerText, '/foo/bar');
-        });
-      });
-
-      describe('APIC-550', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        it('should render without errors', async () => {
-          amf = await loader.getGraph(compact, 'APIC-550');
-          element = await modelFixture(amf);
-          await nextFrame();
-          assert.lengthOf(element[endpointsValue], 1);
-        });
-      });
-
-      describe('APIC-554', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        before(async () => {
-          amf = await loader.getGraph(compact, 'APIC-554');
-        });
-
-        beforeEach(async () => {
-          element = await modelFixture(amf);
-        });
-
-        it('should compute endpoint names correctly', () => {
-          const labels = [
-            '/customer/{customerId}/chromeos',
-            '/deviceId',
-            '/customerId',
-          ];
-          assert.deepEqual(
-            element[endpointsValue].map(e => e.label),
-            labels
-          );
-        });
-      });
-
-      describe('APIC-554-ii', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        before(async () => {
-          amf = await loader.getGraph(compact, 'APIC-554-ii');
-        });
-
-        beforeEach(async () => {
-          element = await modelFixture(amf);
-        });
-
-        it('should compute endpoint names correctly', () => {
-          const labels = [
-            '/customers/{customer}/chromeos/deviceId',
-            '/customer/{customer}/chromeos/deviceId',
-          ];
-          assert.deepEqual(
-            element[endpointsValue].map(e => e.label),
-            labels
-          );
-        });
-      });
-
-      describe('SE-19215', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        before(async () => {
-          amf = await loader.getGraph(compact, 'SE-19215');
-        });
-
-        beforeEach(async () => {
-          element = await modelFixture(amf);
-        });
-
-        it('should compute endpoint names correctly', () => {
-          const labels = ['/omaha/transactionscall1', '/transactions/call2'];
-          assert.deepEqual(
-            element[endpointsValue].map(e => e.label),
-            labels
-          );
-        });
-      });
-
-      describe('operationsOpened', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        before(async () => {
-          amf = await loader.getGraph(compact, 'navigation-api');
-        });
-
-        beforeEach(async () => {
-          element = await operationsOpenedFixture(amf, true);
-          await aTimeout(0);
-        });
-
-        it('should expand all operations when operationsOpened', () => {
-          const operations = element.shadowRoot.querySelectorAll('.list-item.endpoint');
-          assert.equal(operations.length, 32);
-
-          let openedOperations = 0;
-          operations.forEach(e => {
-            if (e.getAttribute('data-endpoint-opened') === '') {
-              openedOperations++;
-            }
-          });
-          assert.equal(openedOperations, 32);
-        });
-      });
-
-      describe('GH-27', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        before(async () => {
-          amf = await loader.getGraph(compact, 'navigation-api');
-        });
-
-        beforeEach(async () => {
-          element = await modelFixture(amf);
-          await aTimeout(0);
-        });
-
-        it('selected operation should expand endpoint', async () => {
-          const operation = /** @type HTMLElement */ (element.shadowRoot.querySelector('.list-item.operation[data-shape="operation"]'));
-          element.domainId = operation.dataset.apiId;
-          element.domainType = 'operation';
-          await nextFrame();
-          assert.equal(operation.classList.contains('selected'), true);
-          assert.notEqual(operation.parentElement.getAttribute('data-endpoint-opened'), null);
-        });
-      });
-
-      describe('noOverview', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        before(async () => {
-          amf = await loader.getGraph(compact, 'simple-api');
-        });
-
-        beforeEach(async () => {
-          element = await modelFixture(amf);
-        });
-
-        it('should set noOverview to false by default', () => {
-          assert.isFalse(element.noOverview)
-        });
-
-        it('should render endpoints overview by default', () => {
-          const endpoints = element.shadowRoot.querySelectorAll(
-            '.list-item.operation[data-shape="resource"]'
-          );
-          assert.equal(endpoints.length, 3);
-        });
-
-        it('should render endpoints name by default', () => {
-          const endpoints = element.shadowRoot.querySelectorAll(
-            '.endpoint-name'
-          );
-          assert.equal(endpoints.length, 3);
-        });
-
-        it('should set noOverview to true', async () => {
-          element.noOverview = true;
-          await aTimeout(0);
-
-          assert.isTrue(element.noOverview)
-        });
-
-        it('should not render endpoints overview when noOverview', async () => {
-          element.noOverview = true;
-          await aTimeout(0);
-
-          const endpoints = element.shadowRoot.querySelectorAll(
-            '.list-item.operation[data-shape="resource"]'
-          );
-          assert.equal(endpoints.length, 0);
-        });
-
-        it('should render clickable endpoints name when noOverview', async () => {
-          element.noOverview = true;
-          await aTimeout(0);
-
-          const endpoints = element.shadowRoot.querySelectorAll(
-            '.endpoint-name-overview'
-          );
-          assert.equal(endpoints.length, 3);
-        });
-
-        it('should select endpoint when clicking its name', async () => {
-          element.noOverview = true;
-          await aTimeout(0);
-
-          const endpointName = /** @type HTMLElement */ (element.shadowRoot.querySelector('.endpoint-name-overview'));
-          endpointName.click();
-          await aTimeout(0);
-
-          const endpoint = element.shadowRoot.querySelector(`.endpoint[data-endpoint-id="${endpointName.dataset.apiId}"]`);
-          assert.equal(endpoint.className, "list-item endpoint selected");
-        });
-
-        describe('menu keyboard navigation', () => {
-          it('should focus on endpoint path detail first', async () => {
-            element.noOverview = true;
-            element.endpointsOpened = true;
-            await aTimeout(5);
-            element.dispatchEvent(new Event('focus', { bubbles: false }));
-            await nextFrame();
-            // Key press down
-            element.dispatchEvent(keyboardEvent('ArrowDown', 40));
-            await nextFrame();
-            const node = element.shadowRoot.querySelector('div[data-endpoint-path="/one"] .path-details');
-            assert.equal(
-              element.focusedItem,
-              node,
-              'element.focusedItem is last item'
-            );
-          });
-
-          it('should focus on endpoint toggle arrow second', async () => {
-            element.noOverview = true;
-            element.endpointsOpened = true;
-            await aTimeout(5);
-            element.dispatchEvent(new Event('focus', { bubbles: false }));
-            await nextFrame();
-            // Key press down
-            element.dispatchEvent(keyboardEvent('ArrowDown', 40));
-            element.dispatchEvent(keyboardEvent('ArrowDown', 40));
-            await nextFrame();
-            const node = element.shadowRoot.querySelector('div[data-endpoint-path="/one"] anypoint-icon-button');
-            assert.equal(
-              element.focusedItem,
-              node,
-              'element.focusedItem is last item'
-            );
-          });
-        });
-      });
-
-      describe('renderFullPaths', () => {
-        /** @type ApiNavigationElement */
-        let element;
-        /** @type AmfDocument */
-        let amf;
-
-        beforeEach(async () => {
-          amf = await loader.getGraph(compact, 'navigation-api');
-          element = await basicFixture();
-          element.amf = amf;
-          await nextFrame();
-        });
-
-        it('renders full paths when renderFullPaths is set', async () => {
-          element.renderFullPaths = true;
-          element.endpointsOpened = true;
-          await aTimeout(50);
-          const renderedPath = element.shadowRoot.querySelectorAll('.list-item.endpoint')[2].textContent.split('\n').join('').trim();
-          assert.equal(renderedPath, '/files/{fileId}/copy');
-        });
-
-        it('does not indent any endpoint', async () => {
-          element.renderFullPaths = true;
-          element.endpointsOpened = true;
-          await aTimeout(50);
-          element[endpointsValue].forEach(endpoint => assert.equal(endpoint.indent, 0));
-        });
-      });
+    });
+  });
+
+  describe('renderFullPaths', () => {
+    /** @type ApiNavigationElement */
+    let element;
+    /** @type AmfDocument */
+    let amf;
+
+    beforeEach(async () => {
+      amf = await loader.getGraph('navigation-api');
+      element = await basicFixture();
+      element.amf = amf;
+      await nextFrame();
+    });
+
+    it('renders full paths when renderFullPaths is set', async () => {
+      element.renderFullPaths = true;
+      element.endpointsOpened = true;
+      await aTimeout(50);
+      const renderedPath = element.shadowRoot.querySelectorAll('.list-item.endpoint')[2].textContent.split('\n').join('').trim();
+      assert.equal(renderedPath, '/files/{fileId}/copy');
+    });
+
+    it('does not indent any endpoint', async () => {
+      element.renderFullPaths = true;
+      element.endpointsOpened = true;
+      await aTimeout(50);
+      element[endpointsValue].forEach(endpoint => assert.equal(endpoint.indent, 0));
     });
   });
 
@@ -1423,7 +1419,7 @@ describe('ApiNavigationLegacyElement', () => {
     /** @type ApiNavigationElement */
     let element;
     beforeEach(async () => {
-      const amf = await loader.getGraph(true, 'navigation-api');
+      const amf = await loader.getGraph('navigation-api');
       element = await summaryFixture();
       element.amf = amf;
       element.domainId = 'summary';
@@ -1439,7 +1435,7 @@ describe('ApiNavigationLegacyElement', () => {
     /** @type AmfDocument */
     let amf;
     before(async () => {
-      amf = await loader.getGraph(true, 'navigation-api');
+      amf = await loader.getGraph('navigation-api');
     });
 
     it('opens endpoints when initialized', async () => {
@@ -1478,7 +1474,7 @@ describe('ApiNavigationLegacyElement', () => {
     let amf;
 
     before(async () => {
-      amf = await loader.getGraph(true, 'simple-api');
+      amf = await loader.getGraph('simple-api');
     });
 
     describe('menu keyboard tests', () => {

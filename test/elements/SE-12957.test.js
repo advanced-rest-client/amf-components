@@ -33,24 +33,20 @@ describe('ApiOperationDocumentElement', () => {
       return /** @type ApiOperationDocumentElement */ (element);
     }
 
-    [false, true].forEach((compact) => {
-      describe(compact ? 'Compact model' : 'Full model', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(compact, apiFile);
-        });
+    /** @type AmfDocument */
+    let model;
+    before(async () => {
+      model = await loader.getGraph(apiFile);
+    });
 
-        it('computes path parameters from AMF Endpoint model', async () => {
-          const data = loader.getOperation(model, '/api/v1/alarm/{scada-object-key}', 'get');
-          const element = await basicFixture(data);
-          const request = element.shadowRoot.querySelector('api-request-document');
-          const params = request.shadowRoot.querySelectorAll('api-parameter-document[data-name="uri"]');
-          assert.lengthOf(params, 1, 'has a single path parameter');
-          const param = /** @type ApiParameterDocumentElement */ (params[0]);
-          assert.equal(param.parameter.name, 'scada-object-key', 'has the model defined parameter');
-        });
-      });
+    it('computes path parameters from AMF Endpoint model', async () => {
+      const data = loader.getOperation(model, '/api/v1/alarm/{scada-object-key}', 'get');
+      const element = await basicFixture(data);
+      const request = element.shadowRoot.querySelector('api-request-document');
+      const params = request.shadowRoot.querySelectorAll('api-parameter-document[data-name="uri"]');
+      assert.lengthOf(params, 1, 'has a single path parameter');
+      const param = /** @type ApiParameterDocumentElement */ (params[0]);
+      assert.equal(param.parameter.name, 'scada-object-key', 'has the model defined parameter');
     });
   });
 });

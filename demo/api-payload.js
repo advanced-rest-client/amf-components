@@ -182,7 +182,7 @@ class ComponentPage extends AmfDemoBase {
       ['stevetest', 'stevetest'],
     ].forEach(([file, label]) => {
       result[result.length] = html`
-      <anypoint-item data-src="models/${file}-compact.json">${label}</anypoint-item>
+      <anypoint-item data-src="models/${file}.json">${label}</anypoint-item>
       `;
     });
     return result;

@@ -91,7 +91,7 @@ describe('ApiRequestElement', () => {
     /** @type AmfDocument */
     let model;
     before(async () => {
-      model = await loader.getGraph(true);
+      model = await loader.getGraph();
       store.amf = model;
     });
 
@@ -121,7 +121,7 @@ describe('ApiRequestElement', () => {
     /** @type AmfDocument */
     let model;
     before(async () => {
-      model = await loader.getGraph(true);
+      model = await loader.getGraph();
       store.amf = model;
     });
 
@@ -160,7 +160,7 @@ describe('ApiRequestElement', () => {
     /** @type AmfDocument */
     let model;
     before(async () => {
-      model = await loader.getGraph(true);
+      model = await loader.getGraph();
       store.amf = model;
     });
 
@@ -171,7 +171,7 @@ describe('ApiRequestElement', () => {
       element.addEventListener(EventTypes.Request.apiRequest, spy);
       const editor = element.shadowRoot.querySelector('api-request-editor');
       editor.execute();
-      assert.equal(spy.args[0][0].detail.headers, 'x-people-op-id: 9719fa6f-c666-48e0-a191-290890760b30\nx-rate-client-id: \nx-test: header-value');
+      assert.equal(spy.args[0][0].detail.headers, 'x-people-op-id: 9719fa6f-c666-48e0-a191-290890760b30\nx-rate-client-id: 5757gh76\nx-test: header-value');
     });
 
     it('replaces headers in the request', async () => {
@@ -184,7 +184,7 @@ describe('ApiRequestElement', () => {
       element.addEventListener(EventTypes.Request.apiRequest, spy);
       const editor = element.shadowRoot.querySelector('api-request-editor');
       editor.execute();
-      assert.equal(spy.args[0][0].detail.headers, 'x-people-op-id: 9719fa6f-c666-48e0-a191-290890760b30\nx-rate-client-id: \nx-test: header-value');
+      assert.equal(spy.args[0][0].detail.headers, 'x-people-op-id: 9719fa6f-c666-48e0-a191-290890760b30\nx-rate-client-id: 5757gh76\nx-test: header-value');
     });
   });
 
@@ -314,7 +314,7 @@ describe('ApiRequestElement', () => {
     /** @type AmfDocument */
     let model;
     before(async () => {
-      model = await loader.getGraph(true);
+      model = await loader.getGraph();
       store.amf = model;
     });
 
@@ -347,7 +347,7 @@ describe('ApiRequestElement', () => {
     /** @type AmfDocument */
     let model;
     before(async () => {
-      model = await loader.getGraph(true);
+      model = await loader.getGraph();
       store.amf = model;
     });
 

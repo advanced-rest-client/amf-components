@@ -221,7 +221,7 @@ class ComponentDemo extends AmfDemoBase {
       ['APIC-711', 'APIC-711: switching to a library']
     ].forEach(([file, label]) => {
       result[result.length] = html`
-      <anypoint-item data-src="models/${file}-compact.json">${label}</anypoint-item>`;
+      <anypoint-item data-src="models/${file}.json">${label}</anypoint-item>`;
     });
     return result;
   }

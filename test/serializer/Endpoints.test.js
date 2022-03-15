@@ -14,7 +14,7 @@ describe('AmfSerializer', () => {
     /** @type AmfSerializer */
     let serializer;
     before(async () => {
-      api = await loader.getGraph(true, 'petstore');
+      api = await loader.getGraph('petstore');
       serializer = new AmfSerializer();
       serializer.amf = api;
     });
@@ -56,8 +56,8 @@ describe('AmfSerializer', () => {
     /** @type AmfSerializer */
     let arcDemoSerializer;
     before(async () => {
-      demoApi = await loader.getGraph(true, 'amf-helper-api');
-      arcDemoApi = await loader.getGraph(true, 'arc-demo-api');
+      demoApi = await loader.getGraph('amf-helper-api');
+      arcDemoApi = await loader.getGraph('arc-demo-api');
       demoSerializer = new AmfSerializer(demoApi);
       arcDemoSerializer = new AmfSerializer(arcDemoApi);
     });

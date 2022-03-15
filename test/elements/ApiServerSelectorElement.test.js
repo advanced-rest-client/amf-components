@@ -451,593 +451,589 @@ describe('ApiServerSelectorElement', () => {
     });
   });
 
-  [false, true].forEach((compact) => {
-    describe(compact ? 'Compact model' : 'Full model', () => {
-      async function changeSelection(element, { selected, type }) {
-        element.domainId = selected;
-        element.domainType = type;
-        await aTimeout(2)
+  async function changeSelection(element, { selected, type }) {
+    element.domainId = selected;
+    element.domainType = type;
+    await aTimeout(2)
+  }
+
+  describe('[serverListTemplate]()', () => {
+    /** @type AmfDocument */
+    let model;
+    /** @type ApiServerSelectorElement */
+    let element;
+    
+    before(async () => {
+      model = await loader.getGraph('servers-api');
+      store.amf = model;
+    });
+
+    beforeEach(async () => {
+      element = await basicFixture();
+    });
+
+    it('returns empty array when servers is null', () => {
+      element.servers = null;
+      assert.lengthOf(element[serverListTemplate](), 0);
+    });
+
+    it('returns list of servers for the document', () => {
+      assert.lengthOf(element[serverListTemplate](), 4);
+    });
+
+    it('returns list of servers for an endpoint', async () => {
+      const endpoint = loader.lookupEndpoint(model, '/ping');
+      const endpointId = endpoint['@id'];
+      const detail = {
+        selected: endpointId,
+        type: 'resource',
+      };
+      await changeSelection(element, detail);
+      await nextFrame();
+      assert.lengthOf(element[serverListTemplate](), 1);
+    });
+
+    it('returns list of servers for a method', async () => {
+      const endpoint = loader.lookupEndpoint(model, '/ping');
+      const method = loader.lookupOperation(model, '/ping', 'get');
+      const endpointId = endpoint['@id'];
+      const methodId = method['@id'];
+      const detail = {
+        selected: methodId,
+        type: 'operation',
+        endpointId,
+      };
+      await changeSelection(element, detail);
+      assert.lengthOf(element[serverListTemplate](), 2);
+    });
+  });
+
+  describe('[selectionChangeHandler]', () => {
+    /** @type AmfDocument */
+    let model;
+    
+    before(async () => {
+      model = await loader.getGraph('servers-api');
+      store.amf = model;
+    });
+
+    it('selects a server', async () => {
+      const element = await basicFixture();
+
+      const node = /** @type HTMLElement */ (element.shadowRoot.querySelector('[data-value="https://{customerId}.saas-app.com:{port}/v2"]'));
+      node.click();
+      await nextFrame();
+
+      assert.equal(element.value, 'https://{customerId}.saas-app.com:{port}/v2');
+      assert.equal(element.type, 'server');
+    });
+
+    it('selects custom URI', async () => {
+      const element = await allowCustomFixture();
+
+      const node = /** @type HTMLElement */ (element.shadowRoot.querySelector('[data-value="custom"]'));
+      node.click();
+
+      assert.equal(element.value, '');
+      assert.equal(element.type, 'custom');
+    });
+  });
+
+  describe('apiserverscount event', () => {
+    before(async () => {
+      store.amf = undefined;
+    });
+
+    describe('initialization', () => {
+      /** @type ApiServerSelectorElement */
+      let element;
+      let event;
+
+      beforeEach(async () => {
+        element = document.createElement('api-server-selector');
+        document.body.appendChild(element);
+        event = await oneEvent(element, 'serverscountchanged');
+      });
+
+      afterEach(() => {
+        document.body.removeChild(element);
+      });
+
+      it('should render 0 servers', () => {
+        assert.equal(element.serversCount, 0);
+      });
+
+      it('should have triggered event', () => {
+        assert.deepEqual(event.detail, {
+          value: 0
+        });
+      });
+    });
+
+    describe('allowCustom change', () => {
+      /** @type ApiServerSelectorElement */
+      let element;
+      let event;
+
+      beforeEach(async () => {
+        element = await basicFixture();
+        const handler = (e) => {
+          event = e;
+        }
+        element.addEventListener('serverscountchanged', handler);
+        element.allowCustom = true;
+        await nextFrame();
+      });
+
+      it('should have triggered event', () => {
+        assert.deepEqual(event.detail, {
+          value: 1
+        });
+      })
+    });
+  });
+
+  describe('anypoint property', () => {
+    /** @type AmfDocument */
+    let model;
+    /** @type ApiServerSelectorElement */
+    let element;
+    
+    before(async () => {
+      model = await loader.getGraph('servers-api');
+      store.amf = model;
+    });
+
+    beforeEach(async () => {
+      element = await anypointFixture();
+    });
+
+    it('sets the anypoint property on the dropdown', () => {
+      assert.isTrue(element.anypoint);
+    });
+
+    it('sets the anypoint property on the custom item', () => {
+      const item = element.shadowRoot.querySelector('anypoint-item');
+      assert.isTrue(item.hasAttribute('anypoint'));
+    });
+
+    it('sets the anypoint property on the server items', async () => {
+      // class="custom-option"
+      const nodes = element.shadowRoot.querySelectorAll('anypoint-item');
+      const items = Array.from(nodes).filter((node) => node.getAttribute('value') !== 'custom');
+      assert.isAbove(items.length, 0);
+      for (let i = 0; i < items.length; i++) {
+        assert.isTrue(items[i].hasAttribute('anypoint'));
       }
-
-      describe('[serverListTemplate]()', () => {
-        /** @type AmfDocument */
-        let model;
-        /** @type ApiServerSelectorElement */
-        let element;
-        
-        before(async () => {
-          model = await loader.getGraph(compact, 'servers-api');
-          store.amf = model;
-        });
-
-        beforeEach(async () => {
-          element = await basicFixture();
-        });
-
-        it('returns empty array when servers is null', () => {
-          element.servers = null;
-          assert.lengthOf(element[serverListTemplate](), 0);
-        });
-
-        it('returns list of servers for the document', () => {
-          assert.lengthOf(element[serverListTemplate](), 4);
-        });
-
-        it('returns list of servers for an endpoint', async () => {
-          const endpoint = loader.lookupEndpoint(model, '/ping');
-          const endpointId = endpoint['@id'];
-          const detail = {
-            selected: endpointId,
-            type: 'resource',
-          };
-          await changeSelection(element, detail);
-          await nextFrame();
-          assert.lengthOf(element[serverListTemplate](), 1);
-        });
-
-        it('returns list of servers for a method', async () => {
-          const endpoint = loader.lookupEndpoint(model, '/ping');
-          const method = loader.lookupOperation(model, '/ping', 'get');
-          const endpointId = endpoint['@id'];
-          const methodId = method['@id'];
-          const detail = {
-            selected: methodId,
-            type: 'operation',
-            endpointId,
-          };
-          await changeSelection(element, detail);
-          assert.lengthOf(element[serverListTemplate](), 2);
-        });
-      });
-
-      describe('[selectionChangeHandler]', () => {
-        /** @type AmfDocument */
-        let model;
-        
-        before(async () => {
-          model = await loader.getGraph(compact, 'servers-api');
-          store.amf = model;
-        });
-
-        it('selects a server', async () => {
-          const element = await basicFixture();
-
-          const node = /** @type HTMLElement */ (element.shadowRoot.querySelector('[data-value="https://{customerId}.saas-app.com:{port}/v2"]'));
-          node.click();
-          await nextFrame();
-
-          assert.equal(element.value, 'https://{customerId}.saas-app.com:{port}/v2');
-          assert.equal(element.type, 'server');
-        });
-
-        it('selects custom URI', async () => {
-          const element = await allowCustomFixture();
-
-          const node = /** @type HTMLElement */ (element.shadowRoot.querySelector('[data-value="custom"]'));
-          node.click();
-
-          assert.equal(element.value, '');
-          assert.equal(element.type, 'custom');
-        });
-      });
-
-      describe('apiserverscount event', () => {
-        before(async () => {
-          store.amf = undefined;
-        });
-
-        describe('initialization', () => {
-          /** @type ApiServerSelectorElement */
-          let element;
-          let event;
-
-          beforeEach(async () => {
-            element = document.createElement('api-server-selector');
-            document.body.appendChild(element);
-            event = await oneEvent(element, 'serverscountchanged');
-          });
-
-          afterEach(() => {
-            document.body.removeChild(element);
-          });
-
-          it('should render 0 servers', () => {
-            assert.equal(element.serversCount, 0);
-          });
-
-          it('should have triggered event', () => {
-            assert.deepEqual(event.detail, {
-              value: 0
-            });
-          });
-        });
-
-        describe('allowCustom change', () => {
-          /** @type ApiServerSelectorElement */
-          let element;
-          let event;
-
-          beforeEach(async () => {
-            element = await basicFixture();
-            const handler = (e) => {
-              event = e;
-            }
-            element.addEventListener('serverscountchanged', handler);
-            element.allowCustom = true;
-            await nextFrame();
-          });
-
-          it('should have triggered event', () => {
-            assert.deepEqual(event.detail, {
-              value: 1
-            });
-          })
-        });
-      });
-
-      describe('anypoint property', () => {
-        /** @type AmfDocument */
-        let model;
-        /** @type ApiServerSelectorElement */
-        let element;
-        
-        before(async () => {
-          model = await loader.getGraph(compact, 'servers-api');
-          store.amf = model;
-        });
-
-        beforeEach(async () => {
-          element = await anypointFixture();
-        });
-
-        it('sets the anypoint property on the dropdown', () => {
-          assert.isTrue(element.anypoint);
-        });
-
-        it('sets the anypoint property on the custom item', () => {
-          const item = element.shadowRoot.querySelector('anypoint-item');
-          assert.isTrue(item.hasAttribute('anypoint'));
-        });
-
-        it('sets the anypoint property on the server items', async () => {
-          // class="custom-option"
-          const nodes = element.shadowRoot.querySelectorAll('anypoint-item');
-          const items = Array.from(nodes).filter((node) => node.getAttribute('value') !== 'custom');
-          assert.isAbove(items.length, 0);
-          for (let i = 0; i < items.length; i++) {
-            assert.isTrue(items[i].hasAttribute('anypoint'));
-          }
-        });
-
-        it('sets the anypoint property on the custom input', async () => {
-          element.type = 'custom';
-          element.value = 'https://example.com';
-          await nextFrame();
-          const item = element.shadowRoot.querySelector('anypoint-input');
-          assert.isTrue(item.hasAttribute('anypoint'));
-        });
-      });
-
-      describe('outlined theme', () => {
-        /** @type ApiServerSelectorElement */
-        let element;
-
-        beforeEach(async () => {
-          element = await outlinedFixture();
-        });
-
-        it('sets outlined on the dropdown', () => {
-          assert.isTrue(element.outlined);
-        });
-
-        it('sets outlined on the custom input', async () => {
-          element.type = 'custom';
-          element.value = 'https://example.com';
-          await nextFrame();
-          const item = element.shadowRoot.querySelector('anypoint-input');
-          assert.isTrue(item.hasAttribute('outlined'));
-        });
-      });
-
-      describe('slot elements', () => {
-        /** @type AmfDocument */
-        let model;
-        /** @type ApiServerSelectorElement */
-        let element;
-        
-        before(async () => {
-          model = await loader.getGraph(compact, 'servers-api');
-          store.amf = model;
-        });
-
-        beforeEach(async () => {
-          element = await extraOptionsFixture();
-        });
-
-        it('selects slot value', async () => {
-          element.value = 'http://customServer2.com';
-          await nextFrame();
-          assert.equal(element.value, 'http://customServer2.com');
-        });
-      });
-
-      describe('auto selection', () => {
-        /** @type AmfDocument */
-        let model;
-        
-        before(async () => {
-          model = await loader.getGraph(compact, 'servers-api');
-          store.amf = model;
-        });
-
-        it('selects a default server for the API model', async () => {
-          const element = await autoSelectFixture();
-          assert.equal(element.value, 'https://{customerId}.saas-app.com:{port}/v2');
-        });
-
-        it('selects when changing selection to an endpoint', async () => {
-          const element = await autoSelectFixture();
-          const endpoint = loader.lookupEndpoint(model, '/ping');
-          const endpointId = endpoint['@id'];
-          const detail = {
-            selected: endpointId,
-            type: 'resource',
-          };
-          await changeSelection(element, detail);
-          await nextFrame();
-          assert.equal(element.value, 'https://endpoint.example.com');
-        });
-
-        it('selects when changing selection to a method', async () => {
-          const element = await autoSelectFixture();
-          const endpoint = loader.lookupEndpoint(model, '/ping');
-          const method = loader.lookupOperation(model, '/ping', 'get');
-          const endpointId = endpoint['@id'];
-          const methodId = method['@id'];
-          const detail = {
-            selected: methodId,
-            type: 'operation',
-            endpointId,
-          };
-          await changeSelection(element, detail);
-          await nextFrame();
-          assert.equal(element.value, 'https://echo.example.com');
-        });
-
-        it('keeps selection when possible', async () => {
-          const element = await autoSelectFixture();
-          const endpoint1 = loader.lookupEndpoint(model, '/default');
-          const method1 = loader.lookupOperation(model, '/default', 'get');
-          const endpoint2 = loader.lookupEndpoint(model, '/duplicated');
-          const method2 = loader.lookupOperation(model, '/duplicated', 'get');
-
-          const detail = {
-            selected: method1['@id'],
-            type: 'operation',
-            endpointId: endpoint1['@id'],
-          };
-          await changeSelection(element, detail);
-          await nextFrame();
-          element.value = 'http://beta.api.openweathermap.org/data/2.5/';
-          await nextFrame();
-          const detail2 = {
-            selected: method2['@id'],
-            type: 'operation',
-            endpointId: endpoint2['@id'],
-          };
-          await changeSelection(element, detail2);
-          await nextFrame();
-          assert.equal(element.value, 'http://beta.api.openweathermap.org/data/2.5/');
-        });
-      });
-
-      describe('no servers in model', () => {
-        /** @type AmfDocument */
-        let model;
-        
-        before(async () => {
-          model = await loader.getGraph(compact, 'no-servers-api');
-          store.amf = model;
-        });
-
-        it('selects first slot element if there are no model servers', async () => {
-          const element = await autoSelectFixtureWithSlots();
-          assert.equal(element.value, 'http://customServer.com');
-          assert.equal(element.type, 'extra');
-        });
-
-        it('dispatches slot selection event if there are no model servers', async () => {
-          let detail;
-          // @ts-ignore
-          window.addEventListener('apiserverchanged', (e) => { detail = e.detail; });
-          await autoSelectFixtureWithSlots();
-          assert.isDefined(detail, 'has the event');
-          // @ts-ignore
-          assert.equal(detail.value, 'http://customServer.com');
-          // @ts-ignore
-          assert.equal(detail.type, 'extra');
-        });
-      });
-
-      describe('items without a value', () => {
-        /** @type AmfDocument */
-        let model;
-        /** @type ApiServerSelectorElement */
-        let element;
-        
-        before(async () => {
-          model = await loader.getGraph(compact, 'servers-api');
-          store.amf = model;
-        });
-
-        beforeEach(async () => {
-          element = await unselectableFixture();
-        });
-
-        it('do not select element that has no value', () => {
-          // first item has no value
-          const node = element.querySelector('anypoint-item');
-          node.click();
-
-          assert.equal(element.value, '');
-        });
-      });
-
-      describe('#serverValues', () => {
-        const serverValues = [
-          'https://{customerId}.saas-app.com:{port}/v2',
-          'https://{region}.api.cognitive.microsoft.com',
-          'https://api.openweathermap.org/data/2.5/',
-          'http://beta.api.openweathermap.org/data/2.5/'
-        ];
-        const customValues = [
-          'http://customServer.com',
-          'http://customServer2.com'
-        ];
-
-        /** @type AmfDocument */
-        let model;
-        
-        before(async () => {
-          model = await loader.getGraph(compact, 'servers-api');
-        });
-
-        it('returns values from servers', async () => {
-          store.amf = model;
-          const element = await basicFixture();
-          const result = element.serverValues;
-          assert.deepEqual(result, serverValues);
-        });
-
-        it('returns values from custom servers', async () => {
-          store.amf = undefined;
-          const element = await extraOptionsFixture();
-          const result = element.serverValues;
-          assert.deepEqual(result, customValues);
-        });
-
-        it('returns values from servers and custom servers', async () => {
-          store.amf = model;
-          const element = await extraOptionsFixture();
-          const result = element.serverValues;
-          assert.deepEqual(result, serverValues.concat(customValues));
-        });
-      });
-
-      describe('#isValueCustom', () => {
-        /** @type AmfDocument */
-        let model;
-        
-        before(async () => {
-          model = await loader.getGraph(compact, 'servers-api');
-          store.amf = model;
-        });
-
-        it('returns false when no value', async () => {
-          const element = await basicFixture();
-          const result = element.isValueCustom;
-          assert.isFalse(result);
-        });
-
-        it('returns false when value is on the servers list', async () => {
-          const element = await basicFixture();
-          element.value = 'https://{customerId}.saas-app.com:{port}/v2';
-          const result = element.isValueCustom;
-          assert.isFalse(result);
-        });
-
-        it('returns false when value is on the custom servers list', async () => {
-          const element = await extraOptionsFixture();
-          element.value = 'http://customServer.com';
-          const result = element.isValueCustom;
-          assert.isFalse(result);
-        });
-
-        it('returns true when on either of lists', async () => {
-          const element = await extraOptionsFixture();
-          element.value = 'http://mostCustomServer.com';
-          const result = element.isValueCustom;
-          assert.isTrue(result);
-        });
-      });
-
-      describe('#[customItems]', () => {
-        const customValues = [
-          'http://customServer.com',
-          'http://customServer2.com'
-        ];
-
-        /** @type AmfDocument */
-        let model;
-        
-        before(async () => {
-          model = await loader.getGraph(compact, 'servers-api');
-          store.amf = model;
-        });
-
-        it('is empty array by default', async () => {
-          const element = await basicFixture();
-          const result = element[customItems];
-          assert.deepEqual(result, []);
-        });
-
-        it('adds custom items to the list', async () => {
-          const element = await slotChangeFixture();
-          const result = element[customItems];
-          assert.deepEqual(result, customValues);
-        });
-
-        it('updates a list when a child is removed', async () => {
-          const element = await slotChangeFixture();
-          const item = element.querySelector('anypoint-item');
-          element.removeChild(item);
-          await nextFrame();
-          const result = element[customItems];
-          assert.deepEqual(result, [customValues[1]]);
-        });
-
-        it('sets empty array when no items', async () => {
-          const element = await slotChangeFixture();
-          const items = element.querySelectorAll('anypoint-item');
-          Array.from(items).forEach((item) => element.removeChild(item));
-          await nextFrame();
-          const result = element[customItems];
-          assert.deepEqual(result, []);
-        });
-      });
-
-      describe('#value setter', () => {
-        const serverValues = [
-          'https://{customerId}.saas-app.com:{port}/v2',
-          'https://{region}.api.cognitive.microsoft.com',
-          'https://api.openweathermap.org/data/2.5/',
-          'http://beta.api.openweathermap.org/data/2.5/'
-        ];
-        const customValues = [
-          'http://customServer.com',
-          'http://customServer2.com'
-        ];
-
-        /** @type AmfDocument */
-        let model;
-        
-        before(async () => {
-          model = await loader.getGraph(compact, 'servers-api');
-          store.amf = model;
-        });
-
-        it('selects value from rendered servers', async () => {
-          const element = await basicFixture();
-          element.value = serverValues[1];
-          await nextFrame();
-          const node = element.shadowRoot.querySelector('anypoint-listbox');
-          assert.equal(node.selected, serverValues[1]);
-        });
-
-        it('selects value from rendered custom servers', async () => {
-          const element = await extraOptionsFixture();
-          element.value = customValues[1];
-          await nextFrame();
-          const node = element.shadowRoot.querySelector('anypoint-listbox');
-          assert.equal(node.selected, customValues[1]);
-        });
-
-        it('opens the custom editor when value is custom', async () => {
-          const element = await extraOptionsCustomFixture();
-          element.value = 'super-custom';
-          element.type = 'custom';
-          await nextFrame();
-          assert.isTrue(element.isCustom);
-        });
-      });
-
-      describe('domainId & domainType', () => {
-        /** @type ApiServerSelectorElement */
-        let element;
-        let method;
-        let methodId;
-
-        /** @type AmfDocument */
-        let model;
-        
-        before(async () => {
-          model = await loader.getGraph(compact, 'servers-api');
-          store.amf = model;
-        });
-
-        beforeEach(async () => {
-          element = await basicFixture();
-          method = loader.lookupOperation(model, '/ping', 'get');
-          methodId = method['@id'];
-        });
-
-        it('should load method servers on init', async () => {
-          element = await domainIdFixture(methodId, 'operation');
-          assert.equal(element.servers.length, 2)
-        });
-
-        it('should load root servers on init with invalid domainId', async () => {
-          element = await domainIdFixture('', 'operation');
-          assert.equal(element.servers.length, 4)
-        });
-
-        it('should load root servers on init with invalid domainType', async () => {
-          // @ts-ignore
-          element = await domainIdFixture(methodId, '');
-          assert.equal(element.servers.length, 4)
-        });
-
-        it('should change to new endpoint\'s servers after navigation', async () => {
-          element = await domainIdFixture(methodId, 'operation');
-          const endpoint = loader.lookupEndpoint(model, '/ping');
-          const id = endpoint['@id'];
-          const detail = {
-            selected: id,
-            type: 'resource'
-          };
-          await changeSelection(element, detail);
-          await nextFrame();
-          assert.lengthOf(element.servers, 1);
-        });
-
-        it('should change to new method\'s servers after navigation', async () => {
-          element = await domainIdFixture(methodId, 'operation');
-          const nextMethod = loader.lookupOperation(model, '/files', 'get');
-          const id = nextMethod['@id'];
-          const detail = {
-            selected: id,
-            type: 'operation'
-          };
-          await changeSelection(element, detail);
-          await nextFrame();
-          assert.lengthOf(element.servers, 1);
-        });
-
-        it('starts with a selected server value that is not the first one available', async () => {
-          element = await domainIdFixtureWithValue(methodId, 'operation', 'https://echo2.example.com');
-          assert.equal(element.value, 'https://echo2.example.com');
-        });
-      });
+    });
+
+    it('sets the anypoint property on the custom input', async () => {
+      element.type = 'custom';
+      element.value = 'https://example.com';
+      await nextFrame();
+      const item = element.shadowRoot.querySelector('anypoint-input');
+      assert.isTrue(item.hasAttribute('anypoint'));
+    });
+  });
+
+  describe('outlined theme', () => {
+    /** @type ApiServerSelectorElement */
+    let element;
+
+    beforeEach(async () => {
+      element = await outlinedFixture();
+    });
+
+    it('sets outlined on the dropdown', () => {
+      assert.isTrue(element.outlined);
+    });
+
+    it('sets outlined on the custom input', async () => {
+      element.type = 'custom';
+      element.value = 'https://example.com';
+      await nextFrame();
+      const item = element.shadowRoot.querySelector('anypoint-input');
+      assert.isTrue(item.hasAttribute('outlined'));
+    });
+  });
+
+  describe('slot elements', () => {
+    /** @type AmfDocument */
+    let model;
+    /** @type ApiServerSelectorElement */
+    let element;
+    
+    before(async () => {
+      model = await loader.getGraph('servers-api');
+      store.amf = model;
+    });
+
+    beforeEach(async () => {
+      element = await extraOptionsFixture();
+    });
+
+    it('selects slot value', async () => {
+      element.value = 'http://customServer2.com';
+      await nextFrame();
+      assert.equal(element.value, 'http://customServer2.com');
+    });
+  });
+
+  describe('auto selection', () => {
+    /** @type AmfDocument */
+    let model;
+    
+    before(async () => {
+      model = await loader.getGraph('servers-api');
+      store.amf = model;
+    });
+
+    it('selects a default server for the API model', async () => {
+      const element = await autoSelectFixture();
+      assert.equal(element.value, 'https://{customerId}.saas-app.com:{port}/v2');
+    });
+
+    it('selects when changing selection to an endpoint', async () => {
+      const element = await autoSelectFixture();
+      const endpoint = loader.lookupEndpoint(model, '/ping');
+      const endpointId = endpoint['@id'];
+      const detail = {
+        selected: endpointId,
+        type: 'resource',
+      };
+      await changeSelection(element, detail);
+      await nextFrame();
+      assert.equal(element.value, 'https://endpoint.example.com');
+    });
+
+    it('selects when changing selection to a method', async () => {
+      const element = await autoSelectFixture();
+      const endpoint = loader.lookupEndpoint(model, '/ping');
+      const method = loader.lookupOperation(model, '/ping', 'get');
+      const endpointId = endpoint['@id'];
+      const methodId = method['@id'];
+      const detail = {
+        selected: methodId,
+        type: 'operation',
+        endpointId,
+      };
+      await changeSelection(element, detail);
+      await nextFrame();
+      assert.equal(element.value, 'https://echo.example.com');
+    });
+
+    it('keeps selection when possible', async () => {
+      const element = await autoSelectFixture();
+      const endpoint1 = loader.lookupEndpoint(model, '/default');
+      const method1 = loader.lookupOperation(model, '/default', 'get');
+      const endpoint2 = loader.lookupEndpoint(model, '/duplicated');
+      const method2 = loader.lookupOperation(model, '/duplicated', 'get');
+
+      const detail = {
+        selected: method1['@id'],
+        type: 'operation',
+        endpointId: endpoint1['@id'],
+      };
+      await changeSelection(element, detail);
+      await nextFrame();
+      element.value = 'http://beta.api.openweathermap.org/data/2.5/';
+      await nextFrame();
+      const detail2 = {
+        selected: method2['@id'],
+        type: 'operation',
+        endpointId: endpoint2['@id'],
+      };
+      await changeSelection(element, detail2);
+      await nextFrame();
+      assert.equal(element.value, 'http://beta.api.openweathermap.org/data/2.5/');
+    });
+  });
+
+  describe('no servers in model', () => {
+    /** @type AmfDocument */
+    let model;
+    
+    before(async () => {
+      model = await loader.getGraph('no-servers-api');
+      store.amf = model;
+    });
+
+    it('selects first slot element if there are no model servers', async () => {
+      const element = await autoSelectFixtureWithSlots();
+      assert.equal(element.value, 'http://customServer.com');
+      assert.equal(element.type, 'extra');
+    });
+
+    it('dispatches slot selection event if there are no model servers', async () => {
+      let detail;
+      // @ts-ignore
+      window.addEventListener('apiserverchanged', (e) => { detail = e.detail; });
+      await autoSelectFixtureWithSlots();
+      assert.isDefined(detail, 'has the event');
+      // @ts-ignore
+      assert.equal(detail.value, 'http://customServer.com');
+      // @ts-ignore
+      assert.equal(detail.type, 'extra');
+    });
+  });
+
+  describe('items without a value', () => {
+    /** @type AmfDocument */
+    let model;
+    /** @type ApiServerSelectorElement */
+    let element;
+    
+    before(async () => {
+      model = await loader.getGraph('servers-api');
+      store.amf = model;
+    });
+
+    beforeEach(async () => {
+      element = await unselectableFixture();
+    });
+
+    it('do not select element that has no value', () => {
+      // first item has no value
+      const node = element.querySelector('anypoint-item');
+      node.click();
+
+      assert.equal(element.value, '');
+    });
+  });
+
+  describe('#serverValues', () => {
+    const serverValues = [
+      'https://{customerId}.saas-app.com:{port}/v2',
+      'https://{region}.api.cognitive.microsoft.com',
+      'https://api.openweathermap.org/data/2.5/',
+      'http://beta.api.openweathermap.org/data/2.5/'
+    ];
+    const customValues = [
+      'http://customServer.com',
+      'http://customServer2.com'
+    ];
+
+    /** @type AmfDocument */
+    let model;
+    
+    before(async () => {
+      model = await loader.getGraph('servers-api');
+    });
+
+    it('returns values from servers', async () => {
+      store.amf = model;
+      const element = await basicFixture();
+      const result = element.serverValues;
+      assert.deepEqual(result, serverValues);
+    });
+
+    it('returns values from custom servers', async () => {
+      store.amf = undefined;
+      const element = await extraOptionsFixture();
+      const result = element.serverValues;
+      assert.deepEqual(result, customValues);
+    });
+
+    it('returns values from servers and custom servers', async () => {
+      store.amf = model;
+      const element = await extraOptionsFixture();
+      const result = element.serverValues;
+      assert.deepEqual(result, serverValues.concat(customValues));
+    });
+  });
+
+  describe('#isValueCustom', () => {
+    /** @type AmfDocument */
+    let model;
+    
+    before(async () => {
+      model = await loader.getGraph('servers-api');
+      store.amf = model;
+    });
+
+    it('returns false when no value', async () => {
+      const element = await basicFixture();
+      const result = element.isValueCustom;
+      assert.isFalse(result);
+    });
+
+    it('returns false when value is on the servers list', async () => {
+      const element = await basicFixture();
+      element.value = 'https://{customerId}.saas-app.com:{port}/v2';
+      const result = element.isValueCustom;
+      assert.isFalse(result);
+    });
+
+    it('returns false when value is on the custom servers list', async () => {
+      const element = await extraOptionsFixture();
+      element.value = 'http://customServer.com';
+      const result = element.isValueCustom;
+      assert.isFalse(result);
+    });
+
+    it('returns true when on either of lists', async () => {
+      const element = await extraOptionsFixture();
+      element.value = 'http://mostCustomServer.com';
+      const result = element.isValueCustom;
+      assert.isTrue(result);
+    });
+  });
+
+  describe('#[customItems]', () => {
+    const customValues = [
+      'http://customServer.com',
+      'http://customServer2.com'
+    ];
+
+    /** @type AmfDocument */
+    let model;
+    
+    before(async () => {
+      model = await loader.getGraph('servers-api');
+      store.amf = model;
+    });
+
+    it('is empty array by default', async () => {
+      const element = await basicFixture();
+      const result = element[customItems];
+      assert.deepEqual(result, []);
+    });
+
+    it('adds custom items to the list', async () => {
+      const element = await slotChangeFixture();
+      const result = element[customItems];
+      assert.deepEqual(result, customValues);
+    });
+
+    it('updates a list when a child is removed', async () => {
+      const element = await slotChangeFixture();
+      const item = element.querySelector('anypoint-item');
+      element.removeChild(item);
+      await nextFrame();
+      const result = element[customItems];
+      assert.deepEqual(result, [customValues[1]]);
+    });
+
+    it('sets empty array when no items', async () => {
+      const element = await slotChangeFixture();
+      const items = element.querySelectorAll('anypoint-item');
+      Array.from(items).forEach((item) => element.removeChild(item));
+      await nextFrame();
+      const result = element[customItems];
+      assert.deepEqual(result, []);
+    });
+  });
+
+  describe('#value setter', () => {
+    const serverValues = [
+      'https://{customerId}.saas-app.com:{port}/v2',
+      'https://{region}.api.cognitive.microsoft.com',
+      'https://api.openweathermap.org/data/2.5/',
+      'http://beta.api.openweathermap.org/data/2.5/'
+    ];
+    const customValues = [
+      'http://customServer.com',
+      'http://customServer2.com'
+    ];
+
+    /** @type AmfDocument */
+    let model;
+    
+    before(async () => {
+      model = await loader.getGraph('servers-api');
+      store.amf = model;
+    });
+
+    it('selects value from rendered servers', async () => {
+      const element = await basicFixture();
+      element.value = serverValues[1];
+      await nextFrame();
+      const node = element.shadowRoot.querySelector('anypoint-listbox');
+      assert.equal(node.selected, serverValues[1]);
+    });
+
+    it('selects value from rendered custom servers', async () => {
+      const element = await extraOptionsFixture();
+      element.value = customValues[1];
+      await nextFrame();
+      const node = element.shadowRoot.querySelector('anypoint-listbox');
+      assert.equal(node.selected, customValues[1]);
+    });
+
+    it('opens the custom editor when value is custom', async () => {
+      const element = await extraOptionsCustomFixture();
+      element.value = 'super-custom';
+      element.type = 'custom';
+      await nextFrame();
+      assert.isTrue(element.isCustom);
+    });
+  });
+
+  describe('domainId & domainType', () => {
+    /** @type ApiServerSelectorElement */
+    let element;
+    let method;
+    let methodId;
+
+    /** @type AmfDocument */
+    let model;
+    
+    before(async () => {
+      model = await loader.getGraph('servers-api');
+      store.amf = model;
+    });
+
+    beforeEach(async () => {
+      element = await basicFixture();
+      method = loader.lookupOperation(model, '/ping', 'get');
+      methodId = method['@id'];
+    });
+
+    it('should load method servers on init', async () => {
+      element = await domainIdFixture(methodId, 'operation');
+      assert.equal(element.servers.length, 2)
+    });
+
+    it('should load root servers on init with invalid domainId', async () => {
+      element = await domainIdFixture('', 'operation');
+      assert.equal(element.servers.length, 4)
+    });
+
+    it('should load root servers on init with invalid domainType', async () => {
+      // @ts-ignore
+      element = await domainIdFixture(methodId, '');
+      assert.equal(element.servers.length, 4)
+    });
+
+    it('should change to new endpoint\'s servers after navigation', async () => {
+      element = await domainIdFixture(methodId, 'operation');
+      const endpoint = loader.lookupEndpoint(model, '/ping');
+      const id = endpoint['@id'];
+      const detail = {
+        selected: id,
+        type: 'resource'
+      };
+      await changeSelection(element, detail);
+      await nextFrame();
+      assert.lengthOf(element.servers, 1);
+    });
+
+    it('should change to new method\'s servers after navigation', async () => {
+      element = await domainIdFixture(methodId, 'operation');
+      const nextMethod = loader.lookupOperation(model, '/files', 'get');
+      const id = nextMethod['@id'];
+      const detail = {
+        selected: id,
+        type: 'operation'
+      };
+      await changeSelection(element, detail);
+      await nextFrame();
+      assert.lengthOf(element.servers, 1);
+    });
+
+    it('starts with a selected server value that is not the first one available', async () => {
+      element = await domainIdFixtureWithValue(methodId, 'operation', 'https://echo2.example.com');
+      assert.equal(element.value, 'https://echo2.example.com');
     });
   });
 
@@ -1143,7 +1139,7 @@ describe('ApiServerSelectorElement', () => {
     let model;
         
     before(async () => {
-      model = await loader.getGraph(true, 'servers-api');
+      model = await loader.getGraph('servers-api');
       store.amf = model;
     });
 

@@ -52,7 +52,7 @@ describe('ApiAuthorizationEditorElement', () => {
     /** @type AmfDocument */
     let model;
     before(async () => {
-      model = await store.getGraph(false, 'secured-api');
+      model = await store.getGraph('secured-api');
     });
 
     describe(`Basic method`, () => {

@@ -23,41 +23,37 @@ describe('ApiRequestEditorElement', () => {
       return element;
     }
 
-    [true].forEach((compact) => {
-      describe(compact ? 'Compact model' : 'Full model', () => {
-        let methodId;
+    let methodId;
 
-        /** @type AmfLoader */
-        let loader;
-        /** @type AmfDocument */
-        let amf;
-        before(async () => {
-          loader = new AmfLoader();
-          amf = await loader.getGraph(compact, apiFile);
-          store.amf = amf;
-        });
+    /** @type AmfLoader */
+    let loader;
+    /** @type AmfDocument */
+    let amf;
+    before(async () => {
+      loader = new AmfLoader();
+      amf = await loader.getGraph(apiFile);
+      store.amf = amf;
+    });
 
-        /** @type ApiRequestEditorElement */
-        let element;
-        beforeEach(async () => {
-          const method = loader.lookupOperation(amf,  '/prescreens/{id}', 'get');
-          methodId = method['@id'];
-          element = await modelFixture(methodId);
-        });
+    /** @type ApiRequestEditorElement */
+    let element;
+    beforeEach(async () => {
+      const method = loader.lookupOperation(amf,  '/prescreens/{id}', 'get');
+      methodId = method['@id'];
+      element = await modelFixture(methodId);
+    });
 
-        it('computes pth uri parameters', () => {
-          const params = element.parametersValue;
-          assert.lengthOf(params, 1, 'pathModel has no elements');
-          const [param] = params;
-          assert.equal(param.binding, 'path', 'has a path item only');
-        });
+    it('computes pth uri parameters', () => {
+      const params = element.parametersValue;
+      assert.lengthOf(params, 1, 'pathModel has no elements');
+      const [param] = params;
+      assert.equal(param.binding, 'path', 'has a path item only');
+    });
 
-        it('has OAS property name', () => {
-          const params = element.parametersValue;
-          const [param] = params;
-          assert.equal(param.parameter.paramName, 'id');
-        });
-      });
+    it('has OAS property name', () => {
+      const params = element.parametersValue;
+      const [param] = params;
+      assert.equal(param.parameter.paramName, 'id');
     });
   });
 });

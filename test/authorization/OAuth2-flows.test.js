@@ -37,7 +37,7 @@ describe('OAuth 2', () => {
   let model;
   before(async () => {
     store = new AmfLoader();
-    model = await store.getGraph(false, 'oauth-flows');
+    model = await store.getGraph('oauth-flows');
   });
 
   /**

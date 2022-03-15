@@ -40,30 +40,26 @@ describe('ApiSecurityRequirementDocumentElement', () => {
     return /** @type ApiSecurityRequirementDocumentElement */ (element);
   }
 
-  [false, true].forEach((compact) => {
-    describe(compact ? 'Compact model' : 'Full model', () => {
-      /** @type AmfDocument */
-      let model;
-      before(async () => {
-        model = await loader.getGraph(compact, 'secured-api');
-        store.amf = model;
-      });
+  /** @type AmfDocument */
+  let model;
+  before(async () => {
+    model = await loader.getGraph('secured-api');
+    store.amf = model;
+  });
 
-      it('finds the security for an operation', async () => {
-        const op = loader.getOperation(model, '/custom1', 'get');
-        const [security] = op.security;
-        const { id } = security;
-        const element = await domainIdFixture(id);
-        assert.deepEqual(element.securityRequirement, security);
-      });
+  it('finds the security for an operation', async () => {
+    const op = loader.getOperation(model, '/custom1', 'get');
+    const [security] = op.security;
+    const { id } = security;
+    const element = await domainIdFixture(id);
+    assert.deepEqual(element.securityRequirement, security);
+  });
 
-      it('renders the security requirement when passing a serialized model', async () => {
-        const op = loader.getOperation(model, '/custom1', 'get');
-        const [security] = op.security;
-        const element = await modelFixture(security);
-        const node = element.shadowRoot.querySelector('api-parametrized-security-scheme');
-        assert.ok(node, 'has the documentation element node');
-      });
-    });
+  it('renders the security requirement when passing a serialized model', async () => {
+    const op = loader.getOperation(model, '/custom1', 'get');
+    const [security] = op.security;
+    const element = await modelFixture(security);
+    const node = element.shadowRoot.querySelector('api-parametrized-security-scheme');
+    assert.ok(node, 'has the documentation element node');
   });
 });

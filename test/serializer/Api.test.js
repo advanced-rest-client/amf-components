@@ -22,9 +22,9 @@ describe('AmfSerializer', () => {
     /** @type AmfSerializer */
     let asyncSerializer;
     before(async () => {
-      const a1 = await loader.getGraph(true, 'petstore');
-      const a2 = await loader.getGraph(true, 'arc-demo-api');
-      const a3 = await loader.getGraph(true, 'async-api');
+      const a1 = await loader.getGraph('petstore');
+      const a2 = await loader.getGraph('arc-demo-api');
+      const a3 = await loader.getGraph('async-api');
       petstoreSerializer = new AmfSerializer(a1);
       demoSerializer = new AmfSerializer(a2);
       asyncSerializer = new AmfSerializer(a3);

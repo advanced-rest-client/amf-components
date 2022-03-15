@@ -1,12 +1,17 @@
 const amf = require('amf-client-js');
-// import amf from 'amf-client-js';
-amf.plugins.document.WebApi.register();
-amf.plugins.document.Vocabularies.register();
-amf.plugins.features.AMFValidation.register();
 
+/** @typedef {import('amf-client-js').AMFConfiguration} AMFConfiguration */
 /** @typedef {import('../types').ParserProcessMessage} ParserProcessMessage */
 /** @typedef {import('../types').ContentParseCommand} ContentParseCommand */
 /** @typedef {import('../types').ParserProcessResult} ParserProcessResult */
+
+const {
+  RAMLConfiguration,
+  OASConfiguration,
+  AsyncAPIConfiguration,
+  RenderOptions,
+  PipelineId,
+} = amf;
 
 class AmfParserProcess {
   /**
@@ -50,15 +55,34 @@ class AmfParserProcess {
    * @param {string} vendor
    */
   async doParseContent(content, mime, vendor) {
-    await amf.Core.init();
-    
-    const parser = amf.Core.parser(vendor, mime);
-    const doc = await parser.parseStringAsync(content);
-    const resolver = amf.Core.resolver(vendor);
-    const resolved = resolver.resolve(doc, 'editing');
-    const generator = amf.Core.generator('AMF Graph', 'application/ld+json');
-    const opts = new amf.render.RenderOptions().withSourceMaps.withCompactUris;
-    return generator.generateString(resolved, opts);
+    const ro = new RenderOptions().withSourceMaps().withCompactUris();
+    const apiConfiguration = this.getConfiguration(vendor).withRenderOptions(ro);
+    const client = apiConfiguration.baseUnitClient();
+    const result = await client.parseContent(content, mime);
+    const transformed = client.transform(result.baseUnit, PipelineId.Editing);
+    return client.render(transformed.baseUnit, 'application/ld+json');
+    // const parser = amf.Core.parser(vendor, mime);
+    // const doc = await parser.parseStringAsync(content);
+    // const resolver = amf.Core.resolver(vendor);
+    // const resolved = resolver.resolve(doc, 'editing');
+    // const generator = amf.Core.generator('AMF Graph', 'application/ld+json');
+    // const opts = new amf.render.RenderOptions().withSourceMaps.withCompactUris;
+    // return generator.generateString(resolved, opts);
+  }
+
+  /**
+   * @param {string} vendor 
+   * @returns {AMFConfiguration}
+   */
+  getConfiguration(vendor) {
+    switch (vendor) {
+      case 'RAML 0.8': return RAMLConfiguration.RAML08();
+      case 'RAML 1.0': return RAMLConfiguration.RAML10();
+      case 'OAS 2.0': return OASConfiguration.OAS20();
+      case 'OAS 3.0': return OASConfiguration.OAS30();
+      case 'ASYNC 2.0': return AsyncAPIConfiguration.Async20();
+      default: throw new Error(`Unknown vendor: ${vendor}`);
+    }
   }
 }
 

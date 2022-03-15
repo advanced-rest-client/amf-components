@@ -12,7 +12,7 @@ License for the specific language governing permissions and limitations under
 the License.
 */
 // @ts-ignore
-import { AmfModelExpander, JsonLdOptions, JsonLd } from 'amf-json-ld-lib'
+import { AmfModelExpander, JsonLdOptions, JsonLd } from 'amf-json-ld-lib';
 import { ns } from './Namespace.js';
 
 /** @typedef {import('./Namespace').ns} Namespace */

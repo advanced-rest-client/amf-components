@@ -26,7 +26,7 @@ describe('ApiAnnotationDocumentElement', () => {
     /** @type AmfDocument */
     let model;
     before(async () => {
-      model = await loader.getGraph(true, apiFile);
+      model = await loader.getGraph(apiFile);
       store.amf = model;
     });
 
@@ -41,93 +41,91 @@ describe('ApiAnnotationDocumentElement', () => {
     });
   });
 
-  [false, true].forEach((compact) => {
-    describe(compact ? 'Compact model' : 'Full model', () => {
-      describe('Model computations', () => {
-        /** @type AmfDocument */
-        let model;
-        before(async () => {
-          model = await loader.getGraph(compact, apiFile);
-          store.amf = model;
-        });
+  describe('Compact model', () => {
+    describe('Model computations', () => {
+      /** @type AmfDocument */
+      let model;
+      before(async () => {
+        model = await loader.getGraph(apiFile);
+        store.amf = model;
+      });
 
-        /** @type ApiAnnotationDocumentElement */
-        let element;
-        beforeEach(async () => {
-          element = await basicFixture();
-        });
+      /** @type ApiAnnotationDocumentElement */
+      let element;
+      beforeEach(async () => {
+        element = await basicFixture();
+      });
 
-        it('computes hasCustomProperties when no annotations', () => {
-          const shape = loader.getShape(model, 'NoAnnotations');
-          element.customProperties = shape.customDomainProperties;
-          assert.isFalse(element.hasCustomProperties);
-        });
+      it('computes hasCustomProperties when no annotations', () => {
+        const shape = loader.getShape(model, 'NoAnnotations');
+        element.customProperties = shape.customDomainProperties;
+        assert.isFalse(element.hasCustomProperties);
+      });
 
-        it('computes hasCustomProperties when has the annotations', () => {
-          const shape = loader.getShape(model, 'ComboType');
-          element.customProperties = shape.customDomainProperties;
-          assert.isTrue(element.hasCustomProperties);
-        });
+      it('computes hasCustomProperties when has the annotations', () => {
+        const shape = loader.getShape(model, 'ComboType');
+        element.customProperties = shape.customDomainProperties;
+        assert.isTrue(element.hasCustomProperties);
+      });
 
-        it('computes the list of annotations', () => {
-          const shape = loader.getShape(model, 'ComboType');
-          element.customProperties = shape.customDomainProperties;
-          assert.typeOf(element.customProperties, 'array');
-          assert.lengthOf(element.customProperties, 3);
-        });
+      it('computes the list of annotations', () => {
+        const shape = loader.getShape(model, 'ComboType');
+        element.customProperties = shape.customDomainProperties;
+        assert.typeOf(element.customProperties, 'array');
+        assert.lengthOf(element.customProperties, 3);
+      });
 
-        it('renders a nil annotation', async () => {
-          const shape = loader.getShape(model, 'notRequiredRepeatable');
-          element.customProperties = shape.customDomainProperties;
-          await nextFrame();
-          const node = element.shadowRoot.querySelectorAll('.custom-property')[0];
-          assert.ok(node, 'Annotation container is rendered');
-          const label = /** @type HTMLElement */ (node.querySelector('.name'));
-          assert.ok(label, 'Annotation label is rendered');
-          const labelValue = label.innerText.toLowerCase();
-          assert.equal(labelValue, 'annotationtest');
-        });
+      it('renders a nil annotation', async () => {
+        const shape = loader.getShape(model, 'notRequiredRepeatable');
+        element.customProperties = shape.customDomainProperties;
+        await nextFrame();
+        const node = element.shadowRoot.querySelectorAll('.custom-property')[0];
+        assert.ok(node, 'Annotation container is rendered');
+        const label = /** @type HTMLElement */ (node.querySelector('.name'));
+        assert.ok(label, 'Annotation label is rendered');
+        const labelValue = label.innerText.toLowerCase();
+        assert.equal(labelValue, 'annotationtest');
+      });
 
-        // APIMF-1710
-        it('does not render a value for a nil annotation', async () => {
-          const shape = loader.getShape(model, 'notRequiredRepeatable');
-          element.customProperties = shape.customDomainProperties;
-          await nextFrame();
-          const node = element.shadowRoot.querySelector('.custom-property');
-          assert.ok(node, 'Annotation container is rendered');
-          const value = node.querySelector('.scalar-value');
-          assert.isEmpty(value.textContent.trim(), 'Annotation value is not rendered');
-        });
+      // APIMF-1710
+      it('does not render a value for a nil annotation', async () => {
+        const shape = loader.getShape(model, 'notRequiredRepeatable');
+        element.customProperties = shape.customDomainProperties;
+        await nextFrame();
+        const node = element.shadowRoot.querySelector('.custom-property');
+        assert.ok(node, 'Annotation container is rendered');
+        const value = node.querySelector('.scalar-value');
+        assert.isEmpty(value.textContent.trim(), 'Annotation value is not rendered');
+      });
 
-        it('renders a scalar annotation', async () => {
-          const shape = loader.getShape(model, 'ErrorResource');
-          element.customProperties = shape.customDomainProperties;
-          await nextFrame();
-          const node = element.shadowRoot.querySelector('.custom-property');
-          assert.ok(node, 'Annotation container is rendered');
-          const label = /** @type HTMLElement */ (node.querySelector('.name'));
-          assert.ok(label, 'Annotation label is rendered');
-          const labelValue = label.innerText.toLowerCase();
-          assert.equal(labelValue, 'deprecated');
-          const value = node.querySelector('.scalar-value');
-          assert.ok(value, 'Annotation value is rendered');
-          const scalarList = node.querySelectorAll('.scalar-value');
-          assert.equal(scalarList.length, 1, 'Scalar value is rendered');
-        });
+      it('renders a scalar annotation', async () => {
+        const shape = loader.getShape(model, 'ErrorResource');
+        element.customProperties = shape.customDomainProperties;
+        await nextFrame();
+        const node = element.shadowRoot.querySelector('.custom-property');
+        assert.ok(node, 'Annotation container is rendered');
+        const label = /** @type HTMLElement */ (node.querySelector('.name'));
+        assert.ok(label, 'Annotation label is rendered');
+        const labelValue = label.innerText.toLowerCase();
+        assert.equal(labelValue, 'deprecated');
+        const value = node.querySelector('.scalar-value');
+        assert.ok(value, 'Annotation value is rendered');
+        const scalarList = node.querySelectorAll('.scalar-value');
+        assert.equal(scalarList.length, 1, 'Scalar value is rendered');
+      });
 
-        it('renders a complex annotation', async () => {
-          const shape = loader.getShape(model, 'ComplexAnnotations');
-          element.customProperties = shape.customDomainProperties;
-          await nextFrame();
-          const node = element.shadowRoot.querySelector('.custom-property');
-          assert.ok(node, 'Annotation container is rendered');
-          const label = /** @type HTMLElement */ (node.querySelector('.name'));
-          assert.ok(label, 'Annotation label is rendered');
-          const labelValue = label.innerText.toLowerCase();
-          assert.equal(labelValue, 'clearancelevel');
-          const objectNodes = node.querySelectorAll('.object-property');
-          assert.equal(objectNodes.length, 2, 'has all properties rendered');
-        });
+      it('renders a complex annotation', async () => {
+        const shape = loader.getShape(model, 'ComplexAnnotations');
+        element.customProperties = shape.customDomainProperties;
+        await nextFrame();
+        const node = element.shadowRoot.querySelector('.custom-property');
+        assert.ok(node, 'Annotation container is rendered');
+        const label = /** @type HTMLElement */ (node.querySelector('.name'));
+        assert.ok(label, 'Annotation label is rendered');
+        const labelValue = label.innerText.toLowerCase();
+        assert.equal(labelValue, 'clearancelevel');
+        const objectNodes = node.querySelectorAll('.object-property');
+        assert.equal(objectNodes.length, 2, 'has all properties rendered');
       });
     });
   });

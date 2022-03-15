@@ -20,87 +20,83 @@ describe('ApiNavigationLegacyElement', () => {
       return fixture(html`<api-navigation-legacy .amf="${amf}"></api-navigation-legacy>`);
     }
 
-    [false, true].forEach((compact) => {
-      describe(compact ? 'Compact model' : 'Full model', () => {
-        describe('Data computations', () => {
-          /** @type ApiNavigationElement */
-          let element;
-          /** @type AmfDocument */
-          let amf;
+    describe('Data computations', () => {
+      /** @type ApiNavigationElement */
+      let element;
+      /** @type AmfDocument */
+      let amf;
 
-          before(async () => {
-            amf = await loader.getGraph(compact, 'ext-docs');
-          });
+      before(async () => {
+        amf = await loader.getGraph('ext-docs');
+      });
 
-          beforeEach(async () => {
-            element = await basicFixture(amf);
-          });
+      beforeEach(async () => {
+        element = await basicFixture(amf);
+      });
 
-          it('has [docsValue]', () => {
-            assert.lengthOf(element[docsValue], 1, 'has 1 docs items');
-            assert.isTrue(element.hasDocs, 'hasDocs is set');
-          });
+      it('has [docsValue]', () => {
+        assert.lengthOf(element[docsValue], 1, 'has 1 docs items');
+        assert.isTrue(element.hasDocs, 'hasDocs is set');
+      });
 
-          it('computes URL value', () => {
-            const [doc] = element[docsValue];
-            assert.equal(doc.url, 'https://example.com');
-          });
+      it('computes URL value', () => {
+        const [doc] = element[docsValue];
+        assert.equal(doc.url, 'https://example.com');
+      });
 
-          it('computes isExternal value', () => {
-            const [doc] = element[docsValue];
-            assert.isTrue(doc.isExternal);
-          });
-        });
+      it('computes isExternal value', () => {
+        const [doc] = element[docsValue];
+        assert.isTrue(doc.isExternal);
+      });
+    });
 
-        describe('View rendering', () => {
-          /** @type ApiNavigationElement */
-          let element;
-          /** @type AmfDocument */
-          let amf;
+    describe('View rendering', () => {
+      /** @type ApiNavigationElement */
+      let element;
+      /** @type AmfDocument */
+      let amf;
 
-          before(async () => {
-            amf = await loader.getGraph(compact, 'ext-docs');
-          });
+      before(async () => {
+        amf = await loader.getGraph('ext-docs');
+      });
 
-          beforeEach(async () => {
-            element = await basicFixture(amf);
-          });
+      beforeEach(async () => {
+        element = await basicFixture(amf);
+      });
 
-          it('renders list item with anchor', () => {
-            const node = element.shadowRoot.querySelector('a.list-item');
-            assert.ok(node, 'node is rendered');
-          });
+      it('renders list item with anchor', () => {
+        const node = element.shadowRoot.querySelector('a.list-item');
+        assert.ok(node, 'node is rendered');
+      });
 
-          it('opens anchor in a new tab', () => {
-            const node = element.shadowRoot.querySelector('a.list-item');
-            assert.equal(node.getAttribute('target'), '_blank');
-          });
+      it('opens anchor in a new tab', () => {
+        const node = element.shadowRoot.querySelector('a.list-item');
+        assert.equal(node.getAttribute('target'), '_blank');
+      });
 
-          it('has external URL', () => {
-            const node = element.shadowRoot.querySelector('a.list-item');
-            assert.equal(node.getAttribute('href'), 'https://example.com');
-          });
-        });
+      it('has external URL', () => {
+        const node = element.shadowRoot.querySelector('a.list-item');
+        assert.equal(node.getAttribute('href'), 'https://example.com');
+      });
+    });
 
-        describe('Invalid URL', () => {
-          /** @type ApiNavigationElement */
-          let element;
-          /** @type AmfDocument */
-          let amf;
+    describe('Invalid URL', () => {
+      /** @type ApiNavigationElement */
+      let element;
+      /** @type AmfDocument */
+      let amf;
 
-          before(async () => {
-            amf = await loader.getGraph(compact, 'APIC-449');
-          });
+      before(async () => {
+        amf = await loader.getGraph('APIC-449');
+      });
 
-          beforeEach(async () => {
-            element = await basicFixture(amf);
-          });
+      beforeEach(async () => {
+        element = await basicFixture(amf);
+      });
 
-          it('URL default to about:blank when invalid', () => {
-            const node = element.shadowRoot.querySelector('a.list-item');
-            assert.equal(node.getAttribute('href'), 'about:blank');
-          });
-        });
+      it('URL default to about:blank when invalid', () => {
+        const node = element.shadowRoot.querySelector('a.list-item');
+        assert.equal(node.getAttribute('href'), 'about:blank');
       });
     });
   });

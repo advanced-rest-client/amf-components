@@ -26,7 +26,7 @@ describe('OAuth 2', () => {
   let model;
   before(async () => {
     store = new AmfLoader();
-    model = await store.getGraph(false, '21143');
+    model = await store.getGraph('21143');
   });
 
   /**

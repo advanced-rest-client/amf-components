@@ -28,7 +28,7 @@ describe('Pass Through authorization', () => {
   let model;
   before(async () => {
     store = new AmfLoader();
-    model = await store.getGraph(false, 'secured-api');
+    model = await store.getGraph('secured-api');
   });
 
   /**

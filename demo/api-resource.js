@@ -230,7 +230,7 @@ class ComponentPage extends AmfDemoBase {
       ['APIC-650', 'APIC-650'],
     ].forEach(([file, label]) => {
       result[result.length] = html`
-      <anypoint-item data-src="models/${file}-compact.json">${label}</anypoint-item>`;
+      <anypoint-item data-src="models/${file}.json">${label}</anypoint-item>`;
     });
     return result;
   }

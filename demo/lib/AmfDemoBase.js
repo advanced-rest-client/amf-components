@@ -260,7 +260,7 @@ export class AmfDemoBase extends AmfHelperMixin(DemoPage) {
     return [
       ['demo-api', 'Demo API'],
     ].map(([file, label]) => html`
-      <anypoint-item data-src="models/${file}-compact.json">${label} - compact model</anypoint-item>
+      <anypoint-item data-src="models/${file}.json">${label} - compact model</anypoint-item>
     `);
   }
 

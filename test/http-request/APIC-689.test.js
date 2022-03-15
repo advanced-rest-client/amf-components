@@ -23,35 +23,31 @@ describe('ApiRequestEditorElement', () => {
       return element;
     }
 
-    [true, false].forEach((compact) => {
-      describe(compact ? 'Compact model' : 'Full model', () => {
-        /** @type AmfLoader */
-        let loader;
-        /** @type AmfDocument */
-        let amf;
+    /** @type AmfLoader */
+    let loader;
+    /** @type AmfDocument */
+    let amf;
 
-        before(async () => {
-          loader = new AmfLoader();
-          amf = await loader.getGraph(compact, apiFile);
-          store.amf = amf;
-        });
+    before(async () => {
+      loader = new AmfLoader();
+      amf = await loader.getGraph(apiFile);
+      store.amf = amf;
+    });
 
-        it('does not set URL query param for an optional enum', async () => {
-          const method = loader.lookupOperation(amf, '/test', 'get');
-          const methodId = method['@id'];
-          const editor = await modelFixture(methodId);
-          const values = editor.serialize();
-          assert.equal(values.url, '/test', 'param value is not set');
-        });
+    it('does not set URL query param for an optional enum', async () => {
+      const method = loader.lookupOperation(amf, '/test', 'get');
+      const methodId = method['@id'];
+      const editor = await modelFixture(methodId);
+      const values = editor.serialize();
+      assert.equal(values.url, '/test', 'param value is not set');
+    });
 
-        it('sets URL query param for a required enum', async () => {
-          const method = loader.lookupOperation(amf, '/test', 'post');
-          const methodId = method['@id'];
-          const editor = await modelFixture(methodId);
-          const values = editor.serialize();
-          assert.equal(values.url, '/test?param1=A', 'param value is set');
-        });
-      });
+    it('sets URL query param for a required enum', async () => {
+      const method = loader.lookupOperation(amf, '/test', 'post');
+      const methodId = method['@id'];
+      const editor = await modelFixture(methodId);
+      const values = editor.serialize();
+      assert.equal(values.url, '/test?param1=A', 'param value is set');
     });
   });
 });

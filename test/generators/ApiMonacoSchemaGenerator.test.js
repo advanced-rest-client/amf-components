@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 import { assert } from '@open-wc/testing';
 import { ns } from '../../src/helpers/Namespace.js';
 import { ApiMonacoSchemaGenerator } from '../../src/schema/ApiMonacoSchemaGenerator.js';
@@ -21,7 +22,7 @@ describe('ApiMonacoSchemaGenerator', () => {
     let model;
 
     before(async () => {
-      model = await loader.getGraph(true, 'schema-api');
+      model = await loader.getGraph('schema-api');
       reader = new ApiMonacoSchemaGenerator();
     });
 

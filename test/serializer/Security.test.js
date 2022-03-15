@@ -18,7 +18,7 @@ describe('AmfSerializer', () => {
     /** @type AmfSerializer */
     let serializer;
     before(async () => {
-      api = await loader.getGraph(true, 'oas-3-api');
+      api = await loader.getGraph('oas-3-api');
       serializer = new AmfSerializer(api);
     });
 
@@ -277,7 +277,7 @@ describe('AmfSerializer', () => {
     /** @type AmfSerializer */
     let serializer;
     before(async () => {
-      api = await loader.getGraph(true, 'secured-api');
+      api = await loader.getGraph('secured-api');
       serializer = new AmfSerializer();
       serializer.amf = api;
     });

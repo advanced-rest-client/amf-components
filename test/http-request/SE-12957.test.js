@@ -30,51 +30,47 @@ describe('ApiRequestEditorElement', () => {
       return element;
     }
 
-    [true, false].forEach((compact) => {
-      describe(compact ? 'Compact model' : 'Full model', () => {
-        /** @type AmfLoader */
-        let loader;
-        /** @type AmfDocument */
-        let amf;
+    /** @type AmfLoader */
+    let loader;
+    /** @type AmfDocument */
+    let amf;
 
-        before(async () => {
-          loader = new AmfLoader();
-          amf = await loader.getGraph(compact, apiFile);
-          store.amf = amf;
-        });
+    before(async () => {
+      loader = new AmfLoader();
+      amf = await loader.getGraph(apiFile);
+      store.amf = amf;
+    });
 
-        it('renders the input for the URI parameter', async () => {
-          const method = loader.lookupOperation(amf, '/api/v1/alarm/{scada-object-key}', 'get');
-          const methodId = method['@id'];
-          const editor = await modelFixture(methodId);
-          const input = editor.shadowRoot.querySelector('[name="scada-object-key"]');
-          assert.ok(input);
-        });
+    it('renders the input for the URI parameter', async () => {
+      const method = loader.lookupOperation(amf, '/api/v1/alarm/{scada-object-key}', 'get');
+      const methodId = method['@id'];
+      const editor = await modelFixture(methodId);
+      const input = editor.shadowRoot.querySelector('[name="scada-object-key"]');
+      assert.ok(input);
+    });
 
-        // 
-        // accidentally I discovered that the `dateTime` input is not rendering correctly
-        // after updating the cached values.
-        // 
+    // 
+    // accidentally I discovered that the `dateTime` input is not rendering correctly
+    // after updating the cached values.
+    // 
 
-        it('renders the dateTime query parameter', async () => {
-          const method = loader.lookupOperation(amf, '/api/v1/alarm/{scada-object-key}', 'get');
-          const methodId = method['@id'];
-          const editor = await modelFixture(methodId);
-          const input = editor.shadowRoot.querySelector('[name="time-on"]');
-          assert.ok(input);
-        });
+    it('renders the dateTime query parameter', async () => {
+      const method = loader.lookupOperation(amf, '/api/v1/alarm/{scada-object-key}', 'get');
+      const methodId = method['@id'];
+      const editor = await modelFixture(methodId);
+      const input = editor.shadowRoot.querySelector('[name="time-on"]');
+      assert.ok(input);
+    });
 
-        it('sets the proper value on the dateTime parameter', async () => {
-          const method = loader.lookupOperation(amf, '/api/v1/alarm/{scada-object-key}', 'get');
-          const methodId = method['@id'];
-          const editor = await modelFixture(methodId);
-          const input = /** @type HTMLInputElement */ (editor.shadowRoot.querySelector('[name="time-on"]'));
-          // this is valid value but the <input> filed ignores this format.
-          InputCache.set(editor, input.dataset.domainId, '2021-09-27T14:55:33.688Z', false);
-          await editor.requestUpdate();
-          assert.equal(input.value, '2021-09-27T14:55:33.688');
-        });
-      });
+    it('sets the proper value on the dateTime parameter', async () => {
+      const method = loader.lookupOperation(amf, '/api/v1/alarm/{scada-object-key}', 'get');
+      const methodId = method['@id'];
+      const editor = await modelFixture(methodId);
+      const input = /** @type HTMLInputElement */ (editor.shadowRoot.querySelector('[name="time-on"]'));
+      // this is valid value but the <input> filed ignores this format.
+      InputCache.set(editor, input.dataset.domainId, '2021-09-27T14:55:33.688Z', false);
+      await editor.requestUpdate();
+      assert.equal(input.value, '2021-09-27T14:55:33.688');
     });
   });
 });

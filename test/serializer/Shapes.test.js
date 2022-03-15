@@ -21,7 +21,7 @@ describe('AmfSerializer', () => {
     /** @type AmfSerializer */
     let serializer;
     before(async () => {
-      api = await loader.getGraph(true, 'amf-helper-api');
+      api = await loader.getGraph('amf-helper-api');
       serializer = new AmfSerializer();
       serializer.amf = api;
     });
@@ -192,7 +192,10 @@ describe('AmfSerializer', () => {
       assert.lengthOf(result.examples, 0, 'has no examples');
     });
 
-    it('resolves links', () => {
+    // 
+    // AMF resolvers links in the Editing pipeline. this probably can be removed.
+    // 
+    it.skip('resolves links', () => {
       // takes any operation that has a link-target in the shape
       const expects = loader.lookupExpects(api, '/files/{fileId}/comments', 'post');
       const payload = expects[loader._getAmfKey(loader.ns.aml.vocabularies.apiContract.payload)][0];
@@ -211,7 +214,7 @@ describe('AmfSerializer', () => {
     /** @type AmfSerializer */
     let serializer;
     before(async () => {
-      api = await loader.getGraph(true, 'petstore');
+      api = await loader.getGraph('petstore');
       serializer = new AmfSerializer();
       serializer.amf = api;
     });

@@ -99,7 +99,7 @@ class ComponentDemo extends AmfDemoBase {
       ['21143', '21143'],
       ['annotated-parameters', 'annotated-parameters'],
     ].map(([file, label]) => html`
-      <anypoint-item data-src="models/${file}-compact.json">${label}</anypoint-item>
+      <anypoint-item data-src="models/${file}.json">${label}</anypoint-item>
       `);
   }
 

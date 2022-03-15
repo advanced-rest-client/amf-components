@@ -27,7 +27,7 @@ describe('Api Key authorization', () => {
   let model;
   before(async () => {
     store = new AmfLoader();
-    model = await store.getGraph(false, 'api-keys');
+    model = await store.getGraph('api-keys');
   });
 
   describe('initialization', () => {

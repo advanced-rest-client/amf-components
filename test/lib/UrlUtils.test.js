@@ -23,9 +23,9 @@ describe('Libraries', () => {
     let oas3Model;
     before(async () => {
       store = new AmfLoader();
-      demoApiModel = await store.getGraph(true, 'demo-api');
-      petstoreModel = await store.getGraph(true, 'petstore');
-      oas3Model = await store.getGraph(true, 'oas-3-api');
+      demoApiModel = await store.getGraph('demo-api');
+      petstoreModel = await store.getGraph('petstore');
+      oas3Model = await store.getGraph('oas-3-api');
     });
 
     describe('computeApiBaseUri', () => {

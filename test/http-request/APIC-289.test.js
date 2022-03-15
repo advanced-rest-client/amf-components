@@ -23,45 +23,41 @@ describe('ApiRequestEditorElement', () => {
     }
 
     const apiFile = 'APIC-289';
-    [true, false].forEach((compact) => {
-      describe(compact ? 'Compact model' : 'Full model', () => {
-        /** @type AmfLoader */
-        let loader;
-        /** @type AmfDocument */
-        let amf;
-        before(async () => {
-          loader = new AmfLoader();
-          amf = await loader.getGraph(compact, apiFile);
-          store.amf = amf;
-        });
+    /** @type AmfLoader */
+    let loader;
+    /** @type AmfDocument */
+    let amf;
+    before(async () => {
+      loader = new AmfLoader();
+      amf = await loader.getGraph(apiFile);
+      store.amf = amf;
+    });
 
-        it('generates query parameters model', async () => {
-          const method = loader.lookupOperation(amf, '/organization', 'get');
-          const element = await modelFixture(method['@id']);
-          await aTimeout(0);
-          await aTimeout(0);
-          const model = element.parametersValue;
-          assert.lengthOf(model, 1);
-        });
+    it('generates query parameters model', async () => {
+      const method = loader.lookupOperation(amf, '/organization', 'get');
+      const element = await modelFixture(method['@id']);
+      await aTimeout(0);
+      await aTimeout(0);
+      const model = element.parametersValue;
+      assert.lengthOf(model, 1);
+    });
 
-        it('has OAS name on a parameter', async () => {
-          const method = loader.lookupOperation(amf, '/organization', 'get');
-          const element = await modelFixture(method['@id']);
-          await aTimeout(0);
-          await aTimeout(0);
-          const model = element.parametersValue.find(p => p.parameter.name === 'foo_bar');
-          assert.equal(model.parameter.paramName, 'foo');
-        });
+    it('has OAS name on a parameter', async () => {
+      const method = loader.lookupOperation(amf, '/organization', 'get');
+      const element = await modelFixture(method['@id']);
+      await aTimeout(0);
+      await aTimeout(0);
+      const model = element.parametersValue.find(p => p.parameter.name === 'foo_bar');
+      assert.equal(model.parameter.paramName, 'foo');
+    });
 
-        it('render parameter name with the input', async () => {
-          const method = loader.lookupOperation(amf, '/organization', 'get');
-          const element = await modelFixture(method['@id']);
-          await aTimeout(0);
-          await aTimeout(0);
-          const node = element.shadowRoot.querySelector('.form-input label');
-          assert.equal(node.textContent.trim(), 'foo*');
-        });
-      });
+    it('render parameter name with the input', async () => {
+      const method = loader.lookupOperation(amf, '/organization', 'get');
+      const element = await modelFixture(method['@id']);
+      await aTimeout(0);
+      await aTimeout(0);
+      const node = element.shadowRoot.querySelector('.form-input label');
+      assert.equal(node.textContent.trim(), 'foo*');
     });
   });
 });
