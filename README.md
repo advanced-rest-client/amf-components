@@ -53,6 +53,7 @@ npm install --save @api-components/amf-components
       import { DomEventsAmfStore } from '@api-components/amf-components';
       (async () => {
         const apiStore = new DomEventsAmfStore();
+        apiStore.listen();
         apiStore.amf = await getAmfModelSomehow();
       })();
     </script>

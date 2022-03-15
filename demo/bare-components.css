@@ -1,0 +1,11 @@
+body {
+  display: flex;
+  flex-direction: row;
+}
+nav {
+  width: 360px;
+}
+
+aside {
+  width: 480px;
+}

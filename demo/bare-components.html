@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+  <title>Bare components demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./demo.css" />
+  <link rel="stylesheet" href="./styles/api-console.css" />
+  <link rel="stylesheet" href="./bare-components.css" />
+</head>
+
+<body class="demo styled">
+  <!-- A helper library that works with <api-request> to perform an HTTP request in the browser. -->
+  <xhr-simple-request></xhr-simple-request>
+  <nav>
+    <!-- The navigation element. Starts with the "summary" page selection. -->
+    <api-navigation summary domainId="summary" domainType="summary"></api-navigation>
+  </nav>
+  <main>
+    <!-- The main documentation element. Starts with the "summary" page selection. -->
+    <api-documentation handleNavigationEvents domainId="summary" domainType="summary"></api-documentation>
+  </main>
+  <aside>
+    <!-- The HTTP request editor. Renders forms for user input to make an HTTP request -->
+    <api-request handleNavigationEvents></api-request>
+  </aside>
+  <script type="module" src="bare-components.js"></script>
+</body>
+
+</html>
