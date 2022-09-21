@@ -2,42 +2,46 @@
 /* eslint-disable no-continue */
 /* eslint-disable no-plusplus */
 /* eslint-disable class-methods-use-this */
-/** @typedef {import('../../types').ApiEndPointListItem} ApiEndPointListItem */
-/** @typedef {import('../../types').ApiEndpointsTreeItem} ApiEndpointsTreeItem */
-/** @typedef {import('./EndpointsTree').CommonRootInfo} CommonRootInfo */
+
+import { ApiEndpointsTreeItem, ApiEndPointListItem } from "../../types.js";
+
+export interface CommonRootInfo {
+  index: number;
+  item: ApiEndpointsTreeItem;
+  common: string;
+}
 
 /**
  * A class that transforms the list of endpoints and methods into
  * a tree structure with indentation
  */
 export class EndpointsTree {
+  result: ApiEndpointsTreeItem[];
+
+  indents: Record<string, number>;
+
   constructor() {
-    /** 
-     * @type ApiEndpointsTreeItem[] 
-     */
     this.result = [];
-    /** @type Record<string, number> */
     this.indents = {};
   }
 
   /**
-   * @param {ApiEndPointListItem[]} list Sorted list of endpoints.
-   * @returns {ApiEndpointsTreeItem[]}
+   * @param list Sorted list of endpoints.
    */
-  create(list) {
+  create(list: ApiEndPointListItem[]): ApiEndpointsTreeItem[] {
     if (!Array.isArray(list) || !list.length) {
       return [];
     }
     const { result, indents } = this;
-    let prev = /** @type ApiEndpointsTreeItem */ (null);
+    let prev: ApiEndpointsTreeItem | undefined;
     for (let i = 0, len = list.length; i < len; i++) {
-      const item = /** @type ApiEndpointsTreeItem */ ({ ...list[i], indent: 0, label: '' });
+      const item = ({ ...list[i], indent: 0, label: '' }) as ApiEndpointsTreeItem;
       const { path } = item;
       const parts = path.split('/');
       const hasParts = parts.length > 1 && !(parts.length === 2 && !parts[0]);
       if (i === 0) {
         if (hasParts) {
-          const parent = {
+          const parent: ApiEndpointsTreeItem = {
             indent: 0,
             path: parts.slice(0, parts.length - 1).join('/'),
             label: undefined,
@@ -55,8 +59,11 @@ export class EndpointsTree {
           continue;
         }
       }
+      if (!prev) {
+        continue;
+      }
       // this is similar to the next block but is faster when the previous item is parent.
-      if (path.startsWith(prev.path)) {
+      if (path.startsWith(prev.path || '')) {
         item.indent = prev.indent + 1;
         prev.hasChildren = true;
         indents[item.path] = item.indent;
@@ -67,7 +74,7 @@ export class EndpointsTree {
       const upPath = this.findParentEndpoint(parts);
       if (upPath) {
         item.indent = indents[upPath] + 1;
-        const parent = result.find((p) => p.path === upPath);
+        const parent = result.find((p) => p.path === upPath) as ApiEndpointsTreeItem;
         parent.hasChildren = true;
         indents[item.path] = item.indent;
         result.push(this.prepareLabel(item, upPath));
@@ -76,7 +83,7 @@ export class EndpointsTree {
           const info = this.findCommonRootInfo(parts);
           if (info) {
             // this is an abstract item, it's not actually an endpoint
-            const parent = {
+            const parent: ApiEndpointsTreeItem = {
               indent: info.item.indent,
               path: info.common,
               label: info.common,
@@ -102,9 +109,9 @@ export class EndpointsTree {
   }
 
   /**
-   * @param {string[]} parts Path parts of the currently evaluated endpoint
+   * @param parts Path parts of the currently evaluated endpoint
    */
-  findParentEndpoint(parts) {
+  findParentEndpoint(parts: string[]): string | undefined {
     const { indents } = this;
     const list = Array.from(parts);
     const compare = Object.keys(indents).reverse();
@@ -128,9 +135,8 @@ export class EndpointsTree {
 
   /**
    * @param {string[]} parts Path parts of the currently evaluated endpoint
-   * @returns {CommonRootInfo|undefined}
    */
-  findCommonRootInfo(parts) {
+  findCommonRootInfo(parts: string[]): CommonRootInfo|undefined {
     const { result } = this;
     const list = Array.from(parts);
     // eslint-disable-next-line no-constant-condition
@@ -155,12 +161,7 @@ export class EndpointsTree {
     return undefined;
   }
 
-  /**
-   * @param {ApiEndpointsTreeItem} item 
-   * @param {string=} prevPath 
-   * @returns {ApiEndpointsTreeItem}
-   */
-  prepareLabel(item, prevPath) {
+  prepareLabel(item: ApiEndpointsTreeItem, prevPath?: string): ApiEndpointsTreeItem {
     const { name, path, indent } = item;
     item.label = path;
     if (name) {
@@ -168,7 +169,7 @@ export class EndpointsTree {
     } else if (indent > 0 && prevPath) {
       let label = item.label.replace(prevPath, '');
       if (label.startsWith('-')) {
-        label = label.substr(1);
+        label = label.substring(1);
       }
       item.label = label
       item.hasShortPath = true;
@@ -181,15 +182,14 @@ export class EndpointsTree {
 
   /**
    * Updates paths and indentation of children after inserting a new (abstract) parent.
-   * @param {ApiEndpointsTreeItem} parent 
    */
-  postInsertParent(parent) {
+  postInsertParent(parent: ApiEndpointsTreeItem): void {
     const { result } = this;
     result.forEach((item) => {
       const { path } = item;
       if (path.startsWith(parent.path)) {
         item.indent += 1;
-        item.label = item.label.replace(parent.path, '');
+        item.label = (item.label || '').replace(parent.path, '');
       }
     });
   }

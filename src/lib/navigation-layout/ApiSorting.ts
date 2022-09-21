@@ -1,12 +1,10 @@
-/** @typedef {import('../../types').ApiEndPointListItem} ApiEndPointListItem */
+import { ApiEndPointListItem } from "../../types.js";
 
 export class ApiSorting {
   /**
    * Sorts endpoints by path.
-   * @param {ApiEndPointListItem[]} list 
-   * @returns {ApiEndPointListItem[]}
    */
-  static sortEndpointsByPath(list) {
+  static sortEndpointsByPath(list: ApiEndPointListItem[]): ApiEndPointListItem[] {
     list.sort((a,b) => {
       if (a.path < b.path){
         return -1;

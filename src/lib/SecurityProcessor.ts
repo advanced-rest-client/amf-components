@@ -1,30 +1,21 @@
 /* eslint-disable no-continue */
 import { ArcHeaders, UrlParser, AuthorizationUtils } from '@advanced-rest-client/base/api.js';
+import { BasicAuthorization, OidcAuthorization, OAuth2Authorization, BearerAuthorization, RamlCustomAuthorization, ApiKeyAuthorization, PassThroughAuthorization } from '@advanced-rest-client/events/src/authorization/Authorization.js';
+import { RequestAuthorization } from '@advanced-rest-client/events/src/request/ArcRequest.js';
 import {
   METHOD_CUSTOM,
   METHOD_PASS_THROUGH,
   METHOD_API_KEY,
 } from '../elements/ApiAuthorizationMethodElement.js';
-
-/** @typedef {import('../helpers/api').ApiSecurityRequirement} ApiSecurityRequirement */
-/** @typedef {import('@advanced-rest-client/events').ArcRequest.RequestAuthorization} RequestAuthorization */
-/** @typedef {import('@advanced-rest-client/events').Authorization.BasicAuthorization} BasicAuthorization */
-/** @typedef {import('@advanced-rest-client/events').Authorization.OAuth2Authorization} OAuth2Authorization */
-/** @typedef {import('@advanced-rest-client/events').Authorization.OAuth1Authorization} OAuth1Authorization */
-/** @typedef {import('@advanced-rest-client/events').Authorization.BearerAuthorization} BearerAuthorization */
-/** @typedef {import('@advanced-rest-client/events').Authorization.OidcAuthorization} OidcAuthorization */
-/** @typedef {import('@advanced-rest-client/events').Authorization.RamlCustomAuthorization} RamlCustomAuthorization */
-/** @typedef {import('@advanced-rest-client/events').Authorization.ApiKeyAuthorization} ApiKeyAuthorization */
-/** @typedef {import('@advanced-rest-client/events').Authorization.PassThroughAuthorization} PassThroughAuthorization */
-/** @typedef {import('../types').SecuritySelectorListItem} SecuritySelectorListItem */
-/** @typedef {import('../types').ApiConsoleRequest} ApiConsoleRequest */
+import { ApiSecurityRequirement } from '../helpers/api.js';
+import { ApiConsoleRequest, SecuritySelectorListItem } from '../types.js';
 
 /**
  * Applies a map of query parameters to the request object.
- * @param {ApiConsoleRequest} request The request object
- * @param {Record<string, string>} params A map of query parameters to apply to the request
+ * @param request The request object
+ * @param params A map of query parameters to apply to the request
  */
-function applyQueryParams(request, params) {
+function applyQueryParams(request: ApiConsoleRequest, params?: Record<string, string>): void {
   if (typeof params !== 'object') {
     return;
   }
@@ -33,7 +24,7 @@ function applyQueryParams(request, params) {
     return;
   }
   const parser = new UrlParser(request.url);
-  const sParams = parser.searchParams;
+  const sParams = parser.searchParams as string[][];
   keys.forEach((name) => {
     const value = params[name];
     const index = sParams.findIndex((item) => item[0] === name);
@@ -48,10 +39,10 @@ function applyQueryParams(request, params) {
 
 /**
  * Applies a map of headers to the request object.
- * @param {ApiConsoleRequest} request The request object
- * @param {Record<string, string>} headers A map of headers to apply to the request
+ * @param request The request object
+ * @param headers A map of headers to apply to the request
  */
-function applyHeaders(request, headers) {
+function applyHeaders(request: ApiConsoleRequest, headers?: Record<string, string>): void {
   if (typeof headers !== 'object') {
     return;
   }
@@ -68,12 +59,8 @@ function applyHeaders(request, headers) {
 }
 
 export class SecurityProcessor {
-  /**
-   * @param {ApiSecurityRequirement[]} security
-   * @returns {SecuritySelectorListItem[]}
-   */
-  static readSecurityList(security) {
-    const result = /** @type SecuritySelectorListItem[] */ ([]);
+  static readSecurityList(security: ApiSecurityRequirement[]): SecuritySelectorListItem[] {
+    const result: SecuritySelectorListItem[] = []
     if (!Array.isArray(security) || !security.length) {
       return result;
     }
@@ -87,17 +74,13 @@ export class SecurityProcessor {
     return result;
   }
 
-  /**
-   * @param {ApiSecurityRequirement} item
-   * @returns {SecuritySelectorListItem}
-   */
-  static readSecurityListItem(item) {
+  static readSecurityListItem(item: ApiSecurityRequirement): SecuritySelectorListItem {
     const { schemes } = item;
-    const result = /** @type SecuritySelectorListItem */ ({
+    const result: SecuritySelectorListItem = {
       types: [],
       labels: [],
       security: item,
-    });
+    };
     schemes.forEach((scheme) => {
       const { name, scheme: settings } = scheme;
       if (name === 'null') {
@@ -117,10 +100,8 @@ export class SecurityProcessor {
 
   /**
    * Applies authorization configuration to the API Console request object.
-   * @param {ApiConsoleRequest} request
-   * @param {RequestAuthorization[]} authorization
    */
-  static applyAuthorization(request, authorization) {
+  static applyAuthorization(request: ApiConsoleRequest, authorization: RequestAuthorization[]): void {
     if (!Array.isArray(authorization) || !authorization.length) {
       return;
     }
@@ -131,35 +112,35 @@ export class SecurityProcessor {
       }
       switch (AuthorizationUtils.normalizeType(auth.type)) {
         case AuthorizationUtils.METHOD_BASIC: 
-          SecurityProcessor.applyBasicAuth(request, /** @type BasicAuthorization */ (auth.config));
+          SecurityProcessor.applyBasicAuth(request, (auth.config as BasicAuthorization));
           auth.enabled = false; 
           break;
         case AuthorizationUtils.METHOD_OAUTH2: 
-          SecurityProcessor.applyOAuth2(request, /** @type OAuth2Authorization */ (auth.config)); 
+          SecurityProcessor.applyOAuth2(request, (auth.config as OAuth2Authorization)); 
           auth.enabled = false;
           break;
         case AuthorizationUtils.METHOD_OIDC: 
-          SecurityProcessor.applyOpenId(request, /** @type OidcAuthorization */ (auth.config)); 
+          SecurityProcessor.applyOpenId(request, (auth.config as OidcAuthorization)); 
           auth.enabled = false;
           break;
         case AuthorizationUtils.METHOD_BEARER: 
-          SecurityProcessor.applyBearer(request, /** @type BearerAuthorization */ (auth.config)); 
+          SecurityProcessor.applyBearer(request, (auth.config as BearerAuthorization)); 
           auth.enabled = false;
           break;
         case METHOD_CUSTOM: 
-          SecurityProcessor.applyCustomAuth(request, /** @type RamlCustomAuthorization */ (auth.config)); 
+          SecurityProcessor.applyCustomAuth(request, (auth.config as RamlCustomAuthorization)); 
           auth.enabled = false;
           break;
         case METHOD_API_KEY: 
-          SecurityProcessor.applyApiKeys(request, /** @type ApiKeyAuthorization */ (auth.config)); 
+          SecurityProcessor.applyApiKeys(request, (auth.config as ApiKeyAuthorization)); 
           auth.enabled = false;
           break;
         case METHOD_PASS_THROUGH: 
-          SecurityProcessor.applyPassThrough(request, /** @type PassThroughAuthorization */ (auth.config)); 
+          SecurityProcessor.applyPassThrough(request, (auth.config as PassThroughAuthorization)); 
           auth.enabled = false;
           break;
         // case METHOD_OAUTH1:
-        //   SecurityProcessor.applyOAuth1(request, /** @type OAuth1Authorization */ (auth.config)); 
+        //   SecurityProcessor.applyOAuth1(request, (auth.config as OAuth1Authorization)); 
         //   auth.enabled = false;
         //   break;
         default:
@@ -169,10 +150,8 @@ export class SecurityProcessor {
 
   /**
    * Injects basic auth header into the request headers.
-   * @param {ApiConsoleRequest} request 
-   * @param {BasicAuthorization} config 
    */
-  static applyBasicAuth(request, config) {
+  static applyBasicAuth(request: ApiConsoleRequest, config: BasicAuthorization): void {
     const { username, password } = config;
     if (!username) {
       return;
@@ -186,10 +165,8 @@ export class SecurityProcessor {
 
   /**
    * Injects oauth 2 auth header into the request headers.
-   * @param {ApiConsoleRequest} request 
-   * @param {OAuth2Authorization} config 
    */
-  static applyOAuth2(request, config) {
+  static applyOAuth2(request: ApiConsoleRequest, config: OAuth2Authorization): void {
     const { accessToken, tokenType='Bearer', deliveryMethod='header', deliveryName='authorization' } = config;
     if (!accessToken) {
       return;
@@ -213,10 +190,8 @@ export class SecurityProcessor {
 
   /**
    * Injects OpenID Connect auth header into the request headers.
-   * @param {ApiConsoleRequest} request 
-   * @param {OidcAuthorization} config 
    */
-  static applyOpenId(request, config) {
+  static applyOpenId(request: ApiConsoleRequest, config: OidcAuthorization): void {
     const { accessToken } = config;
     if (accessToken) {
       SecurityProcessor.applyOAuth2(request, config);
@@ -227,10 +202,8 @@ export class SecurityProcessor {
 
   /**
    * Injects bearer auth header into the request headers.
-   * @param {ApiConsoleRequest} request 
-   * @param {BearerAuthorization} config 
    */
-  static applyBearer(request, config) {
+  static applyBearer(request: ApiConsoleRequest, config: BearerAuthorization): void {
     const { token } = config;
     const value = `Bearer ${token}`;
 
@@ -241,10 +214,8 @@ export class SecurityProcessor {
 
   /**
    * Injects the RAML custom configuration into the request
-   * @param {ApiConsoleRequest} request 
-   * @param {RamlCustomAuthorization} config 
    */
-  static applyCustomAuth(request, config) {
+  static applyCustomAuth(request: ApiConsoleRequest, config: RamlCustomAuthorization): void {
     const { header, query } = config;
     applyQueryParams(request, query);
     applyHeaders(request, header);
@@ -252,10 +223,8 @@ export class SecurityProcessor {
 
   /**
    * Injects the ApiKey configuration into the request
-   * @param {ApiConsoleRequest} request 
-   * @param {ApiKeyAuthorization} config 
    */
-  static applyApiKeys(request, config) {
+  static applyApiKeys(request: ApiConsoleRequest, config: ApiKeyAuthorization): void {
     const { header, query, } = config;
     applyQueryParams(request, query);
     applyHeaders(request, header);
@@ -263,10 +232,8 @@ export class SecurityProcessor {
 
   /**
    * Injects the PassThrough configuration into the request
-   * @param {ApiConsoleRequest} request 
-   * @param {PassThroughAuthorization} config 
    */
-  static applyPassThrough(request, config) {
+  static applyPassThrough(request: ApiConsoleRequest, config: PassThroughAuthorization): void {
     const { header, query, } = config;
     applyQueryParams(request, query);
     applyHeaders(request, header);
@@ -287,7 +254,7 @@ export class SecurityProcessor {
   //  * @param {ApiConsoleRequest} request 
   //  * @param {OAuth1Authorization} config 
   //  */
-  // static applyOAuth1(request, config) {
+  // static applyOAuth1(request: ApiConsoleRequest, config: OAuth1Authorization): void {
     // ...
   // }
 }

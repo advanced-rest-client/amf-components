@@ -1,13 +1,41 @@
+import { esbuildPlugin } from '@web/dev-server-esbuild';
 import { amfParserApi } from './dev/amf-server/api.mjs';
 
-/** @typedef {import('@web/dev-server').DevServerConfig} DevServerConfig */
+/** Use Hot Module replacement by adding --hmr to the start command */
+const hmr = process.argv.includes('--hmr');
 
-export default /** @type DevServerConfig */ ({
-  open: true,
-  nodeResolve: true,
-  appIndex: 'demo/index.html',
-  rootDir: '.',
-  watch: true,
+export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
+  open: '/demo/',
+  /** Use regular watch mode if HMR is not enabled. */
+  watch: !hmr,
+  /** Resolve bare module imports */
+  nodeResolve: {
+    exportConditions: ['browser', 'development'],
+  },
+
+  // mimeTypes: {
+  //   // serve all json files as js
+  //   // '**/*.json': 'js',
+  //   // serve .module.css files as js
+  //   '**/monaco-editor/esm/vs/editor/standalone/**/.css': 'js',
+  // },
+
+  /** Compile JS for older browsers. Requires @web/dev-server-esbuild plugin */
+  // esbuildTarget: 'auto'
+
+  /** Set appIndex to enable SPA routing */
+  // appIndex: 'demo/index.html',
+
+  plugins: [
+    esbuildPlugin({ ts: true, target: 'es2020' }),
+    /** Use Hot Module Replacement by uncommenting. Requires @open-wc/dev-server-hmr plugin */
+    // hmr && hmrPlugin({ exclude: ['**/*/node_modules/**/*'], presets: [presets.litElement] }),
+  ],
+
+  // preserveSymlinks: true,
+
+  // See documentation for all available options
+
   middleware: [
     amfParserApi,
   ],

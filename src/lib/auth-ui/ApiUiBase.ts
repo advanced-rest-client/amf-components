@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
 import AuthUiBase from "@advanced-rest-client/base/src/elements/authorization/ui/AuthUiBase.js";
 import '@anypoint-web-components/awc/anypoint-dropdown-menu.js';
@@ -10,26 +10,18 @@ import '@anypoint-web-components/awc/anypoint-button.js';
 import '@anypoint-web-components/awc/anypoint-icon-button.js';
 import '@advanced-rest-client/icons/arc-icon.js';
 import { AmfParameterMixin } from '../AmfParameterMixin.js';
-
-/** @typedef {import('@advanced-rest-client/base').AuthUiInit} AuthUiInit */
-/** @typedef {import('../../helpers/amf').DomainElement} DomainElement */
-/** @typedef {import('../../helpers/api').ApiParametrizedSecurityScheme} ApiParametrizedSecurityScheme */
+import { ApiParametrizedSecurityScheme } from "../../helpers/api.js";
 
 const securityValue = Symbol("securityValue");
-const apiValue = Symbol("apiValue");
 
 export default class ApiUiBase extends AmfParameterMixin(AuthUiBase) {
-  /**
-   * @returns {ApiParametrizedSecurityScheme}
-   */
-  get security() {
+  [securityValue]?: ApiParametrizedSecurityScheme;
+  
+  get security(): ApiParametrizedSecurityScheme | undefined {
     return this[securityValue];
   }
 
-  /**
-   * @param {ApiParametrizedSecurityScheme} value
-   */
-  set security(value) {
+  set security(value: ApiParametrizedSecurityScheme | undefined) {
     const old = this[securityValue];
     if (old === value) {
       return;
@@ -43,7 +35,7 @@ export default class ApiUiBase extends AmfParameterMixin(AuthUiBase) {
    * Called when the `security` value change. Should be used
    * to initialize the UI after setting AMF models.
    */
-  initializeApiModel() {
+  initializeApiModel(): void {
     // ...
   }
 
@@ -53,10 +45,10 @@ export default class ApiUiBase extends AmfParameterMixin(AuthUiBase) {
    * This does nothing if the query parameter has not been defined for the current
    * scheme.
    *
-   * @param {string} name The name of the changed parameter
-   * @param {string} newValue A value to apply. May be empty but must be defined.
+   * @param name The name of the changed parameter
+   * @param newValue A value to apply. May be empty but must be defined.
    */
-  updateQueryParameter(name, newValue) {
+  updateQueryParameter(name: string, newValue: string): void {
     // ...
   }
 
@@ -68,10 +60,10 @@ export default class ApiUiBase extends AmfParameterMixin(AuthUiBase) {
    * This does nothing if the header has not been defined for current
    * scheme.
    *
-   * @param {string} name The name of the changed header
-   * @param {string} newValue A value to apply. May be empty but must be defined.
+   * @param name The name of the changed header
+   * @param newValue A value to apply. May be empty but must be defined.
    */
-  updateHeader(name, newValue) {
+  updateHeader(name: string, newValue: string): void {
     // ...
   }
 
@@ -82,18 +74,18 @@ export default class ApiUiBase extends AmfParameterMixin(AuthUiBase) {
    * This does nothing if the cookie has not been defined for current
    * scheme.
    *
-   * @param {string} name The name of the changed cookie
-   * @param {string} newValue A value to apply. May be empty but must be defined.
+   * @param name The name of the changed cookie
+   * @param newValue A value to apply. May be empty but must be defined.
    */
-  updateCookie(name, newValue) {
+  updateCookie(name: string, newValue: string): void {
     // ...
   }
 
   /**
    * To be implemented by the child classes.
-   * @returns {boolean} True when the UI is in valid state.
+   * @returns True when the UI is in valid state.
    */
-  validate() {
+  validate(): boolean {
     return true;
   }
 }

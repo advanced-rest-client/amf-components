@@ -1,13 +1,5 @@
 /* eslint-disable class-methods-use-this */
-/** @typedef {import('../helpers/api').ApiDataNodeUnion} ApiDataNodeUnion */
-/** @typedef {import('../helpers/api').ApiScalarNode} ApiScalarNode */
-/** @typedef {import('../helpers/api').ApiObjectNode} ApiObjectNode */
-/** @typedef {import('../helpers/api').ApiParameter} ApiParameter */
-/** @typedef {import('../helpers/api').ApiShapeUnion} ApiShapeUnion */
-/** @typedef {import('../helpers/api').ApiArrayShape} ApiArrayShape */
-/** @typedef {import('../helpers/api').ApiScalarShape} ApiScalarShape */
-/** @typedef {import('../helpers/api').ApiShape} ApiShape */
-
+import { ApiArrayShape, ApiDataNodeUnion, ApiObjectNode, ApiParameter, ApiScalarNode, ApiScalarShape, ApiShape, ApiShapeUnion } from '../helpers/api.js';
 import { ns } from '../helpers/Namespace.js';
 
 /**
@@ -16,19 +8,15 @@ import { ns } from '../helpers/Namespace.js';
  * https://github.com/raml-org/raml-annotations/tree/master/annotations/security-schemes
  */
 export class Oauth2RamlCustomData {
-  /**
-   * @param {{[key: string]: ApiDataNodeUnion}} properties
-   * @returns {ApiParameter[]}
-   */
-  readParams(properties) {
-    const result = [];
+  readParams(properties: {[key: string]: ApiDataNodeUnion}): ApiParameter[] {
+    const result: ApiParameter[] = [];
     Object.keys(properties).forEach((key) => {
       const definition = properties[key];
       if (definition.types.includes(ns.aml.vocabularies.data.Object)) {
-        const property = this.getProperty(/** @type ApiObjectNode */ (definition));
+        const property = this.getProperty((definition as ApiObjectNode));
         result.push(property);
       } else if (definition.types.includes(ns.aml.vocabularies.data.Scalar)) {
-        const property = this.getPropertyScalar(/** @type ApiScalarNode */ (definition));
+        const property = this.getPropertyScalar((definition as ApiScalarNode));
         result.push(property);
       }
     });
@@ -38,25 +26,23 @@ export class Oauth2RamlCustomData {
   /**
    * Creates an ApiParameter for an annotation that has properties.
    * This expects the properties to be defined like RAML's type definition.
-   * 
-   * @param {ApiObjectNode} definition
-   * @returns {ApiParameter}
    */
-  getProperty(definition) {
+  getProperty(definition: ApiObjectNode): ApiParameter {
     const { properties={}, id, name } = definition;
-    const result = /** @type ApiParameter */ ({
+    const result: ApiParameter = {
       id,
       name,
       examples: [],
       payloads: [],
       types: [ns.aml.vocabularies.apiContract.Parameter],
-    });
+      customDomainProperties: [],
+    };
     const schema = this.readSchema(definition);
     if (schema) {
       result.schema = schema;
     }
     if (properties.required) {
-      const req = /** @type ApiScalarNode */ (properties.required);
+      const req = properties.required as ApiScalarNode;
       result.required = req.value === 'true';
     }
     return result;
@@ -65,20 +51,18 @@ export class Oauth2RamlCustomData {
   /**
    * Creates an ApiParameter for an annotation that has no properties but rather a simplified
    * notation of `propertyName: dataType`.
-   * 
-   * @param {ApiScalarNode} definition
-   * @returns {ApiParameter}
    */
-  getPropertyScalar(definition) {
-    const { dataType, id, name } = definition;
-    const result = /** @type ApiParameter */ ({
+  getPropertyScalar(definition: ApiScalarNode): ApiParameter {
+    const { dataType = '', id, name } = definition;
+    const result: ApiParameter = {
       id,
       name,
       examples: [],
       payloads: [],
       types: [ns.aml.vocabularies.apiContract.Parameter],
-    });
-    const schema = /** @type ApiScalarShape */ (this.createSchema());
+      customDomainProperties: [],
+    };
+    const schema = this.createSchema() as ApiScalarShape;
     schema.types = [ns.aml.vocabularies.shapes.ScalarShape];
     schema.id = id;
     schema.name = name;
@@ -87,19 +71,14 @@ export class Oauth2RamlCustomData {
     return result;
   }
 
-  /**
-   * @param {ApiObjectNode} property
-   * @returns {ApiShapeUnion}
-   */
-  readSchema(property) {
+  readSchema(property: ApiObjectNode): ApiShapeUnion | undefined {
     const { properties={}, name, id } = property;
     // const { example, examples, } = properties;
-    const isArray = this.readIsSchemaArray(/** @type ApiScalarNode */ (properties.type), /** @type ApiScalarNode */ (properties.items));
-    const type = this.readSchemaType(/** @type ApiScalarNode */ (properties.type), /** @type ApiScalarNode */ (properties.items));
-    /** @type ApiShapeUnion */
-    let schema;
+    const isArray = this.readIsSchemaArray((properties.type as ApiScalarNode), (properties.items as ApiScalarNode));
+    const type = this.readSchemaType((properties.type as ApiScalarNode), (properties.items as ApiScalarNode));
+    let schema: ApiShapeUnion | undefined;
     if (isArray) {
-      const s = /** @type ApiArrayShape */ (this.createSchema());
+      const s = this.createSchema() as ApiArrayShape;
       s.types = [ns.aml.vocabularies.shapes.ArrayShape];
       s.id = id;
       s.name = name;
@@ -111,12 +90,7 @@ export class Oauth2RamlCustomData {
     return schema;
   }
 
-  /**
-   * @param {string} type
-   * @param {ApiObjectNode} object
-   * @returns {ApiShapeUnion} 
-   */
-  createTypedSchema(type, object) {
+  createTypedSchema(type: string, object: ApiObjectNode): ApiShapeUnion | undefined {
     switch (type) {
       case 'string':
       case 'number':
@@ -134,87 +108,78 @@ export class Oauth2RamlCustomData {
     }
   }
 
-  /**
-   * @returns {ApiShape} 
-   */
-  createSchema() {
-    return /** @type ApiShape */ ({
+  createSchema(): ApiShape {
+    return {
       id: '',
       types: [],
       and: [],
-      examples: [],
       name: '',
       inherits: [],
       or: [],
       values: [],
       xone: [],
       customDomainProperties: [],
-    });
+    };
   }
 
-  /**
-   * @param {ApiObjectNode} object
-   * @param {string} type
-   * @returns {ApiScalarShape}
-   */
-  createScalarSchema(object, type) {
+  createScalarSchema(object: ApiObjectNode, type: string): ApiScalarShape {
     const { properties={}, name, id } = object;
-    const schema = /** @type ApiScalarShape */ (this.createSchema());
+    const schema = this.createSchema() as ApiScalarShape;
     schema.types = [ns.aml.vocabularies.shapes.ScalarShape];
     schema.id = id;
     schema.name = name;
     schema.dataType = this.typeToSchemaType(type);
     if (properties.format) {
-      const item = /** @type ApiScalarNode */ (properties.format);
+      const item = properties.format as ApiScalarNode;
       schema.format = item.value;
     }
     if (properties.default) {
-      const item = /** @type ApiScalarNode */ (properties.default);
+      const item = properties.default as ApiScalarNode;
       schema.defaultValueStr = item.value;
       // schema.defaultValue = item.value;
     }
     if (properties.description) {
-      const item = /** @type ApiScalarNode */ (properties.description);
+      const item = (properties.description as ApiScalarNode);
       schema.description = item.value;
     }
     if (properties.displayName) {
-      const item = /** @type ApiScalarNode */ (properties.displayName);
+      const item = (properties.displayName as ApiScalarNode);
       schema.displayName = item.value;
     }
     if (properties.pattern) {
-      const item = /** @type ApiScalarNode */ (properties.pattern);
+      const item = (properties.pattern as ApiScalarNode);
       schema.pattern = item.value;
     }
     if (properties.maximum) {
-      const item = /** @type ApiScalarNode */ (properties.maximum);
+      const item = (properties.maximum as ApiScalarNode);
       const value = Number(item.value);
       if (!Number.isNaN(value)) {
         schema.maximum = value;
       }
     }
     if (properties.minimum) {
-      const item = /** @type ApiScalarNode */ (properties.minimum);
+      const item = (properties.minimum as ApiScalarNode);
       const value = Number(item.value);
       if (!Number.isNaN(value)) {
         schema.minimum = value;
       }
     }
     if (properties.multipleOf) {
-      const item = /** @type ApiScalarNode */ (properties.multipleOf);
+      const item = (properties.multipleOf as ApiScalarNode);
       const value = Number(item.value);
       if (!Number.isNaN(value)) {
         schema.multipleOf = value;
       }
     }
     if (properties.maxLength) {
-      const item = /** @type ApiScalarNode */ (properties.maxLength);
+      const item = (properties.maxLength as ApiScalarNode);
       const value = Number(item.value);
       if (!Number.isNaN(value)) {
         schema.maxLength = value;
       }
     }
     if (properties.minLength) {
-      const item = /** @type ApiScalarNode */ (properties.minLength);
+      const item = (properties.minLength as ApiScalarNode);
       const value = Number(item.value);
       if (!Number.isNaN(value)) {
         schema.minLength = value;
@@ -224,11 +189,10 @@ export class Oauth2RamlCustomData {
   }
 
   /**
-   * @param {ApiScalarNode} object
-   * @param {ApiScalarNode=} items The definition of the `items` property that corresponds to RAML's items property of an array
-   * @returns {string}
+   * @param object
+   * @param items The definition of the `items` property that corresponds to RAML's items property of an array
    */
-  readSchemaType(object, items) {
+  readSchemaType(object: ApiScalarNode, items?: ApiScalarNode): string {
     if (object.dataType !== ns.w3.xmlSchema.string) {
       return ns.w3.xmlSchema.string;
     }
@@ -243,11 +207,7 @@ export class Oauth2RamlCustomData {
     
   }
 
-  /**
-   * @param {string} type
-   * @returns {string} 
-   */
-  typeToSchemaType(type) {
+  typeToSchemaType(type: string): string {
     switch (type) {
       case 'boolean': return ns.w3.xmlSchema.boolean;
       case 'number': return ns.w3.xmlSchema.number;
@@ -265,11 +225,11 @@ export class Oauth2RamlCustomData {
 
   /**
    * Checks whether the custom property represents an array.
-   * @param {ApiScalarNode} type
-   * @param {ApiScalarNode} items The definition of the `items` property that corresponds to RAML's items property of an array
-   * @returns {boolean} True when the schema is an array.
+   * @param type
+   * @param items The definition of the `items` property that corresponds to RAML's items property of an array
+   * @returns True when the schema is an array.
    */
-  readIsSchemaArray(type, items) {
+  readIsSchemaArray(type: ApiScalarNode, items: ApiScalarNode): boolean {
     if (!type && items) {
       return true;
     }

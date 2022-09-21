@@ -1,6 +1,6 @@
 import { HTTPRequest, RequestAuthorization } from '@advanced-rest-client/events/src/request/ArcRequest';
-import { ApiParameter, ApiShapeUnion, ApiSecurityRequirement, ApiServer, ApiEndPoint, ApiExample, ApiDocumentation } from './helpers/api';
-import { default as XhrSimpleRequestTransportElement } from './elements/XhrSimpleRequestTransportElement';
+import { ApiParameter, ApiShapeUnion, ApiSecurityRequirement, ApiServer, ApiEndPoint, ApiExample, ApiDocumentation } from './helpers/api.js';
+import XhrSimpleRequestTransportElement from './elements/XhrSimpleRequestTransportElement.js';
 
 export declare interface ApiConsoleRequest extends HTTPRequest {
   /**
@@ -99,8 +99,8 @@ export interface OperationParameter {
 }
 
 export interface SecuritySelectorListItem {
-  types: string[];
-  labels: string[];
+  types: (string | undefined)[];
+  labels: (string | undefined)[];
   security: ApiSecurityRequirement;
 }
 
@@ -154,14 +154,14 @@ export interface ComputeBaseUriOptions {
   forceHttpProtocol?: boolean;
 }
 
-export interface OperationParameter {
-  parameter: ApiParameter;
-  schema?: ApiShapeUnion;
-  paramId: string;
-  schemaId?: string;
-  binding: string;
-  source: string;
-}
+// export interface OperationParameter {
+//   parameter: ApiParameter;
+//   schema?: ApiShapeUnion;
+//   paramId: string;
+//   schemaId?: string;
+//   binding: string;
+//   source: string;
+// }
 
 export declare interface SelectionInfo {
   /**
@@ -249,7 +249,7 @@ export interface ApiOperationListItem {
 }
 
 export interface ApiEndpointsTreeItem extends ApiEndPointWithOperationsListItem {
-  label: string;
+  label: string | undefined;
   indent: number;
   hasShortPath?: boolean;
   hasChildren?: boolean;

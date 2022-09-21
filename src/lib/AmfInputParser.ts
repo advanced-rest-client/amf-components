@@ -1,31 +1,21 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-continue */
 /* eslint-disable no-param-reassign */
 /* eslint-disable class-methods-use-this */
 import { ApiSchemaValues } from '../schema/ApiSchemaValues.js';
 import { ns } from '../helpers/Namespace.js';
+import { ApiArrayShape, ApiParameter, ApiScalarShape, ApiShapeUnion, ApiUnionShape } from '../helpers/api.js';
 
-/** @typedef {import('../helpers/api').ApiShapeUnion} ApiShapeUnion */
-/** @typedef {import('../helpers/api').ApiScalarShape} ApiScalarShape */
-/** @typedef {import('../helpers/api').ApiArrayShape} ApiArrayShape */
-/** @typedef {import('../helpers/api').ApiTupleShape} ApiTupleShape */
-/** @typedef {import('../helpers/api').ApiUnionShape} ApiUnionShape */
-/** @typedef {import('../helpers/api').ApiFileShape} ApiFileShape */
-/** @typedef {import('../helpers/api').ApiSchemaShape} ApiSchemaShape */
-/** @typedef {import('../helpers/api').ApiAnyShape} ApiAnyShape */
-/** @typedef {import('../helpers/api').ApiNodeShape} ApiNodeShape */
-/** @typedef {import('../helpers/api').ApiParameter} ApiParameter */
-/** @typedef {import('@anypoint-web-components/awc').SupportedInputTypes} SupportedInputTypes */
+export interface ParametersSerializationReport {
+  valid: boolean;
+  invalid: string[];
+  header: Record<string, any>;
+  query: Record<string, any>;
+  path: Record<string, any>;
+  cookie: Record<string, any>;
+}
 
-
-/**  
- * @typedef ParametersSerializationReport
- * @property {boolean} valid
- * @property {string[]} invalid
- * @property {Record<string, any>} header
- * @property {Record<string, any>} query
- * @property {Record<string, any>} path
- * @property {Record<string, any>} cookie
- */
+export type BindingType = Pick<ParametersSerializationReport, 'header' | 'query' | 'path' | 'cookie'>;
 
 /**
  * A utility class with helper functions to process user input according on AMF schema.
@@ -40,34 +30,33 @@ export class AmfInputParser {
    * 
    * All optional parameters that have no value or have invalid value ar ignored.
    * 
-   * @param {ApiParameter[]} parameters The input parameters for the operation
-   * @param {Map<string, any>} values The collected values for all parameters.
-   * @param {string[]=} [nillable=[]] The list of parameter ids that are marked as nil values.
-   * @param {any=} [defaultNil=null] The nil value to insert when the parameter is in the nillable list.
-   * @returns {ParametersSerializationReport}
+   * @param parameters The input parameters for the operation
+   * @param values The collected values for all parameters.
+   * @param nillable The list of parameter ids that are marked as nil values.
+   * @param defaultNil The nil value to insert when the parameter is in the nillable list.
    */
-  static reportRequestInputs(parameters, values, nillable=[], defaultNil=null) {
-    const report = /** @type ParametersSerializationReport */ ({
+  static reportRequestInputs(parameters: ApiParameter[], values: Map<string, any>, nillable: string[]=[], defaultNil: any=null): ParametersSerializationReport {
+    const report: ParametersSerializationReport = {
       valid: true,
       invalid: [],
       header: {},
       query: {},
       path: {},
       cookie: {},
-    });
+    };
 
     parameters.forEach((param) => {
-      const { id, required, schema, binding, name, paramName } = param;
+      const { id, required, schema, binding = '', name, paramName } = param;
       const parameterName = paramName || name;
       if (!parameterName) {
         return;
       }
-      if (!report[binding]) {
+      if (!report[binding as keyof ParametersSerializationReport]) {
         // for custom shapes
-        report[binding] = {};
+        report[binding as keyof BindingType] = {};
       }
       if (nillable.includes(id)) {
-        report[binding][parameterName] = defaultNil;
+        report[binding as keyof BindingType][parameterName] = defaultNil;
         return;
       }
       let value = values.get(id);
@@ -77,7 +66,7 @@ export class AmfInputParser {
       }
       if (jsType === 'undefined') {
         if (schema && schema.types.includes(ns.aml.vocabularies.shapes.ScalarShape)) {
-          value = ApiSchemaValues.readInputValue(param, /** @type ApiScalarShape */ (schema));
+          value = ApiSchemaValues.readInputValue(param, schema as ApiScalarShape);
         }
       }
       if (!schema) {
@@ -85,13 +74,13 @@ export class AmfInputParser {
         if (Array.isArray(value)) {
           // this is a huge assumption here.
           // Todo: this should be done recursively.
-          report[binding][parameterName] = value.map(i => i === undefined ? i : String(i));
+          report[binding as keyof BindingType][parameterName] = value.map(i => i === undefined ? i : String(i));
         } else {
           const isScalar = jsType !== 'undefined' && jsType !== 'object' && value !== null;
-          report[binding][parameterName] = isScalar ? String(value) : value;
+          report[binding as keyof BindingType][parameterName] = isScalar ? String(value) : value;
         }
       } else {
-        const valid = AmfInputParser.addReportItem(report[binding], parameterName, schema, value, required);
+        const valid = AmfInputParser.addReportItem(report[binding as keyof BindingType], parameterName, schema, value, required);
         if (!valid) {
           report.valid = false;
           report.invalid.push(id);
@@ -103,37 +92,33 @@ export class AmfInputParser {
   }
 
   /**
-   * @param {Record<string, any>} reportGroup
-   * @param {string} name
-   * @param {ApiShapeUnion} schema
-   * @param {any} value
-   * @param {boolean} required Whether the parameter is required.
-   * @returns {boolean} `true` when the parameter is valid and `false` otherwise.
+   * @param reportGroup
+   * @param name
+   * @param schema
+   * @param value
+   * @param required Whether the parameter is required.
+   * @returns `true` when the parameter is valid and `false` otherwise.
    */
-  static addReportItem(reportGroup, name, schema, value, required) {
+  static addReportItem(reportGroup: Record<string, any>, name: string, schema: ApiShapeUnion, value: any, required?: boolean): boolean {
     const { types } = schema;
     if (types.includes(ns.aml.vocabularies.shapes.ScalarShape)) {
-      return AmfInputParser.addReportScalarItem(reportGroup, name, value, /** @type ApiScalarShape */ (schema), required);
+      return AmfInputParser.addReportScalarItem(reportGroup, name, value, (schema as ApiScalarShape), required);
     }
     if (types.includes(ns.aml.vocabularies.shapes.ArrayShape) || types.includes(ns.aml.vocabularies.shapes.MatrixShape)) {
-      return AmfInputParser.addReportArrayItem(reportGroup, name, value, /** @type ApiArrayShape */ (schema), required);
+      return AmfInputParser.addReportArrayItem(reportGroup, name, value, (schema as ApiArrayShape), required);
     }
     if (types.includes(ns.aml.vocabularies.shapes.UnionShape)) {
-      return AmfInputParser.addReportUnionItem(reportGroup, name, value, /** @type ApiUnionShape */ (schema), required);
+      return AmfInputParser.addReportUnionItem(reportGroup, name, value, (schema as ApiUnionShape), required);
     }
     // ignored parameters are valid (from the form POV).
     return true;
   }
 
   /**
-   * @param {Record<string, any>} reportGroup
-   * @param {string} name
-   * @param {any} value
-   * @param {ApiScalarShape} schema
-   * @param {boolean=} required Whether the parameter is required.
-   * @returns {boolean} `true` when the parameter is valid and `false` otherwise.
+   * @param required Whether the parameter is required.
+   * @returns `true` when the parameter is valid and `false` otherwise.
    */
-  static addReportScalarItem(reportGroup, name, value, schema, required) {
+  static addReportScalarItem(reportGroup: Record<string, any>, name: string, value: any, schema: ApiScalarShape, required?: boolean): boolean {
     const type = typeof value;
     const isScalar = type !== 'undefined' && type !== 'object' && value !== null;
     reportGroup[name] = isScalar ? ApiSchemaValues.parseScalarInput(value, schema) : value;
@@ -141,14 +126,14 @@ export class AmfInputParser {
   }
 
   /**
-   * @param {Record<string, any>} reportGroup
-   * @param {string} name
-   * @param {any} value
-   * @param {ApiArrayShape} schema
-   * @param {boolean} required Whether the parameter is required.
-   * @returns {boolean} `true` when the parameter is valid and `false` otherwise.
+   * @param reportGroup
+   * @param name
+   * @param value
+   * @param schema
+   * @param required Whether the parameter is required.
+   * @returns `true` when the parameter is valid and `false` otherwise.
    */
-  static addReportArrayItem(reportGroup, name, value, schema, required) {
+  static addReportArrayItem(reportGroup: Record<string, any>, name: string, value: any, schema: ApiArrayShape, required?: boolean): boolean {
     if (!Array.isArray(reportGroup[name])) {
       reportGroup[name] = [];
     }
@@ -157,7 +142,7 @@ export class AmfInputParser {
       return !required;
     }
     const { items } = schema;
-    /** @type any[] */ (value).forEach((item) => {
+    value.forEach((item) => {
       if (item === undefined) {
         // the UI generates a default input for array items. We now ignore all 
         // items that are undefined. This means the item was added but the user never provided any
@@ -179,16 +164,15 @@ export class AmfInputParser {
   }
 
   /**
-   * @param {Record<string, any>} reportGroup
-   * @param {string} name
-   * @param {any} value
-   * @param {ApiUnionShape} schema
-   * @param {boolean} required Whether the parameter is required.
-   * @returns {boolean} `true` when the parameter is valid and `false` otherwise.
+   * @param reportGroup
+   * @param name
+   * @param value
+   * @param schema
+   * @param required Whether the parameter is required.
+   * @returns `true` when the parameter is valid and `false` otherwise.
    */
-  static addReportUnionItem(reportGroup, name, value, schema, required) {
-    const typed = /** @type ApiUnionShape */ (schema);
-    const { anyOf } = typed;
+  static addReportUnionItem(reportGroup: Record<string, any>, name: string, value: any, schema: ApiUnionShape, required?: boolean): boolean {
+    const { anyOf } = schema;
     if (!anyOf || !anyOf.length) {
       return !required;
     }
@@ -196,7 +180,7 @@ export class AmfInputParser {
     if (nil && anyOf.length === 2) {
       // this item is not marked as nil (or we wouldn't get to this line) so use the only schema left.
       const scalar = anyOf.find(shape => shape !== nil);
-      return AmfInputParser.addReportScalarItem(reportGroup, name, value, /** @type ApiScalarShape */ (scalar));
+      return AmfInputParser.addReportScalarItem(reportGroup, name, value, scalar as ApiScalarShape);
     }
     // we are iterating over each schema in the union. Ignoring non-scalar schemas it parses user input
     // for each schema and if the result is set (non-undefined) then this value is used.

@@ -1,5 +1,6 @@
 import { HeadersParser } from '@advanced-rest-client/base/api.js';
 import sanitizer from 'dompurify';
+import { ApiArrayShape, ApiNodeShape, ApiParameter, ApiParametrizedDeclaration, ApiScalarShape, ApiShapeUnion, ApiTupleShape, ApiUnionShape } from '../helpers/api.js';
 import { ns } from '../helpers/Namespace.js';
 
 /** @typedef {import('../helpers/api').ApiShapeUnion} ApiShapeUnion */
@@ -17,18 +18,18 @@ import { ns } from '../helpers/Namespace.js';
 
 /**
  * Stops an event and cancels it.
- * @param {Event} e The event to stop
+ * @param e The event to stop
  */
-export function cancelEvent(e) {
+export function cancelEvent(e: Event): void {
   e.preventDefault();
   e.stopPropagation();
   e.stopImmediatePropagation();
 }
 
 /**
- * @param {string[]} types Shape's types
+ * @param types Shape's types
  */
-export function isScalarType(types=[]) {
+export function isScalarType(types: string[] = []): boolean {
   const { shapes } = ns.aml.vocabularies;
   return types.includes(shapes.ScalarShape) || 
     types.includes(shapes.NilShape) ||
@@ -36,9 +37,9 @@ export function isScalarType(types=[]) {
 }
 
 /**
- * @param {string} value The value from the graph model to use to read the value from
+ * @param value The value from the graph model to use to read the value from
  */
-export function schemaToType(value) {
+export function schemaToType(value: string): string {
   const typed = String(value);
   let index = typed.lastIndexOf('#');
   if (index === -1) {
@@ -53,11 +54,11 @@ export function schemaToType(value) {
 
 /**
  * Reads the label for a data type for a shape union.
- * @param {ApiShapeUnion} schema
- * @param {boolean=} [isArray] Used internally
- * @returns {string|undefined} Computed label for a shape.
+ * @param schema
+ * @param isArray Used internally
+ * @returns Computed label for a shape.
  */
-export function readPropertyTypeLabel(schema, isArray=false) {
+export function readPropertyTypeLabel(schema: ApiShapeUnion, isArray=false): string|undefined {
   if (!schema) {
     return undefined;
   }
@@ -66,11 +67,11 @@ export function readPropertyTypeLabel(schema, isArray=false) {
     return 'Nil';
   }
   if (types.includes(ns.aml.vocabularies.shapes.ScalarShape)) {
-    const scalar = /** @type ApiScalarShape */ (schema);
+    const scalar = schema as ApiScalarShape;
     return schemaToType(scalar.dataType || '');
   }
   if (types.includes(ns.aml.vocabularies.shapes.TupleShape)) {
-    const array = /** @type ApiTupleShape */ (schema);
+    const array = schema as ApiTupleShape;
     if (!array.items || !array.items.length) {
       return undefined;
     }
@@ -78,7 +79,7 @@ export function readPropertyTypeLabel(schema, isArray=false) {
     return `List of ${label}`;
   }
   if (types.includes(ns.aml.vocabularies.shapes.ArrayShape)) {
-    const array = /** @type ApiArrayShape */ (schema);
+    const array = schema as ApiArrayShape;
     if (!array.items) {
       return undefined;
     }
@@ -89,10 +90,10 @@ export function readPropertyTypeLabel(schema, isArray=false) {
     return `List of ${label}`;
   }
   if (types.includes(ns.w3.shacl.NodeShape)) {
-    let { name } = /** @type ApiNodeShape */ (schema);
-    const { properties } = /** @type ApiNodeShape */ (schema);
+    let { name } = schema as ApiNodeShape;
+    const { properties } = schema as ApiNodeShape;
     if (isArray && properties && properties.length === 1) {
-      const potentialScalar = /** @type ApiScalarShape */ (properties[0].range);
+      const potentialScalar = properties[0].range as ApiScalarShape;
       if (potentialScalar.types.includes(ns.aml.vocabularies.shapes.ScalarShape)) {
         return schemaToType(potentialScalar.dataType || '');
       }
@@ -104,7 +105,7 @@ export function readPropertyTypeLabel(schema, isArray=false) {
     return name || 'Object';
   }
   if (types.includes(ns.aml.vocabularies.shapes.UnionShape)) {
-    const union = /** @type ApiUnionShape */ (schema);
+    const union = schema as ApiUnionShape;
     const items = union.anyOf.map(i => readPropertyTypeLabel(i));
     return items.join(' or ');
   }
@@ -115,18 +116,18 @@ export function readPropertyTypeLabel(schema, isArray=false) {
 }
 
 /**
- * @param {ApiShapeUnion[]} shapes
- * @returns {boolean} true when all of passed shapes are scalar.
+ * @param shapes
+ * @returns true when all of passed shapes are scalar.
  */
-function isAllScalar(shapes=[]) {
+function isAllScalar(shapes: ApiShapeUnion[] = []): boolean {
   return !shapes.some(i => !isScalarType(i.types));
 }
 
 /**
- * @param {ApiUnionShape} shape
- * @returns {boolean} true when the passed union type consists of scalar values only. Nil counts as scalar.
+ * @param shape
+ * @returns true when the passed union type consists of scalar values only. Nil counts as scalar.
  */
-export function isScalarUnion(shape) {
+export function isScalarUnion(shape: ApiUnionShape): boolean {
   const { anyOf=[], or=[], and=[], xone=[] } = shape;
   if (anyOf.length) {
     return isAllScalar(anyOf);
@@ -143,11 +144,7 @@ export function isScalarUnion(shape) {
   return true;
 }
 
-/**
- * @param {string} HTML 
- * @returns {string}
- */
-export function sanitizeHTML(HTML) {
+export function sanitizeHTML(HTML: string): string {
   const result = sanitizer.sanitize(HTML, { 
     ADD_ATTR: ['target', 'href'],
     ALLOWED_TAGS: ['a'],
@@ -162,10 +159,7 @@ export function sanitizeHTML(HTML) {
   return result.toString();
 }
 
-/**
- * @param {ApiParametrizedDeclaration[]} traits
- */
-export function joinTraitNames(traits) {
+export function joinTraitNames(traits: ApiParametrizedDeclaration[]): string {
   const names = traits.map(trait => trait.name).filter(i => !!i);
   let value = '';
   if (names.length === 2) {
@@ -180,11 +174,7 @@ export function joinTraitNames(traits) {
   return value;
 }
 
-/**
- * @param {Record<string, any>} params
- * @returns {string}
- */
- export function generateHeaders(params) {
+export function generateHeaders(params: Record<string, any>): string {
   if (typeof params !== 'object') {
     return '';
   }
@@ -207,10 +197,10 @@ export function joinTraitNames(traits) {
 
 /**
  * Ensures the headers have content type header.
- * @param {string} headers The generated headers string
- * @param {string} mime The expected by the selected payload media type. If not set then it does nothing.
+ * @param headers The generated headers string
+ * @param mime The expected by the selected payload media type. If not set then it does nothing.
  */
-export function ensureContentType(headers, mime) {
+export function ensureContentType(headers: string, mime: string): string {
   if (!mime) {
     return headers;
   }
@@ -223,12 +213,12 @@ export function ensureContentType(headers, mime) {
 }
 
 /**
- * @param {ApiParameter} parameter
- * @param {ApiShapeUnion} schema
- * @returns {string} The name to use in the input.
+ * @param parameter
+ * @param schema
+ * @returns The name to use in the input.
  */
-export function readLabelValue(parameter, schema) {
-  let label = parameter.paramName || schema.displayName || parameter.name ||  schema.name;
+export function readLabelValue(parameter: ApiParameter, schema: ApiShapeUnion): string {
+  let label = parameter.paramName || schema.displayName || parameter.name ||  schema.name || '';
   const { required } = parameter;
   if (required) {
     label += '*';

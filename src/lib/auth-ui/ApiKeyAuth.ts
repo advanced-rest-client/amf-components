@@ -1,19 +1,16 @@
 /* eslint-disable class-methods-use-this */
-import { html } from 'lit-html';
+import { html, TemplateResult } from 'lit';
+import { ApiKeyAuthorization } from '@advanced-rest-client/events/src/authorization/Authorization.js';
 import { ns } from '../../helpers/Namespace.js';
 import ApiUiBase from './ApiUiBase.js';
 import * as InputCache from '../InputCache.js';
-
-/** @typedef {import('lit-element').TemplateResult} TemplateResult */
-/** @typedef {import('../../helpers/api').ApiSecurityApiKeySettings} ApiSecurityApiKeySettings */
-/** @typedef {import('@advanced-rest-client/events').Authorization.ApiKeyAuthorization} ApiKeyAuthorization */
-/** @typedef {import('../../types').OperationParameter} OperationParameter */
+import { ApiParameter, ApiSecurityApiKeySettings, ApiShapeUnion } from '../../helpers/api.js';
 
 export default class ApiKeyAuth extends ApiUiBase {
-  async initializeApiModel() {
+  async initializeApiModel(): Promise<void> {
     const { security } = this;
     const source = 'settings';
-    const list = /** @type OperationParameter[] */ (this.parametersValue);
+    const list = (this.parametersValue);
     this.parametersValue = list.filter(item => item.source !== source);
 
     if (!security) {
@@ -30,11 +27,11 @@ export default class ApiKeyAuth extends ApiUiBase {
     if (!type || !type.startsWith('Api Key')) {
       return;
     }
-    const config = /** @type ApiSecurityApiKeySettings */ (scheme.settings);
+    const config = scheme.settings as ApiSecurityApiKeySettings | undefined;
     if (!config) {
       return;
     }
-    const { in: binding, id } = config;
+    const { in: binding = '', id } = config;
     if (!InputCache.has(this.target, id, this.globalCache)) {
       InputCache.set(this.target, id, '', this.globalCache);
     }
@@ -42,10 +39,10 @@ export default class ApiKeyAuth extends ApiUiBase {
     params.push({
       binding,
       paramId: id,
-      parameter: { ... /** @type any */ (config), binding },
+      parameter: { ... (config as ApiParameter), binding },
       source: 'settings',
       schemaId: scheme.id,
-      schema: /** @type any */ (scheme),
+      schema: (scheme as unknown as ApiShapeUnion),
     });
     
     await this.requestUpdate();
@@ -61,7 +58,7 @@ export default class ApiKeyAuth extends ApiUiBase {
    * @param {string} name The name of the changed parameter
    * @param {string} newValue A value to apply. May be empty but must be defined.
    */
-  updateQueryParameter(name, newValue) {
+  updateQueryParameter(name: string, newValue: string): void {
     const list = /** @type OperationParameter[] */ (this.parametersValue);
     const param = list.find(i => i.binding === 'query' && i.parameter.name === name);
     if (param) {
@@ -80,7 +77,7 @@ export default class ApiKeyAuth extends ApiUiBase {
    * @param {string} name The name of the changed header
    * @param {string} newValue A value to apply. May be empty but must be defined.
    */
-  updateHeader(name, newValue) {
+  updateHeader(name: string, newValue: string): void {
     const list = /** @type OperationParameter[] */ (this.parametersValue);
     const param = list.find(i => i.binding === 'header' && i.parameter.name === name);
     if (param) {
@@ -98,7 +95,7 @@ export default class ApiKeyAuth extends ApiUiBase {
    * @param {string} name The name of the changed cookie
    * @param {string} newValue A value to apply. May be empty but must be defined.
    */
-  updateCookie(name, newValue) {
+  updateCookie(name: string, newValue: string): void {
     const list = /** @type OperationParameter[] */ (this.parametersValue);
     const param = list.find(i => i.binding === 'cookie' && i.parameter.name === name);
     if (param) {
@@ -106,7 +103,7 @@ export default class ApiKeyAuth extends ApiUiBase {
     }
   }
 
-  reset() {
+  reset(): void {
     const params = this.parametersValue;
     (params || []).forEach((param) => {
       InputCache.set(this.target, param.paramId, '', this.globalCache)
@@ -115,9 +112,8 @@ export default class ApiKeyAuth extends ApiUiBase {
 
   /**
    * Restores previously serialized values
-   * @param {ApiKeyAuthorization} state
    */
-  restore(state) {
+  restore(state: ApiKeyAuthorization): void {
     if (!state) {
       return;
     }
@@ -127,15 +123,11 @@ export default class ApiKeyAuth extends ApiUiBase {
     this.requestUpdate();
   }
 
-  /**
-   * @param {string} binding 
-   * @param {ApiKeyAuthorization} restored 
-   */
-  restoreModelValue(binding, restored) {
+  restoreModelValue(binding: string, restored?: ApiKeyAuthorization): void {
     if (!restored) {
       return;
     }
-    const list = /** @type OperationParameter[] */ (this.parametersValue);
+    const list = this.parametersValue;
     const params = list.filter(i => i.binding === binding);
     if (!params) {
       return;
@@ -143,22 +135,19 @@ export default class ApiKeyAuth extends ApiUiBase {
     Object.keys(restored).forEach((name) => {
       const param = params.find(i => i.parameter.name === name);
       if (param) {
-        InputCache.set(this.target, param.paramId, restored[name], this.globalCache);
+        InputCache.set(this.target, param.paramId, restored[name as keyof ApiKeyAuthorization], this.globalCache);
       }
     });
   }
 
-  /**
-   * @returns {ApiKeyAuthorization}
-   */
-  serialize() {
-    const params = /** @type OperationParameter[] */ (this.parametersValue);
-    const result = /** @type ApiKeyAuthorization */ ({});
+  serialize(): ApiKeyAuthorization {
+    const params = this.parametersValue;
+    const result: ApiKeyAuthorization = {};
     (params || []).forEach((param) => {
-      if (!result[param.binding]) {
-        result[param.binding] = {};
+      if (!result[param.binding as keyof ApiKeyAuthorization]) {
+        result[param.binding as keyof ApiKeyAuthorization] = {};
       }
-      let value = InputCache.get(this.target, param.paramId, this.globalCache);
+      let value = InputCache.get(this.target, param.paramId, this.globalCache) as string | boolean;
       if (value === '' || value === undefined) {
         if (param.parameter.required === false) {
           return;
@@ -171,17 +160,14 @@ export default class ApiKeyAuth extends ApiUiBase {
       if (value === null) {
         value = '';
       }
-      result[param.binding][param.parameter.name] = value;
+      (result[param.binding as keyof ApiKeyAuthorization] as Record<string, string>)[param.parameter.name || ''] = value as string;
     });
-    return /** @type ApiKeyAuthorization */ (result);
+    return result;
   }
 
-  /**
-   * @returns {boolean}
-   */
-  validate() {
+  validate(): boolean {
     const nils = this.nilValues;
-    const params = /** @type OperationParameter[] */ (this.parametersValue);
+    const params = this.parametersValue;
     return !params.some((param) => {
       if (nils.includes(param.paramId)) {
         return true;
@@ -191,7 +177,7 @@ export default class ApiKeyAuth extends ApiUiBase {
     });
   }
 
-  render() {
+  render(): TemplateResult {
     return html`
     ${this.titleTemplate()}
     <form autocomplete="on" class="custom-auth">
@@ -204,10 +190,8 @@ export default class ApiKeyAuth extends ApiUiBase {
 
   /**
    * Method that renders scheme's title
-   *
-   * @return {TemplateResult}
    */
-  titleTemplate() {
+  titleTemplate(): TemplateResult {
     return html`
     <div class="subtitle">
       <span>Scheme: Api Key</span>
@@ -217,10 +201,10 @@ export default class ApiKeyAuth extends ApiUiBase {
   /**
    * Method that renders headers, if any
    *
-   * @return {TemplateResult|string} Empty string is returned when the section
+   * @returns Empty string is returned when the section
    * should not be rendered, as documented in `lit-html` library.
    */
-  headersTemplate() {
+  headersTemplate(): TemplateResult|string {
     const headers = this.parametersValue.filter(item => item.binding === 'header');
     if (!headers.length) {
       return '';
@@ -236,10 +220,10 @@ export default class ApiKeyAuth extends ApiUiBase {
   /**
    * Method that renders query parameters, if any
    *
-   * @return {TemplateResult|string} Empty string is returned when the section
+   * @returns Empty string is returned when the section
    * should not be rendered, as documented in `lit-html` library.
    */
-  queryTemplate() {
+  queryTemplate(): TemplateResult|string {
     const headers = this.parametersValue.filter(item => item.binding === 'query');
     if (!headers.length) {
       return '';
@@ -255,10 +239,10 @@ export default class ApiKeyAuth extends ApiUiBase {
   /**
    * Method that renders cookies, if any
    *
-   * @return {TemplateResult|string} Empty string is returned when the section
+   * @returns Empty string is returned when the section
    * should not be rendered, as documented in `lit-html` library.
    */
-  cookieTemplate() {
+  cookieTemplate(): TemplateResult|string {
     const headers = this.parametersValue.filter(item => item.binding === 'cookie');
     if (!headers.length) {
       return '';

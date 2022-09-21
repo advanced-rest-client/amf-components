@@ -1,5 +1,7 @@
 /* eslint-disable class-methods-use-this */
+import { ApiArrayShape, ApiNodeShape, ApiParameter, ApiPropertyShape, ApiScalarShape, ApiShapeUnion, ApiUnionShape } from '../helpers/api.js';
 import { ns } from '../helpers/Namespace.js';
+import { OperationParameter } from '../types.js';
 
 /** @typedef {import('../helpers/api').ApiNodeShape} ApiNodeShape */
 /** @typedef {import('../helpers/api').ApiArrayShape} ApiArrayShape */
@@ -15,31 +17,30 @@ import { ns } from '../helpers/Namespace.js';
  */
 export class QueryParameterProcessor {
   /**
-   * @param {ApiShapeUnion} schema
-   * @param {string} binding The parameter binding.
-   * @param {string=} source Optional parameter source.
-   * @returns {OperationParameter[]}
+   * @param schema
+   * @param binding The parameter binding.
+   * @param source Optional parameter source.
    */
-  collectOperationParameters(schema, binding, source) {
-    let result = [];
+  collectOperationParameters(schema: ApiShapeUnion, binding: string, source?: string): OperationParameter[] {
+    let result: OperationParameter[] = [];
     if (!schema) {
       return result;
     }
     const { types } = schema;
     if (types.includes(ns.aml.vocabularies.shapes.ScalarShape)) {
-      result.push(this.scalarShapeOperationParameter(/** @type ApiScalarShape */ (schema), binding, source));
+      result.push(this.scalarShapeOperationParameter((schema as ApiScalarShape), binding, source));
     } else if (types.includes(ns.w3.shacl.NodeShape)) {
-      const params = this.nodeShapeOperationParameter(/** @type ApiNodeShape */ (schema), binding, source);
+      const params = this.nodeShapeOperationParameter((schema as ApiNodeShape), binding, source);
       result = result.concat(params);
     } else if (types.includes(ns.aml.vocabularies.shapes.ArrayShape)) {
-      const arrResult = this.arrayShapeOperationParameter(/** @type ApiArrayShape */ (schema), binding, source);
+      const arrResult = this.arrayShapeOperationParameter((schema as ApiArrayShape), binding, source);
       if (Array.isArray(arrResult)) {
         result = result.concat(arrResult);
       } else if (arrResult) {
         result.push(arrResult);
       }
     } else if (types.includes(ns.aml.vocabularies.shapes.UnionShape)) {
-      const params = this.unionShapeOperationParameter(/** @type ApiUnionShape */ (schema), binding, source);
+      const params = this.unionShapeOperationParameter((schema as ApiUnionShape), binding, source);
       if (params) {
         result = result.concat(params);
       }
@@ -48,14 +49,13 @@ export class QueryParameterProcessor {
   }
 
   /**
-   * @param {ApiScalarShape} shape
-   * @param {string} binding The parameter binding.
-   * @param {string=} source Optional parameter source.
-   * @returns {OperationParameter}
+   * @param shape
+   * @param binding The parameter binding.
+   * @param source Optional parameter source.
    */
-  scalarShapeOperationParameter(shape, binding, source) {
+  scalarShapeOperationParameter(shape: ApiScalarShape, binding: string, source?: string): OperationParameter {
     const { id, name } = shape;
-    const constructed = /** @type ApiParameter */ ({
+    const constructed: ApiParameter = {
       id,
       binding,
       schema: shape,
@@ -64,26 +64,25 @@ export class QueryParameterProcessor {
       payloads: [],
       types: [ns.aml.vocabularies.apiContract.Parameter],
       required: false,
-    });
+      customDomainProperties: [],
+    };
     return {
       binding,
       paramId: id,
       parameter: constructed,
-      source,
+      source: source || '',
       schemaId: id,
-      // @ts-ignore
       schema: shape,
     };
   }
 
   /**
-   * @param {ApiNodeShape} shape
-   * @param {string} binding The parameter binding.
-   * @param {string=} source Optional parameter source.
-   * @returns {OperationParameter[]}
+   * @param shape
+   * @param binding The parameter binding.
+   * @param source Optional parameter source.
    */
-  nodeShapeOperationParameter(shape, binding, source) {
-    const result = [];
+  nodeShapeOperationParameter(shape: ApiNodeShape, binding: string, source?: string): OperationParameter[] {
+    const result: OperationParameter[] = [];
     const { properties=[] } = shape;
     if (!properties.length) {
       return result;
@@ -95,14 +94,13 @@ export class QueryParameterProcessor {
   }
 
   /**
-   * @param {ApiPropertyShape} property The property to build the parameter for.
-   * @param {string} binding The parameter binding.
-   * @param {string=} source Optional parameter source.
-   * @returns {OperationParameter}
+   * @param property The property to build the parameter for.
+   * @param binding The parameter binding.
+   * @param source Optional parameter source.
    */
-  parameterOperationParameter(property, binding, source) {
-    const { id, range, name, minCount } = property;
-    const constructed = /** @type ApiParameter */ ({
+  parameterOperationParameter(property: ApiPropertyShape, binding: string, source?: string): OperationParameter {
+    const { id, range, name, minCount=0 } = property;
+    const constructed: ApiParameter = {
       id,
       binding,
       schema: range,
@@ -111,31 +109,31 @@ export class QueryParameterProcessor {
       payloads: [],
       types: [ns.aml.vocabularies.apiContract.Parameter],
       required: minCount > 0,
-    });
+      customDomainProperties: [],
+    };
     return {
       binding,
       paramId: id,
       parameter: constructed,
-      source,
+      source: source || '',
       schemaId: property.id,
       schema: range,
     };
   }
 
   /**
-   * @param {ApiArrayShape} shape
-   * @param {string} binding The parameter binding.
-   * @param {string=} source Optional parameter source.
-   * @returns {OperationParameter|OperationParameter[]}
+   * @param shape
+   * @param binding The parameter binding.
+   * @param source Optional parameter source.
    */
-  arrayShapeOperationParameter(shape, binding, source) {
+  arrayShapeOperationParameter(shape: ApiArrayShape, binding: string, source?: string): OperationParameter|OperationParameter[] {
     const target = shape.items || shape;
     if (target.types.includes(ns.w3.shacl.NodeShape)) {
-      const typed = /** @type ApiNodeShape */ (shape.items);
+      const typed = (shape.items as ApiNodeShape);
       return this.collectOperationParameters(typed, binding, source);
     }
     const { id, name,  } = target;
-    const constructed = /** @type ApiParameter */ ({
+    const constructed: ApiParameter = {
       id,
       binding,
       schema: shape,
@@ -144,27 +142,27 @@ export class QueryParameterProcessor {
       payloads: [],
       types: [ns.aml.vocabularies.apiContract.Parameter],
       required: false,
-    });
+      customDomainProperties: [],
+    };
     return {
       binding,
       paramId: id,
       parameter: constructed,
-      source,
+      source: source || '',
       schemaId: id,
       schema: shape,
     };
   }
 
   /**
-   * @param {ApiUnionShape} shape
-   * @param {string} binding The parameter binding.
-   * @param {string=} source Optional parameter source.
-   * @returns {OperationParameter[]|undefined}
+   * @param shape
+   * @param binding The parameter binding.
+   * @param source Optional parameter source.
    */
-  unionShapeOperationParameter(shape, binding, source) {
+  unionShapeOperationParameter(shape: ApiUnionShape, binding: string, source?: string): OperationParameter[]|undefined {
     const { anyOf=[], or=[], and=[], xone=[] } = shape;
     if (and.length) {
-      let result = [];
+      let result: OperationParameter[] = [];
       and.forEach((item) => {
         const itemResult = this.collectOperationParameters(item, binding, source);
         if (itemResult) {

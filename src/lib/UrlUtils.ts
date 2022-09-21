@@ -1,6 +1,8 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-param-reassign */
 
+import { ComputeBaseUriOptions } from "../types.js";
+
 /** @typedef {import('../helpers/api').ApiEndPoint} ApiEndPoint */
 /** @typedef {import('../helpers/api').ApiServer} ApiServer */
 /** @typedef {import('../types').ComputeBaseUriOptions} ComputeBaseUriOptions */
@@ -8,11 +10,11 @@
 /**
  * Computes the base URI value for the API/endpoint/operation.
  * 
- * @param {string} url The url to check for protocol information.
- * @param {ComputeBaseUriOptions} options The computation options
- * @returns {string} The base uri value with a protocol,
+ * @param url The url to check for protocol information.
+ * @param options The computation options
+ * @returns The base uri value with a protocol,
  */
-export function setProtocol(url='', options={}) {
+export function setProtocol(url='', options: ComputeBaseUriOptions={}): string {
   const { server, protocols=[] } = options;
   const schemes = [...protocols];
   if (server && server.protocol) {
@@ -33,10 +35,10 @@ export function setProtocol(url='', options={}) {
 /**
  * Computes the base URI value for the API/endpoint/operation.
  * 
- * @param {ComputeBaseUriOptions} options The computation options
- * @returns {string} Base uri value. Can be empty string.
+ * @param options The computation options
+ * @returns Base uri value. Can be empty string.
  */
-export function computeApiBaseUri(options={}) {
+export function computeApiBaseUri(options: ComputeBaseUriOptions={}): string {
   const { baseUri, server, version } = options;
   if (baseUri) {
     let result = baseUri;
@@ -62,10 +64,10 @@ export function computeApiBaseUri(options={}) {
 /**
  * Computes the base URI value for the API/endpoint/operation.
  * 
- * @param {ComputeBaseUriOptions} options The computation options
- * @returns {string} Base uri value. Can be empty string.
+ * @param options The computation options
+ * @returns Base uri value. Can be empty string.
  */
-export function computeEndpointUri(options={}) {
+export function computeEndpointUri(options: ComputeBaseUriOptions={}): string {
   let result = computeApiBaseUri(options);
   if (options.endpoint) {
     let { path='' } = options.endpoint;
@@ -81,11 +83,10 @@ export function computeEndpointUri(options={}) {
 }
 
 /**
- * @param {string} str A key or value to encode as x-www-form-urlencoded.
- * @param {boolean} replacePlus When set it replaces `%20` with `+`.
- * @returns {string} .
+ * @param str A key or value to encode as x-www-form-urlencoded.
+ * @param replacePlus When set it replaces `%20` with `+`.
  */
-export function wwwFormUrlEncode(str, replacePlus) {
+export function wwwFormUrlEncode(str: string, replacePlus: boolean): string {
   // Spec says to normalize newlines to \r\n and replace %20 spaces with +.
   // jQuery does this as well, so this is likely to be widely compatible.
   if (!str) {
@@ -100,10 +101,9 @@ export function wwwFormUrlEncode(str, replacePlus) {
 
 /**
  * Creates a RegExp object to replace template variable from the base string
- * @param {string} name Name of the parameter to be replaced
- * @returns {RegExp}
+ * @param name Name of the parameter to be replaced
  */
-function createUrlReplaceRegex(name) {
+function createUrlReplaceRegex(name: string): RegExp {
   if (name[0] === '+' || name[0] === '#') {
     // eslint-disable-next-line no-param-reassign
     name = `\\${name}`;
@@ -112,11 +112,11 @@ function createUrlReplaceRegex(name) {
 }
 
 /**
- * @param {string} url The current URL
- * @param {Record<string, any>} variables The path variables to apply.
- * @param {boolean} encode Whether to encode parameters.
+ * @param url The current URL
+ * @param variables The path variables to apply.
+ * @param encode Whether to encode parameters.
  */
-export function applyUrlVariables(url, variables, encode) {
+export function applyUrlVariables(url: string, variables: Record<string, any>, encode: boolean): string {
   let result = url || '';
   Object.keys(variables).forEach((variable) => {
     let value = variables[variable];
@@ -143,20 +143,16 @@ export function applyUrlVariables(url, variables, encode) {
 }
 
 /**
- * @param {Record<string, any>} params The query parameters to use to generate the query string.
- * @param {boolean} encode Whether to encode query parameters.
- * @returns {string} The query string.
+ * @param params The query parameters to use to generate the query string.
+ * @param encode Whether to encode query parameters.
+ * @returns The query string.
  */
-function generateQueryString(params, encode) {
+function generateQueryString(params: Record<string, any>, encode: boolean): string {
   if (typeof params !== 'object') {
     return '';
   }
-  const parts = [];
-  /**
-   * @param {string} name
-   * @param {any} value
-   */
-  function addPart(name, value) {
+  const parts: string[] = [];
+  function addPart(name: string, value: any): void {
     if (value === undefined) {
       value = '';
     } else {
@@ -186,11 +182,11 @@ function generateQueryString(params, encode) {
 }
 
 /**
- * @param {string} url The current URL
- * @param {Record<string, any>} params The query parameters to apply.
- * @param {boolean} encode Whether to encode parameters.
+ * @param url The current URL
+ * @param params The query parameters to apply.
+ * @param encode Whether to encode parameters.
  */
-export function applyUrlParameters(url, params, encode) {
+export function applyUrlParameters(url: string, params: Record<string, any>, encode: boolean): string {
   const query = generateQueryString(params, encode);
   if (!query) {
     return url;
@@ -205,10 +201,10 @@ export function applyUrlParameters(url, params, encode) {
  * Applies query parameter values to an object.
  * Repeated parameters will have array value instead of string value.
  *
- * @param {string} param Query parameter value as string. Eg `name=value`
- * @param {Record<string, string|string[]>} obj Target for values
+ * @param param Query parameter value as string. Eg `name=value`
+ * @param obj Target for values
  */
-export function applyQueryParamStringToObject(param, obj) {
+export function applyQueryParamStringToObject(param: string, obj: Record<string, string|string[]>): void {
   if (!param || !obj || typeof param !== 'string') {
     return;
   }
@@ -216,9 +212,9 @@ export function applyQueryParamStringToObject(param, obj) {
   const name = parts[0];
   if (name in obj) {
     if (!Array.isArray(obj[name])) {
-      obj[name] = [/** @type string */(obj[name])];
+      obj[name] = [obj[name] as string];
     }
-    /** @type string[] */(obj[name]).push(parts[1]);
+    (obj[name] as string[]).push(parts[1]);
   } else {
     obj[name] = parts[1];
   }

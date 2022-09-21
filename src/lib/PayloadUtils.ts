@@ -1,42 +1,51 @@
+import { ApiType } from '@advanced-rest-client/events/src/models/ApiTypes.js';
+import { ApiAnyShape, ApiPayload } from '../helpers/api.js';
 import { ApiExampleGenerator } from '../schema/ApiExampleGenerator.js';
 import { ApiMonacoSchemaGenerator } from '../schema/ApiMonacoSchemaGenerator.js';
 import { ApiSchemaGenerator } from '../schema/ApiSchemaGenerator.js';
+
+export interface PayloadInfo {
+  value: string|FormData|Blob;
+  model?: ApiType[];
+  schemas?: any;
+}
 
 /** @typedef {import('@advanced-rest-client/events').ApiTypes.ApiType} ApiType */
 /** @typedef {import('../helpers/api').ApiPayload} ApiPayload */
 /** @typedef {import('../helpers/api').ApiShapeUnion} ApiShapeUnion */
 /** @typedef {import('../helpers/api').ApiAnyShape} ApiAnyShape */
-/** @typedef {import('./PayloadUtils').PayloadInfo} PayloadInfo */
 
-/** @type {Map<string, PayloadInfo>} */
-const cache = new Map();
+const cache: Map<string, PayloadInfo> = new Map();
 
-/**
- * @param {ApiPayload} payload
- * @returns {PayloadInfo}
- */
-export function getPayloadValue(payload) {
+export function getPayloadValue(payload: ApiPayload): PayloadInfo {
   if (cache.has(payload.id)) {
-    return cache.get(payload.id);
+    return cache.get(payload.id) as PayloadInfo;
   }
   const { id, mediaType='text/plain', schema } = payload;
+
   if (mediaType === 'multipart/form-data') {
     // schema generators don't support this yet,
-    const info = /** @type PayloadInfo */ ({ value: new FormData(), schemas: [] });
+    const info = { value: new FormData(), schemas: [] } as PayloadInfo;
     cache.set(id, info);
     return info;
   }
+  if (!schema) {
+    const info = { value: '', schemas: [] };
+    cache.set(id, info);
+    return info;
+  }
+  
   const schemaFactory = new ApiMonacoSchemaGenerator();
   const monacoSchemes = schemaFactory.generate(schema, id);
   let { examples } = payload;
   if (!Array.isArray(examples) || !examples.length) {
-    examples = /** @type ApiAnyShape */ (schema).examples;
+    examples = (schema as ApiAnyShape).examples;
   }
   if (Array.isArray(examples) && examples.length) {
     const [example] = examples;
     const generator = new ApiExampleGenerator();
     const value = generator.read(example, mediaType);
-    const info = { value, schemas: monacoSchemes };
+    const info = { value, schemas: monacoSchemes } as PayloadInfo;
     cache.set(id, info);
     return info;
   }
@@ -58,13 +67,13 @@ export function getPayloadValue(payload) {
 }
 
 /**
- * @param {string} id The ApiPayload id.
- * @param {string} value The value to cache.
- * @param {ApiType[]=} model Optional model to set.
+ * @param id The ApiPayload id.
+ * @param value The value to cache.
+ * @param model Optional model to set.
  */
-export function cachePayloadValue(id, value, model) {
+export function cachePayloadValue(id: string, value: string, model?: ApiType[]): void {
   if (cache.has(id)) {
-    const info = cache.get(id);
+    const info = cache.get(id) as PayloadInfo;
     info.value = value;
     if (model) {
       info.model = model;
@@ -75,9 +84,8 @@ export function cachePayloadValue(id, value, model) {
 }
 
 /**
- * @param {string} id Payload id to read the value.
- * @returns {PayloadInfo}
+ * @param id Payload id to read the value.
  */
-export function readCachePayloadValue(id) {
+export function readCachePayloadValue(id: string): PayloadInfo | undefined {
   return cache.get(id);
 }

@@ -1,49 +1,48 @@
 /* eslint-disable class-methods-use-this */
-import { html } from 'lit-html';
+import { html, TemplateResult } from 'lit';
 import '@advanced-rest-client/highlight/arc-marked.js';
+import { RamlCustomAuthorization } from '@advanced-rest-client/events/src/authorization/Authorization.js';
+import { AuthUiInit } from '@advanced-rest-client/base/api.js';
 import { ns } from '../../helpers/Namespace.js';
 import ApiUiBase from './ApiUiBase.js';
 import * as InputCache from '../InputCache.js';
+import { ApiNodeShape, ApiParameter, ApiPropertyShape, ApiShapeUnion } from '../../helpers/api.js';
+import { OperationParameter } from '../../types.js';
 
-/** @typedef {import('lit-element').TemplateResult} TemplateResult */
-/** @typedef {import('@advanced-rest-client/base').AuthUiInit} AuthUiInit */
-/** @typedef {import('../../helpers/api').ApiShapeUnion} ApiShapeUnion */
-/** @typedef {import('../../helpers/api').ApiNodeShape} ApiNodeShape */
-/** @typedef {import('../../helpers/api').ApiParameter} ApiParameter */
-/** @typedef {import('@advanced-rest-client/events').Authorization.PassThroughAuthorization} PassThroughAuthorization */
-/** @typedef {import('../../types').OperationParameter} OperationParameter */
+export default class CustomAuth extends ApiUiBase {
+  
+  schemeName?: string;
+  
+  schemeDescription?: string;
+  
+  descriptionOpened?: boolean;
 
-export default class PassThroughAuth extends ApiUiBase {
-  /**
-   * @param {AuthUiInit} init
-   */
-  constructor(init) {
+  constructor(init: AuthUiInit) {
     super(init);
-    /** @type {string} */
-    this.schemeName = undefined;
-    /** @type {string} */
-    this.schemeDescription = undefined;
-    /** @type {boolean} */
-    this.anypoint = undefined;
-    /** @type {boolean} */
-    this.descriptionOpened = undefined;
+    this.clearInit();
 
     this.toggleDescription = this.toggleDescription.bind(this);
   }
 
-  reset() {
-    const params = /** @type OperationParameter[] */ (this.parametersValue);
-    (params || []).forEach((param) => {
-      InputCache.set(this.target, param.paramId, '', this.globalCache)
-    });
+  clearInit(): void {
+    this.schemeName = undefined;
+    this.schemeDescription = undefined;
+    this.anypoint = false;
+    this.descriptionOpened = undefined;
   }
 
-  initializeApiModel() {
+  reset(): void {
+    this.clearInit();
+    this.clearCache();
+  }
+
+  initializeApiModel(): void {
     const { security } = this;
-    this.reset();
+    this.clearInit();
     const source = 'settings';
-    const list = /** @type OperationParameter[] */ (this.parametersValue);
+    const list = this.parametersValue;
     this.parametersValue = list.filter(item => item.source !== source);
+
     if (!security) {
       return;
     }
@@ -55,69 +54,101 @@ export default class PassThroughAuth extends ApiUiBase {
       return;
     }
     const { type } = scheme;
-    if (!type || !type.startsWith('Pass Through')) {
+    if (!type || !type.startsWith('x-')) {
       return;
     }
+    const params = this.parametersValue;
     const { headers, queryParameters, queryString } = scheme;
-    this.appendToParams(headers, 'header', true);
-    this.appendToParams(queryParameters, 'query', true);
-    if (queryString && (!queryParameters || !queryParameters.length)) {
-      this.appendQueryString(queryString);
-    }
-    this.schemeName = security.name || scheme.name;
-    this.schemeDescription = scheme.description;
-    this.notifyChange();
-    this.requestUpdate();
-  }
-
-  /**
-   * @param {ApiShapeUnion} queryString
-   */
-  appendQueryString(queryString) {
-    const object = /** @type ApiNodeShape */ (queryString);
-    if (!object.properties || !object.properties.length) {
-      return;
-    }
-    const list = object.properties.map((item) => {
-      const { id, range, name, minCount } = item;
-      return /** @type ApiParameter */ ({
-        id,
-        binding: 'query',
-        schema: range,
-        name,
-        examples: [],
-        payloads: [],
-        types: [ns.aml.vocabularies.apiContract.Parameter],
-        required: minCount > 0,
-      });
-    });
-    this.appendToParams(list, 'query', true);
-  }
-
-  /**
-   * Appends a list of parameters to the list of rendered parameters.
-   * @param {ApiParameter[]} list
-   * @param {string} source
-   * @param {boolean=} clear When set it clears the previously set parameters
-   */
-  appendToParams(list, source, clear=false) {
-    let params = this.parametersValue;
-    if (clear) {
-      params = params.filter(p => p.source !== source);
-    }
-    if (Array.isArray(list)) {
-      list.forEach((param) => {
+    if (Array.isArray(headers)) {
+      headers.forEach((p) => {
+        const param = { ...p, required: true };
         params.push({
+          binding: param.binding || '',
           paramId: param.id,
           parameter: param,
-          binding: param.binding,
           source,
+          schemaId: param.schema && param.schema.id,
           schema: param.schema,
-          schemaId: param.schema && param.schema.id ? param.schema.id : undefined,
         });
       });
     }
-    this.parametersValue = params;
+    let addedParameters = false;
+    if (Array.isArray(queryParameters)) {
+      queryParameters.forEach((p) => {
+        addedParameters = true;
+        const param = { ...p, required: true };
+        params.push({
+          binding: param.binding || '',
+          paramId: param.id,
+          parameter: param,
+          source,
+          schemaId: param.schema && param.schema.id,
+          schema: param.schema,
+        });
+      });
+    }
+    if (!addedParameters && queryString) {
+      const shape = queryString as ApiNodeShape;
+      const { properties } = shape;
+      const binding = 'query';
+      if (!properties) {
+        params.push(this.createParameterFromSchema(shape, binding, source));
+      } else {
+        properties.forEach((property) => {
+          params.push(this.createParameterFromProperty(property, binding, source));
+        });
+      }
+    }
+    this.schemeName = security.name || scheme.name;
+    this.schemeDescription = scheme.description;
+    this.requestUpdate();
+    this.notifyChange();
+  }
+
+  createParameterFromSchema(shape: ApiShapeUnion, binding: string, source: string): OperationParameter {
+    const { id, name } = shape;
+    const constructed: ApiParameter = {
+      id,
+      binding,
+      schema: shape,
+      name,
+      examples: [],
+      payloads: [],
+      types: [ns.aml.vocabularies.apiContract.Parameter],
+      required: false,
+      customDomainProperties: [],
+    };
+    return {
+      binding,
+      paramId: id,
+      parameter: constructed,
+      source,
+      schemaId: id,
+      schema: shape,
+    };
+  }
+
+  createParameterFromProperty(property: ApiPropertyShape, binding: string, source: string): OperationParameter {
+    const { id, range, name, minCount=0 } = property;
+    const constructed: ApiParameter = {
+      id,
+      binding,
+      schema: range,
+      name,
+      examples: [],
+      payloads: [],
+      types: [ns.aml.vocabularies.apiContract.Parameter],
+      required: minCount > 0,
+      customDomainProperties: [],
+    };
+    return {
+      binding,
+      paramId: id,
+      parameter: constructed,
+      source,
+      schemaId: property.id,
+      schema: property as ApiShapeUnion,
+    };
   }
 
   /**
@@ -126,10 +157,10 @@ export default class PassThroughAuth extends ApiUiBase {
    * This does nothing if the query parameter has not been defined for the current
    * scheme.
    *
-   * @param {string} name The name of the changed parameter
-   * @param {string} newValue A value to apply. May be empty but must be defined.
+   * @param name The name of the changed parameter
+   * @param newValue A value to apply. May be empty but must be defined.
    */
-  updateQueryParameter(name, newValue) {
+  updateQueryParameter(name: string, newValue: string): void {
     const list = /** @type OperationParameter[] */ (this.parametersValue);
     const param = list.find(i => i.binding === 'query' && i.parameter.name === name);
     if (param) {
@@ -145,22 +176,18 @@ export default class PassThroughAuth extends ApiUiBase {
    * This does nothing if the header has not been defined for current
    * scheme.
    *
-   * @param {string} name The name of the changed header
-   * @param {string} newValue A value to apply. May be empty but must be defined.
+   * @param name The name of the changed header
+   * @param newValue A value to apply. May be empty but must be defined.
    */
-  updateHeader(name, newValue) {
-    const list = /** @type OperationParameter[] */ (this.parametersValue);
+  updateHeader(name: string, newValue: string): void {
+    const list = this.parametersValue;
     const param = list.find(i => i.binding === 'header' && i.parameter.name === name);
     if (param) {
       InputCache.set(this.target, param.paramId, newValue, this.globalCache);
     }
   }
 
-  /**
-   * Restores previously serialized values
-   * @param {PassThroughAuthorization} state
-   */
-  restore(state) {
+  restore(state: RamlCustomAuthorization): void {
     if (!state) {
       return;
     }
@@ -169,15 +196,11 @@ export default class PassThroughAuth extends ApiUiBase {
     this.requestUpdate();
   }
 
-  /**
-   * @param {string} binding 
-   * @param {PassThroughAuthorization} restored 
-   */
-  restoreModelValue(binding, restored) {
+  restoreModelValue(binding: string, restored?: RamlCustomAuthorization): void {
     if (!restored) {
       return;
     }
-    const list = /** @type OperationParameter[] */ (this.parametersValue);
+    const list = this.parametersValue;
     const params = list.filter(i => i.binding === binding);
     if (!params) {
       return;
@@ -185,22 +208,19 @@ export default class PassThroughAuth extends ApiUiBase {
     Object.keys(restored).forEach((name) => {
       const param = params.find(i => i.parameter.name === name);
       if (param) {
-        InputCache.set(this.target, param.paramId, restored[name], this.globalCache);
+        InputCache.set(this.target, param.paramId, restored[name as keyof RamlCustomAuthorization], this.globalCache);
       }
     });
   }
 
-  /**
-   * @returns {PassThroughAuthorization}
-   */
-  serialize() {
-    const params = /** @type OperationParameter[] */ (this.parametersValue);
-    const result = /** @type PassThroughAuthorization */ ({});
+  serialize(): RamlCustomAuthorization {
+    const params = this.parametersValue;
+    const result: RamlCustomAuthorization = {};
     (params || []).forEach((param) => {
-      if (!result[param.binding]) {
-        result[param.binding] = {};
+      if (!result[param.binding as keyof RamlCustomAuthorization]) {
+        result[param.binding as keyof RamlCustomAuthorization] = {};
       }
-      let value = InputCache.get(this.target, param.paramId, this.globalCache);
+      let value = InputCache.get(this.target, param.paramId, this.globalCache) as string | boolean;
       if (value === '' || value === undefined) {
         if (param.parameter.required === false) {
           return;
@@ -213,18 +233,15 @@ export default class PassThroughAuth extends ApiUiBase {
       if (value === null) {
         value = '';
       }
-      result[param.binding][param.parameter.name] = value;
+      (result[param.binding as keyof RamlCustomAuthorization] as Record<string, string>)[param.parameter.name || ''] = value as string;
     });
-    return /** @type PassThroughAuthorization */ (result);
+    return result;
   }
 
-  /**
-   * @returns {boolean}
-   */
-  validate() {
+  validate(): boolean {
     const nils = this.nilValues;
-    const params = /** @type OperationParameter[] */ (this.parametersValue);
-    const hasInvalid = params.some((param) => {
+    const params = this.parametersValue;
+    return !params.some((param) => {
       if (nils.includes(param.paramId)) {
         return false;
       }
@@ -234,7 +251,6 @@ export default class PassThroughAuth extends ApiUiBase {
       }
       return !value;
     });
-    return !hasInvalid;
   }
 
   /**
@@ -243,25 +259,22 @@ export default class PassThroughAuth extends ApiUiBase {
    * This is a utility method for UI event handling. Use `descriptionOpened`
    * attribute directly instead of this method.
    */
-  toggleDescription() {
+  toggleDescription(): void {
     this.descriptionOpened = !this.descriptionOpened;
     this.requestUpdate();
   }
 
-  /**
-   * @returns {TemplateResult}
-   */
-  render() {
+  render(): TemplateResult {
     return html`
     ${this.titleTemplate()}
-    <form autocomplete="on" class="passthrough-auth">
+    <form autocomplete="on" class="custom-auth">
       ${this.headersTemplate()}
       ${this.queryTemplate()}
     </form>
     `;
   }
 
-  titleTemplate() {
+  titleTemplate(): TemplateResult | string {
     const {
       schemeName,
       schemeDescription,
@@ -291,7 +304,7 @@ export default class PassThroughAuth extends ApiUiBase {
     </div>` : ''}`;
   }
 
-  headersTemplate() {
+  headersTemplate(): TemplateResult | string {
     const headers = this.parametersValue.filter(item => item.binding === 'header');
     if (!headers.length) {
       return '';
@@ -304,7 +317,7 @@ export default class PassThroughAuth extends ApiUiBase {
     `;
   }
 
-  queryTemplate() {
+  queryTemplate(): TemplateResult | string {
     const params = this.parametersValue.filter(item => item.binding === 'query');
     if (!params.length) {
       return '';
