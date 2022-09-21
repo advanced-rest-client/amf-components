@@ -1,0 +1,38 @@
+openapi: '3.0.2'
+info:
+  title: Not schema
+  version: '1.0'
+  description: Test API for testing AMF service
+  contact:
+    name: API Support
+    url: http://www.example.com/support
+    email: support@example.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+components:
+  schemas:
+    PetByType:
+      type: object
+      properties:
+        pet_type:
+          not:
+            type: integer
+      required:
+        - pet_type
+
+paths:
+  /pets:
+    patch:
+      description: Tests the behavior of the "not" schema
+      summary: Not schema
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PetByType'
+      responses:
+        '200':
+          description: Updated
+  

@@ -135,6 +135,7 @@ config.set('simple-api/simple-api.raml', { type: 'RAML 1.0' });
 config.set('example-generator-api/example-generator-api.raml', { type: "RAML 1.0" });
 config.set('tracked-examples/tracked-to-linked.raml', { type: 'RAML 1.0' });
 config.set('types-list/types-list.raml', { type: 'RAML 1.0' });
+config.set('not-schema/not-schema.yaml', { type: 'OAS 3.0' });
 
 const srcFolder = path.join('demo', 'apis');
 const descFolder = path.join('demo', 'models');
