@@ -843,7 +843,7 @@ export default class ApiSchemaDocumentElement extends ApiDocumentationBase {
           ${detailsTemplate(range)}
         </div>
       </div>
-      </div>
+    </div>
     ${expanded ? html`
     <div class="shape-children">
       <div class="property-border"></div>
