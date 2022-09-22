@@ -1,6 +1,7 @@
-import { Server } from "./amf";
+/* eslint-disable @typescript-eslint/no-empty-interface */
+import { Server } from "./amf.js";
 
-interface ServersQueryOptions {
+export interface ServersQueryOptions {
   /**
    * An EndPoint to look for the servers in
    */
@@ -11,7 +12,7 @@ interface ServersQueryOptions {
   methodId?: string
 }
 
-interface ServerQueryOptions {
+export interface ServerQueryOptions {
   /**
    * An EndPoint to look for the servers in. Required if Operation is provided
    */
@@ -26,7 +27,7 @@ interface ServerQueryOptions {
   id?: string;
 }
 
-interface ComputeUriOptions {
+export interface ComputeUriOptions {
   /**
    * Model for the current server, if available.
    */
@@ -95,11 +96,13 @@ export interface ApiOrganization extends ApiDomainProperty {
   url?: string;
   name?: string;
   email?: string;
+  sourceMaps?: ApiDocumentSourceMaps;
 }
 
 export interface ApiLicense extends ApiDomainProperty {
   url?: string;
   name?: string;
+  sourceMaps?: ApiDocumentSourceMaps;  
 }
 
 export interface ApiEndPoint extends ApiDomainProperty {
@@ -490,6 +493,8 @@ export interface ApiEncoding {
 }
 
 export interface ApiDocumentSourceMaps {
+  id?: string;
+  types?: string[];
   synthesizedField?: ApiSynthesizedField[];
   lexical?: ApiSynthesizedField[];
   trackedElement?: ApiSynthesizedField;
@@ -508,11 +513,13 @@ export interface ApiParametrizedDeclaration extends ApiDomainProperty {
   name?: string;
   target?: ApiAbstractDeclaration;
   variables: ApiVariableValue[];
+  sourceMaps?: ApiDocumentSourceMaps;
 }
 
 export interface ApiVariableValue extends ApiDomainProperty {
   name: string;
   value?: ApiDataNode;
+  sourceMaps?: ApiDocumentSourceMaps;
 }
 
 export interface ApiAbstractDeclaration extends ApiDomainProperty {
@@ -520,6 +527,7 @@ export interface ApiAbstractDeclaration extends ApiDomainProperty {
   description?: string;
   dataNode?: ApiDataNode;
   variables: string[];
+  sourceMaps?: ApiDocumentSourceMaps;
 }
 
 export interface ApiParametrizedTrait extends ApiParametrizedDeclaration {}

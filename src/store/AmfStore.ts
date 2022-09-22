@@ -1,5 +1,11 @@
+/* eslint-disable default-param-last */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
 /* eslint-disable class-methods-use-this */
+import { AmfDocument } from '../helpers/amf.js';
+import { AmfSerializer } from '../helpers/AmfSerializer.js';
+import { ApiSummary, ApiEndPoint, ApiOperation, ServersQueryOptions, ApiServer, ApiDocumentation, ApiSecurityScheme, ApiSecurityRequirement, ApiRequest, ApiResponse, ApiPayload, ApiShapeUnion } from '../helpers/api.js';
+import { DocumentMeta, ApiEndPointWithOperationsListItem, ApiSecuritySchemeListItem, ApiNodeShapeListItem } from '../types.js';
 
 /** @typedef {import('../helpers/amf').AmfDocument} AmfDocument */
 /** @typedef {import('../helpers/amf').DomainElement} DomainElement */
@@ -24,189 +30,191 @@
  * An abstract base class for the store implementation that works with API Components.
  */
 export class AmfStore {
-  constructor() {
-    /** 
-     * For future use.
-     * Indicates that the store is read only.
-     */
+  /** 
+   * For future use.
+   * Indicates that the store is read only.
+   */
+  readonly: boolean;
+
+  target: EventTarget;
+
+  serializer: AmfSerializer;
+
+  /**
+   * @param target The event target to dispatch the events on.
+   */
+  constructor(target: EventTarget = window, graph?: AmfDocument) {
     this.readonly = true;
+    this.target = target;
+    let amf = graph;
+    if (Array.isArray(graph)) {
+      [amf] = graph;
+    }
+    /** 
+     * The API serializer
+     */
+    this.serializer = new AmfSerializer(amf);
   }
 
   /**
-   * @returns {string[]} The list of domain types for the currently loaded document.
+   * @returns The list of domain types for the currently loaded document.
    */
-  getDocumentTypes() {
+  getDocumentTypes(): string[] {
     throw new Error('Not implemented');
   }
 
   /**
    * Gathers information about the loaded document.
    * This is mainly used by the `api-documentation` element to decide which documentation to render.
-   * 
-   * @returns {Promise<DocumentMeta>}
    */
-  async documentMeta() {
+  async documentMeta(): Promise<DocumentMeta> {
     throw new Error('Not implemented');
   }
 
   /**
-   * @returns {Promise<ApiSummary|null>} API summary for the summary view.
+   * @returns API summary for the summary view.
    */
-  async apiSummary() {
+  async apiSummary(): Promise<ApiSummary | null> {
     throw new Error('Not implemented');
   }
 
   /**
-   * @returns {Promise<string[]|null>} Currently loaded API's protocols
+   * @returns Currently loaded API's protocols
    */
-  async apiProtocols() {
+  async apiProtocols(): Promise<string[] | null> {
     throw new Error('Not implemented');
   }
 
   /**
-   * @returns {Promise<string|null>} Currently loaded API's version
+   * @returns Currently loaded API's version
    */
-  async apiVersion() {
+  async apiVersion(): Promise<string | null> {
     throw new Error('Not implemented');
   }
-  
+
   /**
    * Reads an endpoint by its id.
-   * @param {string} id The domain id of the endpoint.
-   * @returns {Promise<ApiEndPoint|null>} 
+   * @param id The domain id of the endpoint.
    */
-  async getEndpoint(id) {
+  async getEndpoint(id: string): Promise<ApiEndPoint | null> {
     throw new Error('Not implemented');
   }
 
   /**
    * Reads an endpoint by its path.
-   * @param {string} path The path value of the endpoint or channel name.
-   * @returns {Promise<ApiEndPoint|null>} 
+   * @param path The path value of the endpoint or channel name.
    */
-  async getEndpointByPath(path) {
+  async getEndpointByPath(path: string): Promise<ApiEndPoint | null> {
     throw new Error('Not implemented');
   }
 
   /**
    * Lists all endpoints with operations included into the result.
-   * @returns {Promise<ApiEndPointWithOperationsListItem[]>}
    */
-  async listEndpointsWithOperations() {
+  async listEndpointsWithOperations(): Promise<ApiEndPointWithOperationsListItem[]> {
     throw new Error('Not implemented');
   }
 
   /**
    * Queries for the list of servers for method, if defined, or endpoint, if defined, or root level 
-   * @param {ServersQueryOptions=} query Server query options
-   * @returns {Promise<ApiServer[]>} The list of servers for given query.
+   * @param query Server query options
+   * @returns The list of servers for given query.
    */
-  async queryServers(query) {
+  async queryServers(query?: ServersQueryOptions): Promise<ApiServer[]> {
     throw new Error('Not implemented');
   }
 
   /**
    * Reads the operation model.
-   * @param {string} operationId The domain id of the operation to read.
-   * @param {string=} endpointId Optional endpoint id. When not set it searches through all endpoints.
-   * @returns {Promise<ApiOperation>}
+   * @param operationId The domain id of the operation to read.
+   * @param endpointId Optional endpoint id. When not set it searches through all endpoints.
    */
-  async getOperation(operationId, endpointId) {
+  async getOperation(operationId: string, endpointId?: string): Promise<ApiOperation | undefined> {
     throw new Error('Not implemented');
   }
 
   /**
    * Finds an endpoint that has the operation.
-   * @param {string} id Method name or the domain id of the operation to find
-   * @returns {Promise<ApiEndPoint|undefined>}
+   * @param id Method name or the domain id of the operation to find
    */
-  async getOperationParent(id) {
+  async getOperationParent(id: string): Promise<ApiEndPoint | undefined> {
     throw new Error('Not implemented');
   }
 
   /**
    * Lists the documentation definitions for the API.
-   * @returns {Promise<ApiDocumentation[]>}
    */
-  async listDocumentations() {
+  async listDocumentations(): Promise<ApiDocumentation[] | undefined> {
     throw new Error('Not implemented');
   }
 
   /**
    * Reads the documentation object from the store.
-   * @param {string} id The domain id of the documentation object
-   * @returns {Promise<ApiDocumentation|undefined>} The read documentation.
+   * @param id The domain id of the documentation object
+   * @returns The read documentation.
    */
-  async getDocumentation(id) {
+  async getDocumentation(id: string): Promise<ApiDocumentation | undefined> {
     throw new Error('Not implemented');
   }
 
   /**
    * Reads the SecurityScheme object from the graph.
-   * @param {string} id The domain id of the SecurityScheme
-   * @returns {Promise<ApiSecurityScheme>}
+   * @param id The domain id of the SecurityScheme
    */
-  async getSecurityScheme(id) {
+  async getSecurityScheme(id: string): Promise<ApiSecurityScheme | undefined> {
     throw new Error('Not implemented');
   }
 
   /**
    * Reads the SecurityRequirement object from the graph.
-   * @param {string} id The domain id of the SecurityRequirement
-   * @returns {Promise<ApiSecurityRequirement>}
+   * @param id The domain id of the SecurityRequirement
    */
-  async getSecurityRequirement(id) {
+  async getSecurityRequirement(id: string): Promise<ApiSecurityRequirement | undefined> {
     throw new Error('Not implemented');
   }
 
   /**
    * Lists the security definitions for the API.
-   * @returns {Promise<ApiSecuritySchemeListItem[]>}
    */
-  async listSecurity() {
+  async listSecurity(): Promise<ApiSecuritySchemeListItem[]> {
     throw new Error('Not implemented');
   }
 
   /**
    * Reads the Request object from the graph.
-   * @param {string} id The domain id of the Request
-   * @returns {Promise<ApiRequest>}
+   * @param id The domain id of the Request
    */
-  async getRequest(id) {
+  async getRequest(id: string): Promise<ApiRequest | undefined> {
     throw new Error('Not implemented');
   }
 
   /**
    * Reads the response data from the graph.
-   * @param {string} id The domain id of the response.
-   * @returns {Promise<ApiResponse>}
+   * @param id The domain id of the response.
    */
-  async getResponse(id) {
+  async getResponse(id: string): Promise<ApiResponse | undefined> {
     throw new Error('Not implemented');
   }
 
   /**
    * Reads Payload data from the graph
-   * @param {string} id The domain id of the payload
-   * @returns {Promise<ApiPayload>}
+   * @param id The domain id of the payload
    */
-  async getPayload(id) {
+  async getPayload(id: string): Promise<ApiPayload | undefined> {
     throw new Error('Not implemented');
   }
 
   /**
    * Lists the type (schema) definitions for the API.
-   * @returns {Promise<ApiNodeShapeListItem[]>}
    */
-  async listTypes() {
+  async listTypes(): Promise<ApiNodeShapeListItem[]> {
     throw new Error(`Not implemented`);
   }
 
   /**
-   * @param {string} id The domain id of the API type (schema).
-   * @returns {Promise<ApiShapeUnion>}
+   * @param id The domain id of the API type (schema).
    */
-  async getType(id) {
+  async getType(id: string): Promise<ApiShapeUnion | undefined> {
     throw new Error('Not implemented');
   }
 }

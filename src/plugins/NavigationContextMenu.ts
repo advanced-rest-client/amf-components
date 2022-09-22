@@ -4,17 +4,14 @@ export class NavigationContextMenu extends ContextMenu {
   /**
    * Finds the click target which can be one of the model objects
    * or SVG elements.
-   *
-   * @param {MouseEvent} e
-   * @return {HTMLElement|SVGElement|undefined}
    */
-  findTarget(e) {
+  findTarget(e: MouseEvent): HTMLElement|SVGElement|undefined {
     let target;
     const path = e.composedPath();
     while(path.length > 0) {
-      const candidate = /** @type Element */ (path.shift());
+      const candidate = path.shift() as Element;
       if (candidate === this.workspace || (candidate.nodeType === Node.ELEMENT_NODE && (candidate.classList.contains('list-item') || candidate.classList.contains('section-title')))) {
-        target = /** @type HTMLElement */ (candidate);
+        target = candidate as HTMLElement;
         break;
       }
     }
@@ -24,10 +21,10 @@ export class NavigationContextMenu extends ContextMenu {
   /**
    * Maps an element to an internal target name.
    *
-   * @param {HTMLElement} element The context click target
-   * @return {string|undefined} The internal target name.
+   * @param element The context click target
+   * @returns The internal target name.
    */
-  elementToTarget(element) {
+  elementToTarget(element: HTMLElement): string|undefined {
     if (element === this.workspace) {
       return 'root';
     }

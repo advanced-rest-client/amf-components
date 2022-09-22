@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
 export declare interface DomainElement {
   '@id': string;
   '@type': string[];
@@ -415,8 +416,9 @@ export interface DocumentSourceMaps extends DomainElement {
   'http://a.ml/vocabularies/document-source-maps#tracked-element'?: SynthesizedField[];
 }
 
-export interface SynthesizedField {
+export interface SynthesizedField extends DomainElement {
   '@id': string;
+  // '@context'?: Record<string, string>;
   'http://a.ml/vocabularies/document-source-maps#element'?: LdValueString[];
   'http://a.ml/vocabularies/document-source-maps#value'?: LdValueString[];
 }

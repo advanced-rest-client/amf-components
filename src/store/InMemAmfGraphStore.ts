@@ -1,29 +1,12 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable class-methods-use-this */
-/* eslint-disable no-continue */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable default-param-last */
 import { AmfHelperMixin } from '../helpers/AmfHelperMixin.js';
-import { AmfSerializer } from '../helpers/AmfSerializer.js';
 import { StoreEvents } from '../events/StoreEvents.js';
 import { AmfStore } from './AmfStore.js';
+import { AmfDocument, Api, CreativeWork, DomainElement } from '../helpers/amf.js';
+import { ApiSummary, ApiEndPoint, ApiOperation, ServersQueryOptions, ApiServer, ApiDocumentation, ApiSecurityScheme, ApiSecurityRequirement, ApiRequest, ApiResponse, ApiPayload, ApiShapeUnion } from '../helpers/api.js';
+import { DocumentMeta, ApiEndPointWithOperationsListItem, ApiSecuritySchemeListItem, ApiNodeShapeListItem } from '../types.js';
 
-/** @typedef {import('../helpers/amf').AmfDocument} AmfDocument */
-/** @typedef {import('../helpers/amf').DomainElement} DomainElement */
-/** @typedef {import('../helpers/api').ApiSummary} ApiSummary */
-/** @typedef {import('../helpers/api').ApiEndPoint} ApiEndPoint */
-/** @typedef {import('../helpers/api').ApiOperation} ApiOperation */
-/** @typedef {import('../helpers/api').ServersQueryOptions} ServersQueryOptions */
-/** @typedef {import('../helpers/api').ApiServer} ApiServer */
-/** @typedef {import('../helpers/api').ApiDocumentation} ApiDocumentation */
-/** @typedef {import('../helpers/api').ApiSecurityScheme} ApiSecurityScheme */
-/** @typedef {import('../helpers/api').ApiSecurityRequirement} ApiSecurityRequirement */
-/** @typedef {import('../helpers/api').ApiRequest} ApiRequest */
-/** @typedef {import('../helpers/api').ApiResponse} ApiResponse */
-/** @typedef {import('../helpers/api').ApiPayload} ApiPayload */
-/** @typedef {import('../helpers/api').ApiShapeUnion} ApiShapeUnion */
-/** @typedef {import('../types').ApiEndPointWithOperationsListItem} ApiEndPointWithOperationsListItem */
-/** @typedef {import('../types').ApiSecuritySchemeListItem} ApiSecuritySchemeListItem */
-/** @typedef {import('../types').ApiNodeShapeListItem} ApiNodeShapeListItem */
-/** @typedef {import('../types').DocumentMeta} DocumentMeta */
 
 /**
  * The store that provides an API to read data from the AMF graph model.
@@ -32,30 +15,22 @@ import { AmfStore } from './AmfStore.js';
  */
 export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
   /**
-   * @param {EventTarget=} eventsTarget The event target to dispatch the events on.
-   * @param {AmfDocument=} graph The full API model.
+   * @param target The event target to dispatch the events on.
+   * @param graph The full API model.
    */
-  constructor(eventsTarget=window, graph) {
-    super();
-    this.target = eventsTarget;
+  constructor(target: EventTarget = window, graph?: AmfDocument) {
+    super(target, graph);
     let amf = graph;
     if (Array.isArray(graph)) {
       [amf] = graph;
     }
-    /** 
-     * The API serializer
-     */
-    this.serializer = new AmfSerializer(amf);
     /** 
      * The graph model.
      */
     this.amf = amf;
   }
 
-  /**
-   * @param {AmfDocument} amf
-   */
-  __amfChanged(amf) {
+  __amfChanged(amf: AmfDocument): void {
     this.serializer.amf = amf;
     if (this.target) {
       StoreEvents.graphChange(this.target);
@@ -63,9 +38,9 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
   }
 
   /**
-   * @returns {string[]} The list of domain types for the currently loaded document.
+   * @returns The list of domain types for the currently loaded document.
    */
-  getDocumentTypes() {
+  getDocumentTypes(): string[] {
     let { amf } = this;
     if (Array.isArray(amf)) {
       [amf] = amf;
@@ -79,11 +54,9 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
   /**
    * Gathers information about the loaded document.
    * This is mainly used by the `api-documentation` element to decide which documentation to render.
-   * 
-   * @returns {Promise<DocumentMeta>}
    */
-  async documentMeta() {
-    const result = /** @type DocumentMeta */ ({
+  async documentMeta(): Promise<DocumentMeta> {
+    const result: DocumentMeta = ({
       isApi: false,
       isAsync: false,
       isFragment: false,
@@ -120,9 +93,9 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
   }
 
   /**
-   * @returns {Promise<ApiSummary|null>} API summary for the summary view.
+   * @returns API summary for the summary view.
    */
-  async apiSummary() {
+  async apiSummary(): Promise<ApiSummary|null> {
     const { amf } = this;
     if (!amf) {
       return null;
@@ -136,37 +109,36 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
   }
 
   /**
-   * @returns {Promise<string[]|null>} Currently loaded API's protocols
+   * @returns Currently loaded API's protocols
    */
-  async apiProtocols() {
+  async apiProtocols(): Promise<string[]|null> {
     const { amf } = this;
     if (!amf) {
       return null;
     }
-    const wa = this._computeApi(this.amf);
-    const protocols = /** @type string[] */ (this._getValueArray(wa, this.ns.aml.vocabularies.apiContract.scheme));
+    const wa = this._computeApi(amf);
+    const protocols = this._getValueArray(wa, this.ns.aml.vocabularies.apiContract.scheme) as string[];
     return protocols;
   }
 
   /**
-   * @returns {Promise<string|null>} Currently loaded API's version
+   * @returns Currently loaded API's version
    */
-  async apiVersion() {
+  async apiVersion(): Promise<string|null> {
     const { amf } = this;
     if (!amf) {
       return null;
     }
-    const version = this._computeApiVersion(amf);
+    const version = this._computeApiVersion(amf) || null;
     return version;
   }
 
   /**
    * Finds an endpoint in the graph.
-   * @param {string} id The domain id of the endpoint.
-   * @returns {ApiEndPoint|null} 
+   * @param id The domain id of the endpoint.
    * @private
    */
-  findEndpoint(id) {
+  findEndpoint(id: string): ApiEndPoint|null {
     const { amf } = this;
     if (!amf) {
       return null;
@@ -185,26 +157,24 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
   
   /**
    * Reads an endpoint by its id.
-   * @param {string} id The domain id of the endpoint.
-   * @returns {Promise<ApiEndPoint|null>} 
+   * @param id The domain id of the endpoint.
    */
-  async getEndpoint(id) {
+  async getEndpoint(id: string): Promise<ApiEndPoint|null> {
     return this.findEndpoint(id);
   }
 
   /**
    * Reads an endpoint by its path.
-   * @param {string} path The path value of the endpoint or channel name.
-   * @returns {Promise<ApiEndPoint|null>} 
+   * @param path The path value of the endpoint or channel name.
    */
-  async getEndpointByPath(path) {
+  async getEndpointByPath(path: string): Promise<ApiEndPoint|null> {
     const { amf } = this;
     if (!amf) {
-      return undefined;
+      return null;
     }
     const api = this._computeApi(amf);
     if (!api) {
-      return undefined;
+      return null;
     }
     const endpoints = this._computeEndpoints(api);
     if (!Array.isArray(endpoints) || !endpoints.length) {
@@ -220,9 +190,8 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Lists all endpoints with operations included into the result.
-   * @returns {Promise<ApiEndPointWithOperationsListItem[]>}
    */
-  async listEndpointsWithOperations() {
+  async listEndpointsWithOperations(): Promise<ApiEndPointWithOperationsListItem[]> {
     const { amf } = this;
     if (!amf) {
       return [];
@@ -240,13 +209,13 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Queries for the list of servers for method, if defined, or endpoint, if defined, or root level 
-   * @param {ServersQueryOptions=} query Server query options
-   * @returns {Promise<ApiServer[]>} The list of servers for given query.
+   * @param query Server query options
+   * @returns The list of servers for given query.
    */
-  async queryServers(query) {
+  async queryServers(query?: ServersQueryOptions): Promise<ApiServer[]> {
     const { amf } = this;
     if (!amf) {
-      return undefined;
+      return [];
     }
     const servers = this._getServers(query);
     if (!Array.isArray(servers)) {
@@ -257,11 +226,10 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Searches for an operation in the API.
-   * @param {string} operationId The domain id of the operation to read.
-   * @param {string=} endpointId Optional endpoint id. When not set it searches through all endpoints.
-   * @returns {ApiOperation|undefined}
+   * @param operationId The domain id of the operation to read.
+   * @param endpointId Optional endpoint id. When not set it searches through all endpoints.
    */
-  findOperation(operationId, endpointId) {
+  findOperation(operationId: string, endpointId?: string): ApiOperation|undefined {
     if (endpointId) {
       const ep = this.findEndpoint(endpointId);
       if (!ep) {
@@ -282,9 +250,9 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
       return undefined;
     }
     const { apiContract } = this.ns.aml.vocabularies;
-    const opKey = this._getAmfKey(apiContract.supportedOperation);
+    const opKey = this._getAmfKey(apiContract.supportedOperation) as string;
     for (const endpoint of endpoints) {
-      let operations = endpoint[opKey];
+      let operations = (endpoint as any)[opKey];
       if (!operations) {
         continue;
       }
@@ -302,11 +270,10 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Reads the operation model.
-   * @param {string} operationId The domain id of the operation to read.
-   * @param {string=} endpointId Optional endpoint id. When not set it searches through all endpoints.
-   * @returns {Promise<ApiOperation>}
+   * @param operationId The domain id of the operation to read.
+   * @param endpointId Optional endpoint id. When not set it searches through all endpoints.
    */
-  async getOperation(operationId, endpointId) {
+  async getOperation(operationId: string, endpointId?: string): Promise<ApiOperation> {
     const op = this.findOperation(operationId, endpointId);
     if (!op) {
       throw new Error(`No operation ${operationId} in the graph`);
@@ -316,10 +283,9 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Finds an endpoint that has the operation.
-   * @param {string} id Method name or the domain id of the operation to find
-   * @returns {Promise<ApiEndPoint|undefined>}
+   * @param id Method name or the domain id of the operation to find
    */
-  async getOperationParent(id) {
+  async getOperationParent(id: string): Promise<ApiEndPoint|undefined> {
     const { amf } = this;
     if (!amf) {
       return undefined;
@@ -338,9 +304,8 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Lists the documentation definitions for the API.
-   * @returns {Promise<ApiDocumentation[]>}
    */
-  async listDocumentations() {
+  async listDocumentations(): Promise<ApiDocumentation[] | undefined> {
     const { amf } = this;
     if (!amf) {
       return undefined;
@@ -356,8 +321,8 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
     if (!api) {
       return undefined;
     }
-    const key = this._getAmfKey(this.ns.aml.vocabularies.core.documentation);
-    const docs = this._ensureArray(api[key]);
+    const key = this._getAmfKey(this.ns.aml.vocabularies.core.documentation) as string;
+    const docs = this._ensureArray((api as any)[key]) as CreativeWork[];
     if (docs) {
       return docs.map((doc) => this.serializer.documentation(doc));
     }
@@ -366,10 +331,10 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Reads the documentation object from the store.
-   * @param {string} id The domain id of the documentation object
-   * @returns {Promise<ApiDocumentation|undefined>} The read documentation.
+   * @param id The domain id of the documentation object
+   * @returns The read documentation.
    */
-  async getDocumentation(id) {
+  async getDocumentation(id: string): Promise<ApiDocumentation|undefined> {
     const { amf } = this;
     if (!amf) {
       return undefined;
@@ -378,11 +343,11 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
     // when we have loaded Documentation fragment then the id doesn't matter.
     if (types.includes(this.ns.aml.vocabularies.apiContract.UserDocumentationFragment)) {
       const encodes = this._computeEncodes(amf);
-      return this.serializer.documentation(encodes);
+      return this.serializer.documentation(encodes as Api);
     }
     const api = this._computeApi(amf);
     if (!api) {
-      return null;
+      return undefined;
     }
     const creative = this._computeDocument(api, id);
     if (!creative) {
@@ -394,10 +359,9 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Reads the SecurityScheme object from the graph.
-   * @param {string} id The domain id of the SecurityScheme
-   * @returns {Promise<ApiSecurityScheme>}
+   * @param id The domain id of the SecurityScheme
    */
-  async getSecurityScheme(id) {
+  async getSecurityScheme(id: string): Promise<ApiSecurityScheme | undefined> {
     const types = this.getDocumentTypes();
     // when we have loaded Security fragment then the id doesn't matter.
     if (types.includes(this.ns.aml.vocabularies.security.SecuritySchemeFragment)) {
@@ -406,7 +370,7 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
         return undefined;
       }
       const encodes = this._computeEncodes(amf);
-      return this.serializer.securityScheme(encodes);
+      return this.serializer.securityScheme(encodes as Api);
     }
     const object = this.findSecurityScheme(id);
     if (!object) {
@@ -417,10 +381,9 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Reads the SecurityRequirement object from the graph.
-   * @param {string} id The domain id of the SecurityRequirement
-   * @returns {Promise<ApiSecurityRequirement>}
+   * @param id The domain id of the SecurityRequirement
    */
-  async getSecurityRequirement(id) {
+  async getSecurityRequirement(id: string): Promise<ApiSecurityRequirement | undefined> {
     const { amf } = this;
     if (!amf) {
       return undefined;
@@ -429,15 +392,15 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
     if (!wa) {
       return undefined;
     }
-    const endpoints = wa[this._getAmfKey(this.ns.aml.vocabularies.apiContract.endpoint)];
+    const endpoints = (wa as any)[this._getAmfKey(this.ns.aml.vocabularies.apiContract.endpoint) as string];
     if (!Array.isArray(endpoints)) {
       return undefined;
     }
     for (const endpoint of endpoints) {
-      const operations = endpoint[this._getAmfKey(this.ns.aml.vocabularies.apiContract.supportedOperation)];
+      const operations = endpoint[this._getAmfKey(this.ns.aml.vocabularies.apiContract.supportedOperation) as string];
       if (Array.isArray(operations)) {
         for (const operation of operations) {
-          const securityList = operation[this._getAmfKey(this.ns.aml.vocabularies.security.security)];
+          const securityList = operation[this._getAmfKey(this.ns.aml.vocabularies.security.security) as string];
           if (Array.isArray(securityList)) {
             for (const security of securityList) {
               if (security['@id'] === id) {
@@ -453,17 +416,16 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Lists the security definitions for the API.
-   * @returns {Promise<ApiSecuritySchemeListItem[]>}
    */
-  async listSecurity() {
+  async listSecurity(): Promise<ApiSecuritySchemeListItem[]> {
     const { amf } = this;
     if (!amf) {
-      return undefined;
+      return [];
     }
     if (this._hasType(amf, this.ns.aml.vocabularies.security.SecuritySchemeFragment)) {
       const model = this._computeEncodes(amf);
       if (!model) {
-        return undefined;
+        return [];
       }
       return [this.serializer.securitySchemeListItem(model)];
     }
@@ -473,10 +435,9 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Reads the Request object from the graph.
-   * @param {string} id The domain id of the Request
-   * @returns {Promise<ApiRequest>}
+   * @param id The domain id of the Request
    */
-  async getRequest(id) {
+  async getRequest(id: string): Promise<ApiRequest | undefined> {
     const { amf } = this;
     if (!amf) {
       return undefined;
@@ -485,15 +446,15 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
     if (!wa) {
       return undefined;
     }
-    const endpoints = wa[this._getAmfKey(this.ns.aml.vocabularies.apiContract.endpoint)];
+    const endpoints = (wa as any)[this._getAmfKey(this.ns.aml.vocabularies.apiContract.endpoint) as string];
     if (!Array.isArray(endpoints)) {
       return undefined;
     }
     for (const endpoint of endpoints) {
-      const operations = endpoint[this._getAmfKey(this.ns.aml.vocabularies.apiContract.supportedOperation)];
+      const operations = endpoint[this._getAmfKey(this.ns.aml.vocabularies.apiContract.supportedOperation) as string];
       if (Array.isArray(operations)) {
         for (const operation of operations) {
-          const expectsList = operation[this._getAmfKey(this.ns.aml.vocabularies.apiContract.expects)];
+          const expectsList = operation[this._getAmfKey(this.ns.aml.vocabularies.apiContract.expects) as string];
           if (Array.isArray(expectsList)) {
             for (const expects of expectsList) {
               if (expects['@id'] === id) {
@@ -509,10 +470,9 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Reads the response data from the graph.
-   * @param {string} id The domain id of the response.
-   * @returns {Promise<ApiResponse>}
+   * @param id The domain id of the response.
    */
-  async getResponse(id) {
+  async getResponse(id: string): Promise<ApiResponse | undefined> {
     const { amf } = this;
     if (!amf) {
       return undefined;
@@ -521,15 +481,15 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
     if (!wa) {
       return undefined;
     }
-    const endpoints = wa[this._getAmfKey(this.ns.aml.vocabularies.apiContract.endpoint)];
+    const endpoints = (wa as any)[this._getAmfKey(this.ns.aml.vocabularies.apiContract.endpoint) as string];
     if (!Array.isArray(endpoints)) {
       return undefined;
     }
     for (const endpoint of endpoints) {
-      const operations = endpoint[this._getAmfKey(this.ns.aml.vocabularies.apiContract.supportedOperation)];
+      const operations = endpoint[this._getAmfKey(this.ns.aml.vocabularies.apiContract.supportedOperation) as string];
       if (Array.isArray(operations)) {
         for (const operation of operations) {
-          const returnsList = operation[this._getAmfKey(this.ns.aml.vocabularies.apiContract.returns)];
+          const returnsList = operation[this._getAmfKey(this.ns.aml.vocabularies.apiContract.returns) as string];
           if (Array.isArray(returnsList)) {
             for (const returns of returnsList) {
               if (returns['@id'] === id) {
@@ -545,12 +505,9 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Finds a payload in a request or a response object.
-   * @param {DomainElement} object
-   * @param {string} domainId
-   * @returns {ApiPayload|undefined}
    */
-  findPayload(object, domainId) {
-    const list = object[this._getAmfKey(this.ns.aml.vocabularies.apiContract.payload)];
+  findPayload(object: DomainElement, domainId: string): ApiPayload|undefined {
+    const list = (object as any)[this._getAmfKey(this.ns.aml.vocabularies.apiContract.payload) as string];
     if (!Array.isArray(list) || !list.length) {
       return undefined;
     }
@@ -563,10 +520,9 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Reads Payload data from the graph
-   * @param {string} id The domain id of the payload
-   * @returns {Promise<ApiPayload>}
+   * @param id The domain id of the payload
    */
-  async getPayload(id) {
+  async getPayload(id: string): Promise<ApiPayload | undefined> {
     const { amf } = this;
     if (!amf) {
       return undefined;
@@ -575,15 +531,15 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
     if (!wa) {
       return undefined;
     }
-    const endpoints = wa[this._getAmfKey(this.ns.aml.vocabularies.apiContract.endpoint)];
+    const endpoints = (wa as any)[this._getAmfKey(this.ns.aml.vocabularies.apiContract.endpoint) as string];
     if (!Array.isArray(endpoints)) {
       return undefined;
     }
     for (const endpoint of endpoints) {
-      const operations = endpoint[this._getAmfKey(this.ns.aml.vocabularies.apiContract.supportedOperation)];
+      const operations = endpoint[this._getAmfKey(this.ns.aml.vocabularies.apiContract.supportedOperation) as string];
       if (Array.isArray(operations)) {
         for (const operation of operations) {
-          const expectsList = operation[this._getAmfKey(this.ns.aml.vocabularies.apiContract.expects)];
+          const expectsList = operation[this._getAmfKey(this.ns.aml.vocabularies.apiContract.expects) as string];
           if (Array.isArray(expectsList)) {
             for (const expects of expectsList) {
               const payload = this.findPayload(expects, id);
@@ -592,7 +548,7 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
               }
             }
           }
-          const returnsList = operation[this._getAmfKey(this.ns.aml.vocabularies.apiContract.returns)];
+          const returnsList = operation[this._getAmfKey(this.ns.aml.vocabularies.apiContract.returns) as string];
           if (Array.isArray(returnsList)) {
             for (const returns of returnsList) {
               const payload = this.findPayload(returns, id);
@@ -609,17 +565,16 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
 
   /**
    * Lists the type (schema) definitions for the API.
-   * @returns {Promise<ApiNodeShapeListItem[]>}
    */
-  async listTypes() {
+  async listTypes(): Promise<ApiNodeShapeListItem[]> {
     const { amf } = this;
     if (!amf) {
-      return undefined;
+      return [];
     }
     if (this._hasType(amf, this.ns.aml.vocabularies.shapes.DataTypeFragment)) {
       const model = this._computeEncodes(amf);
       if (!model) {
-        return undefined;
+        return [];
       }
       return [this.serializer.unknownShape(model)];
     }
@@ -628,10 +583,9 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
   }
 
   /**
-   * @param {string} id The domain id of the API type (schema).
-   * @returns {Promise<ApiShapeUnion>}
+   * @param id The domain id of the API type (schema).
    */
-  async getType(id) {
+  async getType(id: string): Promise<ApiShapeUnion | undefined> {
     const { amf } = this;
     if (!amf) {
       return undefined;
@@ -640,11 +594,11 @@ export class InMemAmfGraphStore extends AmfHelperMixin(AmfStore) {
     // when we have loaded Type fragment then the id doesn't matter.
     if (types.includes(this.ns.aml.vocabularies.shapes.DataTypeFragment)) {
       const encodes = this._computeEncodes(amf);
-      return this.serializer.unknownShape(encodes);
+      return this.serializer.unknownShape(encodes as Api);
     }
     const declares = this._computeDeclares(amf);
     const references = this._computeReferences(amf);
-    const type = this._computeType(declares, references, id);
+    const type = this._computeType(declares as DomainElement[], references as DomainElement[], id);
     if (!type) {
       return undefined;
     }

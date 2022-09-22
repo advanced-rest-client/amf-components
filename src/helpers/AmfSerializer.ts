@@ -1,132 +1,46 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable default-param-last */
 /* eslint-disable class-methods-use-this */
 import { AmfHelperMixin, expandKey, findAmfType, getArrayItems } from "./AmfHelperMixin.js";
 
-/** @typedef {import('./api').ApiParametrizedSecurityScheme} ApiParametrizedSecurityScheme */
-/** @typedef {import('./api').ApiRequest} ApiRequest */
-/** @typedef {import('./api').ApiSecurityScheme} ApiSecurityScheme */
-/** @typedef {import('./api').ApiSecurityRequirement} ApiSecurityRequirement */
-/** @typedef {import('./api').ApiTemplatedLink} ApiTemplatedLink */
-/** @typedef {import('./api').ApiResponse} ApiResponse */
-/** @typedef {import('./api').ApiPayload} ApiPayload */
-/** @typedef {import('./api').ApiExample} ApiExample */
-/** @typedef {import('./api').ApiParameter} ApiParameter */
-/** @typedef {import('./api').ApiOperation} ApiOperation */
-/** @typedef {import('./api').ApiEndPoint} ApiEndPoint */
-/** @typedef {import('./api').ApiServer} ApiServer */
-/** @typedef {import('./api').ApiDocumentation} ApiDocumentation */
-/** @typedef {import('./api').ApiShape} ApiShape */
-/** @typedef {import('./api').ApiPropertyShape} ApiPropertyShape */
-/** @typedef {import('./api').ApiAnyShape} ApiAnyShape */
-/** @typedef {import('./api').ApiNodeShape} ApiNodeShape */
-/** @typedef {import('./api').ApiScalarShape} ApiScalarShape */
-/** @typedef {import('./api').ApiUnionShape} ApiUnionShape */
-/** @typedef {import('./api').ApiFileShape} ApiFileShape */
-/** @typedef {import('./api').ApiDataArrangeShape} ApiDataArrangeShape */
-/** @typedef {import('./api').ApiXMLSerializer} ApiXMLSerializer */
-/** @typedef {import('./api').ApiDataNode} ApiDataNode */
-/** @typedef {import('./api').ApiScalarNode} ApiScalarNode */
-/** @typedef {import('./api').ApiObjectNode} ApiObjectNode */
-/** @typedef {import('./api').ApiArrayNode} ApiArrayNode */
-/** @typedef {import('./api').ApiSchemaShape} ApiSchemaShape */
-/** @typedef {import('./api').ApiArrayShape} ApiArrayShape */
-/** @typedef {import('./api').ApiTupleShape} ApiTupleShape */
-/** @typedef {import('./api').ApiShapeUnion} ApiShapeUnion */
-/** @typedef {import('./api').ApiSecuritySettings} ApiSecuritySettings */
-/** @typedef {import('./api').ApiSecurityOAuth1Settings} ApiSecurityOAuth1Settings */
-/** @typedef {import('./api').ApiSecurityOAuth2Settings} ApiSecurityOAuth2Settings */
-/** @typedef {import('./api').ApiSecurityApiKeySettings} ApiSecurityApiKeySettings */
-/** @typedef {import('./api').ApiSecurityHttpSettings} ApiSecurityHttpSettings */
-/** @typedef {import('./api').ApiSecurityOpenIdConnectSettings} ApiSecurityOpenIdConnectSettings */
-/** @typedef {import('./api').ApiSecurityOAuth2Flow} ApiSecurityOAuth2Flow */
-/** @typedef {import('./api').ApiSecuritySettingsUnion} ApiSecuritySettingsUnion */
-/** @typedef {import('./api').ApiSecurityScope} ApiSecurityScope */
-/** @typedef {import('./api').ApiIriTemplateMapping} ApiIriTemplateMapping */
-/** @typedef {import('./api').ApiCallback} ApiCallback */
-/** @typedef {import('./api').ApiDomainProperty} ApiDomainProperty */
-/** @typedef {import('./api').ApiCustomDomainProperty} ApiCustomDomainProperty */
-/** @typedef {import('./api').ApiRecursiveShape} ApiRecursiveShape */
-/** @typedef {import('./api').ApiTag} ApiTag */
-/** @typedef {import('./api').ApiDataNodeUnion} ApiDataNodeUnion */
-/** @typedef {import('./api').ApiDocumentSourceMaps} ApiDocumentSourceMaps */
-/** @typedef {import('./api').ApiSynthesizedField} ApiSynthesizedField */
-/** @typedef {import('./api').ApiParametrizedDeclaration} ApiParametrizedDeclaration */
-/** @typedef {import('./api').ApiParametrizedTrait} ApiParametrizedTrait */
-/** @typedef {import('./api').ApiParametrizedResourceType} ApiParametrizedResourceType */
-/** @typedef {import('./api').ApiVariableValue} ApiVariableValue */
-/** @typedef {import('./api').ApiAbstractDeclaration} ApiAbstractDeclaration */
-/** @typedef {import('./api').ShapeProcessingOptions} ShapeProcessingOptions */
-/** @typedef {import('./api').ApiSummary} ApiSummary */
-/** @typedef {import('./api').ApiOrganization} ApiOrganization */
-/** @typedef {import('./api').ApiLicense} ApiLicense */
-/** @typedef {import('./api').ApiBase} ApiBase */
-/** @typedef {import('./api').ApiWeb} ApiWeb */
-/** @typedef {import('./api').ApiAsync} ApiAsync */
-/** @typedef {import('./amf').Api} Api */
-/** @typedef {import('./amf').WebApi} WebApi */
-/** @typedef {import('./amf').AsyncApi} AsyncApi */
-/** @typedef {import('./amf').Server} Server */
-/** @typedef {import('./amf').Parameter} Parameter */
-/** @typedef {import('./amf').Shape} Shape */
-/** @typedef {import('./amf').ScalarShape} ScalarShape */
-/** @typedef {import('./amf').NodeShape} NodeShape */
-/** @typedef {import('./amf').UnionShape} UnionShape */
-/** @typedef {import('./amf').FileShape} FileShape */
-/** @typedef {import('./amf').SchemaShape} SchemaShape */
-/** @typedef {import('./amf').ArrayShape} ArrayShape */
-/** @typedef {import('./amf').TupleShape} TupleShape */
-/** @typedef {import('./amf').AnyShape} AnyShape */
-/** @typedef {import('./amf').DomainElement} DomainElement */
-/** @typedef {import('./amf').PropertyShape} PropertyShape */
-/** @typedef {import('./amf').DataArrangeShape} DataArrangeShape */
-/** @typedef {import('./amf').CreativeWork} CreativeWork */
-/** @typedef {import('./amf').Example} Example */
-/** @typedef {import('./amf').XMLSerializer} XMLSerializer */
-/** @typedef {import('./amf').DataNode} DataNode */
-/** @typedef {import('./amf').ScalarNode} ScalarNode */
-/** @typedef {import('./amf').ArrayNode} ArrayNode */
-/** @typedef {import('./amf').ObjectNode} ObjectNode */
-/** @typedef {import('./amf').RecursiveShape} RecursiveShape */
-/** @typedef {import('./amf').EndPoint} EndPoint */
-/** @typedef {import('./amf').Operation} Operation */
-/** @typedef {import('./amf').Callback} Callback */
-/** @typedef {import('./amf').Request} Request */
-/** @typedef {import('./amf').Response} Response */
-/** @typedef {import('./amf').Payload} Payload */
-/** @typedef {import('./amf').TemplatedLink} TemplatedLink */
-/** @typedef {import('./amf').IriTemplateMapping} IriTemplateMapping */
-/** @typedef {import('./amf').ParametrizedSecurityScheme} ParametrizedSecurityScheme */
-/** @typedef {import('./amf').SecurityScheme} SecurityScheme */
-/** @typedef {import('./amf').SecurityRequirement} SecurityRequirement */
-/** @typedef {import('./amf').Settings} Settings */
-/** @typedef {import('./amf').OAuth1Settings} OAuth1Settings */
-/** @typedef {import('./amf').OAuth2Settings} OAuth2Settings */
-/** @typedef {import('./amf').OAuth2Flow} OAuth2Flow */
-/** @typedef {import('./amf').Scope} Scope */
-/** @typedef {import('./amf').ApiKeySettings} ApiKeySettings */
-/** @typedef {import('./amf').HttpSettings} HttpSettings */
-/** @typedef {import('./amf').OpenIdConnectSettings} OpenIdConnectSettings */
-/** @typedef {import('./amf').Tag} Tag */
-/** @typedef {import('./amf').DocumentSourceMaps} DocumentSourceMaps */
-/** @typedef {import('./amf').SynthesizedField} SynthesizedField */
-/** @typedef {import('./amf').ParametrizedDeclaration} ParametrizedDeclaration */
-/** @typedef {import('./amf').ParametrizedTrait} ParametrizedTrait */
-/** @typedef {import('./amf').ParametrizedResourceType} ParametrizedResourceType */
-/** @typedef {import('./amf').VariableValue} VariableValue */
-/** @typedef {import('./amf').AbstractDeclaration} AbstractDeclaration */
-/** @typedef {import('./amf').Organization} Organization */
-/** @typedef {import('./amf').License} License */
-/** @typedef {import('../types').ApiEndPointWithOperationsListItem} ApiEndPointWithOperationsListItem */
-/** @typedef {import('../types').ApiOperationListItem} ApiOperationListItem */
-/** @typedef {import('../types').ApiSecuritySchemeListItem} ApiSecuritySchemeListItem */
+import {
+  AnyShape, ApiKeySettings, ArrayNode, ArrayShape, Callback, CreativeWork, DataArrangeShape,
+  DataNode, DocumentSourceMaps, DomainElement, EndPoint, Example, FileShape, HttpSettings,
+  IriTemplateMapping, NodeShape, OAuth1Settings, OAuth2Flow, OAuth2Settings, ObjectNode,
+  OpenIdConnectSettings, Operation, Parameter, ParametrizedSecurityScheme, Payload,
+  PropertyShape, RecursiveShape, Request, Response, ScalarNode, ScalarShape, SchemaShape,
+  Scope, SecurityRequirement, SecurityScheme, Server, Settings, Shape, SynthesizedField,
+  Tag, TemplatedLink, TupleShape, UnionShape, Api, WebApi, AsyncApi, Organization, License,
+  ParametrizedDeclaration, ParametrizedTrait, ParametrizedResourceType, VariableValue, AbstractDeclaration,
+  XMLSerializer,
+} from "./amf.js";
+import {
+  ApiAnyShape, ApiArrayNode, ApiArrayShape, ApiCallback, ApiCustomDomainProperty, ApiDataArrangeShape,
+  ApiDataNode, ApiDataNodeUnion, ApiDocumentation, ApiDocumentSourceMaps, ApiEndPoint, ApiExample,
+  ApiFileShape, ApiIriTemplateMapping, ApiNodeShape, ApiObjectNode, ApiOperation, ApiParameter,
+  ApiParametrizedSecurityScheme, ApiPayload, ApiPropertyShape, ApiRecursiveShape, ApiRequest, ApiResponse,
+  ApiScalarNode, ApiScalarShape, ApiSchemaShape, ApiSecurityApiKeySettings, ApiSecurityHttpSettings,
+  ApiSecurityOAuth1Settings, ApiSecurityOAuth2Flow, ApiSecurityOAuth2Settings,
+  ApiSecurityOpenIdConnectSettings, ApiSecurityRequirement, ApiSecurityScheme, ApiSecurityScope,
+  ApiSecuritySettings, ApiSecuritySettingsUnion, ApiServer, ApiShape, ApiShapeUnion, ApiSynthesizedField,
+  ApiTag, ApiTupleShape, ApiUnionShape, ApiXMLSerializer, ApiOrganization, ApiSummary, ApiBase,
+  ApiWeb, ApiAsync, ApiLicense, ApiParametrizedDeclaration, ApiParametrizedTrait, ApiParametrizedResourceType,
+  ApiVariableValue, ApiAbstractDeclaration, ShapeProcessingOptions, ApiTemplatedLink,
+} from "./api.js";
+import {
+  ApiEndPointWithOperationsListItem,
+  ApiOperationListItem,
+  ApiSecuritySchemeListItem,
+} from '../types.js'
 
 /**
  * A class that takes AMF's ld+json model and outputs JavaScript interface of it.
  */
 export class AmfSerializer extends AmfHelperMixin(Object) {
   /**
-   * @param {DomainElement=} graph Optional AMF generated graph model.
+   * @param graph Optional AMF generated graph model.
    */
-  constructor(graph) {
+  constructor(graph?: DomainElement) {
     super();
     if (graph) {
       this.amf = graph;
@@ -134,11 +48,10 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {string[]} types The list of graph object types. When not defined it returns an empty array.
-   * @param {Record<string, string>=} context
-   * @returns {string[]} The expanded types.
+   * @param types The list of graph object types. When not defined it returns an empty array.
+   * @returns The expanded types.
    */
-  readTypes(types, context) {
+  readTypes(types: string[], context?: Record<string, string>): string[] {
     let target = types;
     if (typeof target === 'string') {
       target = [target];
@@ -150,12 +63,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {Api} object The API to serialize.
-   * @returns {ApiSummary} API summary, without complex objects.
+   * @param object The API to serialize.
+   * @returns API summary, without complex objects.
    */
-  apiSummary(object) {
+  apiSummary(object: Api): ApiSummary {
     const context = object['@context'];
-    const result = /** @type ApiSummary */ ({
+    const result: ApiSummary = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], context),
       customDomainProperties: this.customDomainProperties(object, context),
@@ -183,96 +96,78 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (termsOfService && typeof termsOfService === 'string') {
       result.termsOfService = termsOfService;
     }
-    const accepts = object[this._getAmfKey(ns.aml.vocabularies.apiContract.accepts, context)];
+    const accepts = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.accepts, context) as string];
     if (Array.isArray(accepts) && accepts.length) {
-      result.accepts = /** @type string[] */ (this._getValueArray(object, ns.aml.vocabularies.apiContract.accepts, context));
+      result.accepts = (this._getValueArray(object, ns.aml.vocabularies.apiContract.accepts, context)) as string[];
     }
-    const contentType = object[this._getAmfKey(ns.aml.vocabularies.apiContract.contentType, context)];
+    const contentType = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.contentType, context) as string];
     if (Array.isArray(contentType) && contentType.length) {
-      result.contentType = /** @type string[] */ (this._getValueArray(object, ns.aml.vocabularies.apiContract.contentType, context));
+      result.contentType = (this._getValueArray(object, ns.aml.vocabularies.apiContract.contentType, context)) as string[];
     }
-    const schemes = object[this._getAmfKey(ns.aml.vocabularies.apiContract.scheme, context)];
+    const schemes = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.scheme, context) as string];
     if (Array.isArray(schemes) && schemes.length) {
-      result.schemes = /** @type string[] */ (this._getValueArray(object, ns.aml.vocabularies.apiContract.scheme, context));
+      result.schemes = (this._getValueArray(object, ns.aml.vocabularies.apiContract.scheme, context)) as string[];
     }
-    let provider = object[this._getAmfKey(ns.aml.vocabularies.core.provider, context)];
+    let provider = (object as any)[this._getAmfKey(ns.aml.vocabularies.core.provider, context) as string];
     if (Array.isArray(provider)) {
       [provider] = provider;
     }
     if (provider) {
       result.provider = this.provider(provider);
     }
-    let license = object[this._getAmfKey(ns.aml.vocabularies.core.license, context)];
+    let license = (object as any)[this._getAmfKey(ns.aml.vocabularies.core.license, context) as string];
     if (Array.isArray(license)) {
       [license] = license;
     }
     if (license) {
       result.license = this.license(license);
     }
-    const tags = object[this._getAmfKey(ns.aml.vocabularies.apiContract.tag, context)];
+    const tags = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.tag, context) as string];
     if (Array.isArray(tags) && tags.length) {
       result.tags = tags.map(t => this.tag(t));
     }
-    const docs = object[this._getAmfKey(ns.aml.vocabularies.core.documentation, context)];
+    const docs = (object as any)[this._getAmfKey(ns.aml.vocabularies.core.documentation, context) as string];
     if (Array.isArray(docs) && docs.length) {
       result.documentations = docs.map(d => this.documentation(d));
     }
     return result;
   }
 
-  /**
-   * @param {Api} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiBase}
-   */
-  api(object, context) {
+  api(object: Api, context?: Record<string, string>): ApiBase {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiBase */ (this.apiSummary(object));
+    const result = this.apiSummary(object) as ApiBase;
     result.endPoints = [];
     result.servers = [];
     result.security = [];
     const { ns } = this;
-    const endPoints = object[this._getAmfKey(ns.aml.vocabularies.apiContract.endpoint, objectContext)];
+    const endPoints = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.endpoint, objectContext) as string];
     if (Array.isArray(endPoints) && endPoints.length) {
       result.endPoints = endPoints.map(e => this.endPoint(e, objectContext));
     }
-    const servers = object[this._getAmfKey(ns.aml.vocabularies.apiContract.server, objectContext)];
+    const servers = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.server, objectContext) as string];
     if (Array.isArray(servers) && servers.length) {
       result.servers = servers.map(s => this.server(s, objectContext));
     }
-    const security = object[this._getAmfKey(ns.aml.vocabularies.security.security, objectContext)];
+    const security = (object as any)[this._getAmfKey(ns.aml.vocabularies.security.security, objectContext) as string];
     if (Array.isArray(security) && security.length) {
       result.security = security.map(s => this.securityRequirement(s, objectContext));
     }
     return result;
   }
 
-  /**
-   * @param {WebApi} object
-   * @param {Record<string, string>=} context 
-   * @returns {ApiWeb}
-   */
-  webApi(object, context) {
-    return this.api(object, context);
+
+  webApi(object: WebApi, context?: Record<string, string>): ApiWeb {
+    return this.api(object, context) as ApiWeb;
   }
 
-  /**
-   * @param {AsyncApi} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiAsync}
-   */
-  asyncApi(object, context) {
-    return this.api(object, context);
+
+  asyncApi(object: AsyncApi, context?: Record<string, string>): ApiAsync {
+    return this.api(object, context) as ApiAsync;
   }
 
-  /**
-   * @param {Organization} object
-   * @param {Record<string, string>=} context
-   * @returns {ApiOrganization}
-   */
-  provider(object, context) {
+  provider(object: Organization, context?: Record<string, string>): ApiOrganization {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiOrganization */ ({
+    const result: ApiOrganization = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -294,14 +189,9 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {License} object
-   * @param {Record<string, string>=} context
-   * @returns {ApiLicense}
-   */
-  license(object, context) {
+  license(object: License, context?: Record<string, string>): ApiLicense {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiLicense */ ({
+    const result: ApiLicense = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -320,15 +210,14 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {Server} object The AMF Server to serialize.
-   * @param {Record<string, string>=} context
-   * @returns {ApiServer} Serialized Server
+   * @param object The AMF Server to serialize.
+   * @returns Serialized Server
    */
-  server(object, context) {
+  server(object: Server, context?: Record<string, string>): ApiServer {
     const objectContext = context || object['@context'];
     const { ns } = this;
-    const url = this._getValue(object, ns.aml.vocabularies.core.urlTemplate, objectContext) || '';
-    const result = /** @type ApiServer */ ({
+    const url = this._getValue(object, ns.aml.vocabularies.core.urlTemplate, objectContext) as string || '';
+    const result: ApiServer = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       url,
@@ -340,19 +229,19 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (description && typeof description === 'string') {
       result.description = description;
     }
-    const variables = /** @type Parameter[] */ (object[this._getAmfKey(ns.aml.vocabularies.apiContract.variable, objectContext)]);
+    const variables = ((object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.variable, objectContext) as string]) as Parameter[];
     if (Array.isArray(variables) && variables.length) {
       result.variables = variables.map((p) => this.parameter(p, objectContext));
     }
-    const protocol = /** @type string */ (this._getValue(object, ns.aml.vocabularies.apiContract.protocol, objectContext));
-    const protocolVersion = /** @type string */ (this._getValue(object, ns.aml.vocabularies.apiContract.protocolVersion, objectContext));
+    const protocol = (this._getValue(object, ns.aml.vocabularies.apiContract.protocol, objectContext)) as string | undefined;
+    const protocolVersion = (this._getValue(object, ns.aml.vocabularies.apiContract.protocolVersion, objectContext)) as string | undefined;
     if (protocol) {
       result.protocol = protocol;
     }
     if (protocolVersion) {
       result.protocolVersion = protocolVersion;
     }
-    const security = /** @type SecurityRequirement */ (object[this._getAmfKey(ns.aml.vocabularies.security.security, objectContext)]);
+    const security = ((object as any)[this._getAmfKey(ns.aml.vocabularies.security.security, objectContext) as string]) as SecurityRequirement[];
     if (Array.isArray(security) && security.length) {
       result.security = security.map((p) => this.securityRequirement(p, objectContext));
     }
@@ -360,13 +249,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {Parameter} object The Parameter to serialize.
-   * @param {Record<string, string>=} context
-   * @returns {ApiParameter} Serialized Parameter
+   * @param object The Parameter to serialize.
+   * @returns Serialized Parameter
    */
-  parameter(object, context) {
+  parameter(object: Parameter, context?: Record<string, string>): ApiParameter {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiParameter */ ({
+    const result: ApiParameter = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       payloads: [],
@@ -415,104 +303,83 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (binding && typeof binding === 'string') {
       result.binding = binding;
     }
-    const schemas = object[this._getAmfKey(ns.aml.vocabularies.shapes.schema, objectContext)];
+    const schemas = (object as any)[this._getAmfKey(ns.aml.vocabularies.shapes.schema, objectContext) as string];
     if (Array.isArray(schemas) && schemas.length) {
       const [schema] = schemas;
       result.schema = this.unknownShape(schema, {
         trackedId: object['@id'],
       }, objectContext);
     }
-    const payloads = object[this._getAmfKey(ns.aml.vocabularies.apiContract.payload, objectContext)];
+    const payloads = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.payload, objectContext) as string];
     if (Array.isArray(payloads) && payloads.length) {
       result.payloads = payloads.map(p => this.payload(p, objectContext));
     }
-    const examples = object[this._getAmfKey(ns.aml.vocabularies.apiContract.examples, objectContext)];
+    const examples = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.examples, objectContext) as string];
     if (Array.isArray(examples) && examples.length) {
       result.examples = examples.map(e => this.example(e, objectContext));
     }
     return result;
   }
 
-  /**
-   * @param {Shape} object 
-   * @param {ShapeProcessingOptions=} options 
-   * @param {Record<string, string>=} context
-   * @returns {ApiShapeUnion}
-   */
-  unknownShape(object, options, context) {
+  unknownShape(object: Shape, options?: ShapeProcessingOptions, context?: Record<string, string>): ApiShapeUnion {
     const objectContext = context || object['@context'];
     const types = this.readTypes(object['@type'], objectContext);
     const { ns } = this;
     if (types.includes(ns.aml.vocabularies.shapes.ScalarShape)) {
-      return this.scalarShape(/** @type ScalarShape */ (object), options, objectContext);
+      return this.scalarShape((object as ScalarShape), options, objectContext);
     }
     if (types.includes(ns.w3.shacl.NodeShape)) {
-      return this.nodeShape(/** @type NodeShape */ (object), options, objectContext);
+      return this.nodeShape((object as NodeShape), options, objectContext);
     }
     if (types.includes(ns.aml.vocabularies.shapes.UnionShape)) {
-      return this.unionShape(/** @type UnionShape */ (object), options, objectContext);
+      return this.unionShape((object as UnionShape), options, objectContext);
     }
     if (types.includes(ns.aml.vocabularies.shapes.FileShape)) {
-      return this.fileShape(/** @type FileShape */ (object), options, objectContext);
+      return this.fileShape((object as FileShape), options, objectContext);
     }
     if (types.includes(ns.aml.vocabularies.shapes.SchemaShape)) {
-      return this.schemaShape(/** @type SchemaShape */ (object), options, objectContext);
+      return this.schemaShape((object as SchemaShape), options, objectContext);
     }
     // this must be before the ArrayShape
     if (types.includes(ns.aml.vocabularies.shapes.TupleShape)) {
-      return this.tupleShape(/** @type TupleShape */ (object), options, objectContext);
+      return this.tupleShape((object as TupleShape), options, objectContext);
     }
     if (types.includes(ns.aml.vocabularies.shapes.ArrayShape) || types.includes(ns.aml.vocabularies.shapes.MatrixShape)) {
-      return this.arrayShape(/** @type ArrayShape */ (object), options, objectContext);
+      return this.arrayShape((object as ArrayShape), options, objectContext);
     }
     if (types.includes(ns.aml.vocabularies.shapes.RecursiveShape)) {
-      return this.recursiveShape(/** @type RecursiveShape */ (object), objectContext);
+      return this.recursiveShape((object as RecursiveShape), objectContext);
     }
     // recursiveShape
-    return this.anyShape(/** @type AnyShape */ (object), options, objectContext);
+    return this.anyShape((object as AnyShape), options, objectContext);
   }
 
-  /**
-   * @param {DomainElement} object 
-   * @param {Record<string, string>=} context
-   * @returns {boolean}
-   */
-  isLink(object, context) {
+  isLink(object: DomainElement, context?: Record<string, string>): boolean {
     const objectContext = context || object['@context'];
     return !!this._getLinkValue(object, this.ns.aml.vocabularies.document.linkTarget, objectContext);
   }
 
-  /**
-   * @param {DomainElement} object 
-   * @param {Record<string, string>=} context
-   * @returns {DomainElement|undefined}
-   */
-  getLinkTarget(object, context) {
+  getLinkTarget(object: DomainElement, context?: Record<string, string>): DomainElement|undefined {
     const objectContext = context || object['@context'];
     const id = this._getLinkValue(object, this.ns.aml.vocabularies.document.linkTarget, objectContext);
     return this[findAmfType](id, objectContext);
   }
 
-  /**
-   * @param {Shape} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiShape}
-   */
-  shape(object, context) {
+  shape(object: Shape, context?: Record<string, string>): ApiShape {
     const objectContext = context || object['@context'];
     this._resolve(object);
-    /** @type string */
-    let linkLabel;
+    
+    let linkLabel: string | undefined;
     let target = object;
     if (this.isLink(target)) {
-      linkLabel = /** @type string */ (this._getValue(target, this.ns.aml.vocabularies.document.linkLabel, objectContext));
+      linkLabel = (this._getValue(target, this.ns.aml.vocabularies.document.linkLabel, objectContext)) as string;
       const id = this._getLinkValue(target, this.ns.aml.vocabularies.document.linkTarget, objectContext);
-      const value = /** @type Shape */ (this[findAmfType](id, objectContext));
+      const value = (this[findAmfType](id, objectContext)) as Shape;
       if (value) {
         target = value;
       }
     }
-    const result = /** @type ApiShape */ ({
+    const result: ApiShape = ({
       id: target['@id'],
       types: this.readTypes(object['@type'], objectContext),
       values: [],
@@ -560,7 +427,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (typeof writeOnly === 'boolean') {
       result.writeOnly = writeOnly;
     }
-    const defValue = target[this._getAmfKey(ns.w3.shacl.defaultValue, objectContext)];
+    const defValue = (target as any)[this._getAmfKey(ns.w3.shacl.defaultValue, objectContext) as string];
     if (Array.isArray(defValue) && defValue.length) {
       result.defaultValue = this.unknownDataNode(defValue[0], objectContext);
     }
@@ -568,26 +435,26 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     // if (Array.isArray(inherits) && inherits.length) {
     //   result.inherits = inherits.map((item) => this.unknownShape(item));
     // }
-    const orKey = this._getAmfKey(ns.w3.shacl.or, objectContext);
-    const orGroup = /** @type Shape[] */ (target[orKey]);
+    const orKey = this._getAmfKey(ns.w3.shacl.or, objectContext) as string;
+    const orGroup = /** @type */ ((target as any)[orKey]) as Shape[];
     if (Array.isArray(orGroup) && orGroup.length) {
       result.or = orGroup.map((item) => this.unknownShape(item, undefined, objectContext));
     }
-    const andKey = this._getAmfKey(ns.w3.shacl.and, objectContext);
-    const andGroup = /** @type Shape[] */ (target[andKey]);
+    const andKey = this._getAmfKey(ns.w3.shacl.and, objectContext) as string;
+    const andGroup = /** @type */ ((target as any)[andKey]) as Shape[];
     if (Array.isArray(andGroup) && andGroup.length) {
       result.and = andGroup.map((item) => this.unknownShape(item, undefined, objectContext));
     }
-    const xoneKey = this._getAmfKey(ns.w3.shacl.xone, objectContext);
-    const xone = /** @type Shape[] */ (target[xoneKey]);
+    const xoneKey = this._getAmfKey(ns.w3.shacl.xone, objectContext) as string;
+    const xone = ((target as any)[xoneKey]) as Shape[];
     if (Array.isArray(xone) && xone.length) {
       result.xone = xone.map((item) => this.unknownShape(item, undefined, objectContext));
     }
-    const valuesList = target[this._getAmfKey(ns.w3.shacl.in, objectContext)];
+    const valuesList = (target as any)[this._getAmfKey(ns.w3.shacl.in, objectContext) as string];
     if (Array.isArray(valuesList) && valuesList.length) {
       const [values] = valuesList;
       const prefix = this.ns.w3.rdfSchema.toString();
-      const prefixCompact = this._getAmfKey(prefix, objectContext);
+      const prefixCompact = this._getAmfKey(prefix, objectContext) as string;
       Object.keys(values).forEach((key) => {
         if (key.startsWith(prefix) || key.startsWith(prefixCompact)) {
           let value = values[key];
@@ -595,33 +462,29 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
             [value] = value;
           }
           const processed = this.unknownDataNode(value, objectContext);
-          result.values.push(processed);
+          if (processed) {
+            result.values.push(processed);
+          }
         }
       });
     }
-    const notKey = this._getAmfKey(ns.w3.shacl.not, objectContext);
-    let not = /** @type Shape */ (target[notKey]);
+    const notKey = this._getAmfKey(ns.w3.shacl.not, objectContext) as string;
+    let not = ((target as any)[notKey]) as Shape | undefined;
     if (not) {
       if (Array.isArray(not)) {
         [not] = not;
       }
-      result.not = this.unknownShape(not, undefined, objectContext);
+      result.not = this.unknownShape(not as Shape, undefined, objectContext);
     }
     return result;
   }
 
-  /**
-   * @param {AnyShape} object
-   * @param {ShapeProcessingOptions=} options 
-   * @param {Record<string, string>=} context
-   * @returns {ApiAnyShape}
-   */
-  anyShape(object, options={}, context) {
+  anyShape(object: AnyShape, options: ShapeProcessingOptions={}, context?: Record<string, string>): ApiAnyShape {
     const objectContext = context || object['@context'];
     let target = object;
-    const result = /** @type ApiAnyShape */ (this.shape(target, objectContext));
+    const result = (this.shape(target, objectContext)) as ApiAnyShape;
     if (this.isLink(target)) {
-      const value = /** @type Shape */ (this.getLinkTarget(target, objectContext));
+      const value = (this.getLinkTarget(target, objectContext)) as Shape;
       if (value) {
         target = value;
       }
@@ -629,7 +492,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     result.examples = [];
 
     const { ns } = this;
-    const examples = target[this._getAmfKey(ns.aml.vocabularies.apiContract.examples, objectContext)];
+    const examples = (target as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.examples, objectContext) as string];
     if (Array.isArray(examples) && examples.length) {
       if (options.trackedId) {
         const filtered = this.filterTrackedExamples(examples, options.trackedId, objectContext);
@@ -639,12 +502,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
         result.examples = filtered.map((item) => this.example(item, objectContext));
       }
     }
-    const docs = target[this._getAmfKey(ns.aml.vocabularies.core.documentation, objectContext)];
+    const docs = (target as any)[this._getAmfKey(ns.aml.vocabularies.core.documentation, objectContext) as string];
     if (Array.isArray(docs) && docs.length) {
       const [documentation] = docs;
       result.documentation = this.documentation(documentation, objectContext);
     }
-    const xml = target[this._getAmfKey(ns.aml.vocabularies.shapes.xmlSerialization, objectContext)];
+    const xml = (target as any)[this._getAmfKey(ns.aml.vocabularies.shapes.xmlSerialization, objectContext) as string];
     if (Array.isArray(xml) && xml.length) {
       result.xmlSerialization = this.xmlSerializer(xml[0], objectContext);
     }
@@ -655,30 +518,25 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
    * Filters examples that should be rendered for a payload identified by `trackedId`.
    * 
    * This function is copied from old `api-example-generator/ExampleGenerator`.
-   * 
-   * @param {Example[]} examples 
-   * @param {string} trackedId 
-   * @param {Record<string, string>=} context
-   * @returns {Example[]}
    */
-  filterTrackedExamples(examples, trackedId, context) {
-    const { docSourceMaps } = this.ns.raml.vocabularies;
-    const sourceKey = this._getAmfKey(docSourceMaps.sources, context);
-    const trackedKey = this._getAmfKey(docSourceMaps.trackedElement, context);
+  filterTrackedExamples(examples: Example[], trackedId: string, context?: Record<string, string>): Example[] {
+    const { docSourceMaps } = this.ns.aml.vocabularies;
+    const sourceKey = this._getAmfKey(docSourceMaps.sources, context) as string;
+    const trackedKey = this._getAmfKey(docSourceMaps.trackedElement, context) as string;
     const longId = trackedId.indexOf('amf') === -1 ? `amf://id${trackedId}` : trackedId;
     return examples.filter((item) => {
       let example = item;
       if (Array.isArray(example)) {
         [example] = example;
       }
-      let sm = example[sourceKey];
+      let sm = (example as any)[sourceKey] as DocumentSourceMaps;
       if (!sm) {
         return true
       }
       if (Array.isArray(sm)) {
         [sm] = sm;
       }
-      let tracked = sm[trackedKey];
+      let tracked = (sm as any)[trackedKey];
       if (!tracked) {
         return true;
       }
@@ -701,28 +559,24 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
    * Kind of the opposite of the `filterTrackedExamples`. It gathers examples that only have been 
    * defined for the parent Shape (ed in the type declaration). It filters out all examples
    * defined in a payload.
-   * 
-   * @param {Example[]} examples 
-   * @param {Record<string, string>=} context
-   * @returns {Example[]}
    */
-  filterNonTrackedExamples(examples, context) {
-    const { docSourceMaps } = this.ns.raml.vocabularies;
-    const sourceKey = this._getAmfKey(docSourceMaps.sources, context);
-    const trackedKey = this._getAmfKey(docSourceMaps.trackedElement, context);
+  filterNonTrackedExamples(examples: Example[], context?: Record<string, string>): Example[] {
+    const { docSourceMaps } = this.ns.aml.vocabularies;
+    const sourceKey = this._getAmfKey(docSourceMaps.sources, context) as string;
+    const trackedKey = this._getAmfKey(docSourceMaps.trackedElement, context) as string;
     return examples.filter((item) => {
       let example = item;
       if (Array.isArray(example)) {
         [example] = example;
       }
-      let sm = example[sourceKey];
+      let sm = (example as any)[sourceKey] as DocumentSourceMaps;
       if (!sm) {
         return true
       }
       if (Array.isArray(sm)) {
         [sm] = sm;
       }
-      let tracked = sm[trackedKey];
+      let tracked = (sm as any)[trackedKey];
       if (!tracked) {
         return true;
       }
@@ -737,18 +591,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     });
   }
 
-  /**
-   * @param {ScalarShape} object
-   * @param {ShapeProcessingOptions=} options 
-   * @param {Record<string, string>=} context
-   * @returns {ApiScalarShape}
-   */
-  scalarShape(object, options={}, context) {
+  scalarShape(object: ScalarShape, options={}, context?: Record<string, string>): ApiScalarShape {
     const objectContext = context || object['@context'];
     let target = object;
-    const result = /** @type ApiScalarShape */ (this.anyShape(target, options, objectContext));
+    const result = (this.anyShape(target, options, objectContext)) as ApiScalarShape;
     if (this.isLink(target)) {
-      const value = /** @type ScalarShape */ (this.getLinkTarget(target, objectContext));
+      const value = (this.getLinkTarget(target, objectContext)) as ScalarShape;
       if (value) {
         target = value;
       }
@@ -797,12 +645,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
    * @param {Record<string, string>=} context
    * @returns {ApiNodeShape}
    */
-  nodeShape(object, options={}, context) {
+  nodeShape(object: NodeShape, options={}, context?: Record<string, string>): ApiNodeShape {
     const objectContext = context || object['@context'];
     let target = object;
-    const result = /** @type ApiNodeShape */ (this.anyShape(target, options, objectContext));
+    const result = (this.anyShape(target, options, objectContext)) as ApiNodeShape;
     if (this.isLink(target)) {
-      const value = /** @type NodeShape */ (this.getLinkTarget(target, objectContext));
+      const value = (this.getLinkTarget(target, objectContext)) as NodeShape;
       if (value) {
         target = value;
       }
@@ -841,7 +689,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     // } else {
     //   result.customShapePropertyDefinitions = [];
     // }
-    const properties = /** @type PropertyShape[] */ (target[this._getAmfKey(ns.w3.shacl.property, objectContext)]);
+    const properties = ((target as any)[this._getAmfKey(ns.w3.shacl.property, objectContext) as string]) as PropertyShape[];
     if (Array.isArray(properties) && properties.length) {
       result.properties = properties.map((item) => this.propertyShape(item, objectContext));
     } else {
@@ -855,17 +703,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {PropertyShape} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiPropertyShape}
-   */
-  propertyShape(object, context) {
+  propertyShape(object: PropertyShape, context?: Record<string, string>): ApiPropertyShape {
     const objectContext = context || object['@context'];
     let target = object;
-    const result = /** @type ApiPropertyShape */ (this.shape(target, objectContext));
+    const result = (this.shape(target, objectContext)) as ApiPropertyShape;
     if (this.isLink(target)) {
-      const value = /** @type PropertyShape */ (this.getLinkTarget(target, objectContext));
+      const value = (this.getLinkTarget(target, objectContext)) as PropertyShape;
       if (value) {
         target = value;
       }
@@ -887,7 +730,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     //   result.patternName = patternName.value();
     // }
     
-    const ranges = /** @type Shape[] */ (target[this._getAmfKey(ns.aml.vocabularies.shapes.range, objectContext)]);
+    const ranges = ((target as any)[this._getAmfKey(ns.aml.vocabularies.shapes.range, objectContext) as string]) as Shape[];
     if (Array.isArray(ranges) && ranges.length) {
       const [range] = ranges;
       result.range = this.unknownShape(range, undefined, objectContext);
@@ -895,16 +738,10 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {UnionShape} object
-   * @param {ShapeProcessingOptions=} options 
-   * @param {Record<string, string>=} context
-   * @returns {ApiUnionShape}
-   */
-  unionShape(object, options={}, context) {
+  unionShape(object: UnionShape, options: ShapeProcessingOptions={}, context?: Record<string, string>): ApiUnionShape {
     const objectContext = context || object['@context'];
-    const anyOf = /** @type Shape[] */ (object[this._getAmfKey(this.ns.aml.vocabularies.shapes.anyOf, objectContext)]);
-    const result = /** @type ApiUnionShape */ (this.anyShape(object, options, objectContext));
+    const anyOf = ((object as any)[this._getAmfKey(this.ns.aml.vocabularies.shapes.anyOf, objectContext) as string]) as Shape[];
+    const result = (this.anyShape(object, options, objectContext)) as ApiUnionShape;
     if (Array.isArray(anyOf) && anyOf.length) {
       const opt = { ...options, trackedId: undefined };
       result.anyOf = anyOf.map((shape) => this.unknownShape(shape, opt, objectContext));
@@ -914,18 +751,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {FileShape} object
-   * @param {ShapeProcessingOptions=} options 
-   * @param {Record<string, string>=} context
-   * @returns {ApiFileShape}
-   */
-  fileShape(object, options={}, context) {
+  fileShape(object: FileShape, options: ShapeProcessingOptions={}, context?: Record<string, string>): ApiFileShape {
     const objectContext = context || object['@context'];
     let target = object;
-    const result = /** @type ApiFileShape */ (this.anyShape(target, options, objectContext));
+    const result = (this.anyShape(target, options, objectContext)) as ApiFileShape;
     if (this.isLink(target)) {
-      const value = /** @type FileShape */ (this.getLinkTarget(target, objectContext));
+      const value = (this.getLinkTarget(target, objectContext)) as FileShape;
       if (value) {
         target = value;
       }
@@ -935,7 +766,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (pattern && typeof pattern === 'string') {
       result.pattern = pattern;
     }
-    const fileTypes = /** @type string[] */ (this._getValueArray(target, ns.aml.vocabularies.shapes.fileType, objectContext));
+    const fileTypes = (this._getValueArray(target, ns.aml.vocabularies.shapes.fileType, objectContext)) as string[];
     if (Array.isArray(fileTypes) && fileTypes.length) {
       result.fileTypes = fileTypes;
     }
@@ -968,18 +799,13 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {SchemaShape} object
-   * @param {ShapeProcessingOptions=} options
-   * @param {Record<string, string>=} context
-   * @returns {ApiSchemaShape}
-   */
-  schemaShape(object, options={}, context) {
+
+  schemaShape(object: SchemaShape, options: ShapeProcessingOptions={}, context?: Record<string, string>): ApiSchemaShape {
     const objectContext = context || object['@context'];
     let target = object;
-    const result = /** @type ApiSchemaShape */ (this.anyShape(target, options, objectContext));
+    const result = (this.anyShape(target, options, objectContext)) as ApiSchemaShape;
     if (this.isLink(target)) {
-      const value = /** @type SchemaShape */ (this.getLinkTarget(target, objectContext));
+      const value = (this.getLinkTarget(target, objectContext)) as SchemaShape;
       if (value) {
         target = value;
       }
@@ -996,17 +822,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {RecursiveShape} object
-   * @param {Record<string, string>=} context
-   * @returns {ApiRecursiveShape}
-   */
-  recursiveShape(object, context) {
+  recursiveShape(object: RecursiveShape, context?: Record<string, string>): ApiRecursiveShape {
     const objectContext = context || object['@context'];
     let target = object;
-    const result = /** @type ApiRecursiveShape */ (this.shape(target, objectContext));
+    const result = (this.shape(target, objectContext)) as ApiRecursiveShape;
     if (this.isLink(target)) {
-      const value = /** @type RecursiveShape */ (this.getLinkTarget(target, objectContext));
+      const value = (this.getLinkTarget(target, objectContext)) as RecursiveShape;
       if (value) {
         target = value;
       }
@@ -1019,18 +840,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {DataArrangeShape} object
-   * @param {ShapeProcessingOptions=} options
-   * @param {Record<string, string>=} context
-   * @returns {ApiDataArrangeShape}
-   */
-  dataArrangeShape(object, options={}, context) {
+  dataArrangeShape(object: DataArrangeShape, options={}, context?: Record<string, string>): ApiDataArrangeShape {
     const objectContext = context || object['@context'];
     let target = object;
-    const result = /** @type ApiDataArrangeShape */ (this.anyShape(target, options, objectContext));
+    const result = (this.anyShape(target, options, objectContext)) as ApiDataArrangeShape;
     if (this.isLink(target)) {
-      const value = /** @type DataArrangeShape */ (this.getLinkTarget(target, objectContext));
+      const value = (this.getLinkTarget(target, objectContext)) as DataArrangeShape;
       if (value) {
         target = value;
       }
@@ -1049,24 +864,18 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {ArrayShape} object
-   * @param {ShapeProcessingOptions=} options
-   * @param {Record<string, string>=} context
-   * @returns {ApiArrayShape}
-   */
-  arrayShape(object, options={}, context) {
+  arrayShape(object: ArrayShape, options: ShapeProcessingOptions={}, context?: Record<string, string>): ApiArrayShape {
     const objectContext = context || object['@context'];
     let target = object;
-    const result = /** @type ApiArrayShape */ (this.dataArrangeShape(target, options, objectContext));
+    const result = (this.dataArrangeShape(target, options, objectContext)) as ApiArrayShape;
     if (this.isLink(target)) {
-      const value = /** @type ArrayShape */ (this.getLinkTarget(target, objectContext));
+      const value = (this.getLinkTarget(target, objectContext)) as ArrayShape;
       if (value) {
         target = value;
       }
     }
 
-    const items = target[this._getAmfKey(this.ns.aml.vocabularies.shapes.items, objectContext)];
+    const items = (target as any)[this._getAmfKey(this.ns.aml.vocabularies.shapes.items, objectContext) as string];
     if (Array.isArray(items) && items.length) {
       const [item] = items;
       result.items = this.unknownShape(item, undefined, objectContext);
@@ -1074,24 +883,18 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {TupleShape} object
-   * @param {ShapeProcessingOptions=} options
-   * @param {Record<string, string>=} context
-   * @returns {ApiTupleShape}
-   */
-  tupleShape(object, options, context) {
+  tupleShape(object: TupleShape, options?: ShapeProcessingOptions, context?: Record<string, string>): ApiTupleShape {
     const objectContext = context || object['@context'];
     let target = object;
-    const result = /** @type ApiTupleShape */ (this.dataArrangeShape(target, options, objectContext));
+    const result = (this.dataArrangeShape(target, options, objectContext)) as ApiTupleShape;
     if (this.isLink(target)) {
-      const value = /** @type TupleShape */ (this.getLinkTarget(target, objectContext));
+      const value = (this.getLinkTarget(target, objectContext)) as TupleShape;
       if (value) {
         target = value;
       }
     }
-    const items = target[this._getAmfKey(this.ns.aml.vocabularies.shapes.items, objectContext)];
-    const prefix = this._getAmfKey(this.ns.w3.rdfSchema.key, objectContext);
+    const items = (target as any)[this._getAmfKey(this.ns.aml.vocabularies.shapes.items, objectContext) as string];
+    const prefix = this._getAmfKey(this.ns.w3.rdfSchema.key, objectContext) as string;
     if (Array.isArray(items) && items.length) {
       result.items = [];
       items.forEach((item) => {
@@ -1115,13 +918,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {CreativeWork} object The CreativeWork to serialize.
-   * @param {Record<string, string>=} context
-   * @returns {ApiDocumentation} Serialized CreativeWork
+   * @param object The CreativeWork to serialize.
+   * @returns Serialized CreativeWork
    */
-  documentation(object, context) {
+  documentation(object: CreativeWork, context?: Record<string, string>): ApiDocumentation {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiDocumentation */ ({
+    const result: ApiDocumentation = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1143,14 +945,13 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {Example} object The Example to serialize.
-   * @param {Record<string, string>=} context
-   * @returns {ApiExample} Serialized Example
+   * @param {} object The Example to serialize.
+   * @returns {} Serialized Example
    */
-  example(object, context) {
+  example(object: Example, context?: Record<string, string>): ApiExample {
     const objectContext = context || object['@context'];
     this._resolve(object);
-    const result = /** @type ApiExample */ ({
+    const result: ApiExample = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1185,7 +986,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     // if (!mediaType.isNullOrEmpty) {
     //   result.mediaType = mediaType.value();
     // }
-    const structuredValue = object[this._getAmfKey(ns.aml.vocabularies.document.structuredValue, objectContext)];
+    const structuredValue = (object as any)[this._getAmfKey(ns.aml.vocabularies.document.structuredValue, objectContext) as string];
     if (Array.isArray(structuredValue) && structuredValue.length) {
       const [value] = structuredValue;
       result.structuredValue = this.unknownDataNode(value, objectContext);
@@ -1193,14 +994,9 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {XMLSerializer} object
-   * @param {Record<string, string>=} context
-   * @returns {ApiXMLSerializer}
-   */
-  xmlSerializer(object, context) {
+  xmlSerializer(object: XMLSerializer, context?: Record<string, string>): ApiXMLSerializer {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiXMLSerializer */ ({
+    const result: ApiXMLSerializer = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1230,33 +1026,24 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {DataNode} object
-   * @param {Record<string, string>=} context A context to use. If not set, it looks for the context of the passed model
-   * @returns {ApiDataNodeUnion}
-   */
-  unknownDataNode(object, context) {
+  unknownDataNode(object: DataNode, context?: Record<string, string>): ApiDataNodeUnion | undefined {
     const types = this.readTypes(object['@type'], context);
     const { ns } = this;
     if (types.includes(ns.aml.vocabularies.data.Scalar)) {
-      return this.scalarNode(/** @type ScalarNode */(object), context);
+      return this.scalarNode((object as ScalarNode), context);
     }
     if (types.includes(ns.aml.vocabularies.data.Object)) {
-      return this.objectNode(/** @type ObjectNode */(object), context);
+      return this.objectNode((object as ObjectNode), context);
     }
     if (types.includes(ns.aml.vocabularies.data.Array)) {
-      return this.arrayNode(/** @type ArrayNode */(object), context);
+      return this.arrayNode((object as ArrayNode), context);
     }
     return undefined;
   }
 
-  /**
-   * @param {DataNode} object
-   * @param {Record<string, string>=} context A context to use. If not set, it looks for the context of the passed model
-   * @returns {ApiDataNode}
-   */
-  dataNode(object, context) {
-    const result = /** @type ApiDataNode */ ({
+
+  dataNode(object: DataNode, context?: Record<string, string>): ApiDataNode {
+    const result: ApiDataNode = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], context),
       customDomainProperties: this.customDomainProperties(object, context),
@@ -1269,14 +1056,10 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {ScalarNode} object
-   * @param {Record<string, string>=} context A context to use. If not set, it looks for the context of the passed model
-   * @returns {ApiScalarNode}
-   */
-  scalarNode(object, context) {
+
+  scalarNode(object: ScalarNode, context?: Record<string, string>): ApiScalarNode {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiScalarNode */ (this.dataNode(object, context));
+    const result = (this.dataNode(object, context)) as ApiScalarNode;
     const { ns } = this;
     const value = this._getValue(object, ns.aml.vocabularies.data.value, objectContext);
     if (value && typeof value === 'string') {
@@ -1289,60 +1072,56 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {ObjectNode} object
-   * @param {Record<string, string>=} context A context to use. If not set, it looks for the context of the passed model
-   * @returns {ApiObjectNode}
-   */
-  objectNode(object, context) {
+  objectNode(object: ObjectNode, context?: Record<string, string>): ApiObjectNode {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiObjectNode */ (this.dataNode(object, context));
+    const result = (this.dataNode(object, context)) as ApiObjectNode;
     result.properties = {};
     const prefix = this.ns.aml.vocabularies.data.toString();
     const prefixCompact = `${this._getAmfKey(prefix, objectContext)}:`;
     Object.keys(object).forEach((key) => {
       if (key.startsWith(prefix) || key.startsWith(prefixCompact)) {
-        let value = object[key];
+        let value = (object as any)[key] as DataNode;
         if (Array.isArray(value)) {
           [value] = value;
         }
         const name = key.replace(prefix, '').replace(prefixCompact, '');
-        result.properties[name] = this.unknownDataNode(value, context);
+        result.properties[name] = this.unknownDataNode(value, context) as ApiDataNodeUnion;
       }
     });
     return result;
   }
 
-  /**
-   * @param {ArrayNode} object
-   * @param {Record<string, string>=} context A context to use. If not set, it looks for the context of the passed model
-   * @returns {ApiArrayNode}
-   */
-  arrayNode(object, context) {
+
+  arrayNode(object: ArrayNode, context?: Record<string, string>): ApiArrayNode {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiArrayNode */ (this.dataNode(object, objectContext));
+    const result = (this.dataNode(object, objectContext)) as ApiArrayNode;
     result.members = [];
-    const members = /** @type DataNode[] */ (this._computePropertyArray(object, this.ns.w3.rdfSchema.member));
+    const members = (this._computePropertyArray(object, this.ns.w3.rdfSchema.member)) as DataNode[];
     if (Array.isArray(members) && members.length) {
-      result.members = members.map((item) => this.unknownDataNode(item));
+      members.forEach(item => {
+        const node = this.unknownDataNode(item);
+        if (node) {
+          result.members.push(node);
+        }
+      });
     }
     return result;
   }
 
   /**
    * Adds the custom domain properties to the currently processed property, a.k.a annotations.
-   * @param {DomainElement} object 
-   * @param {Record<string, string>=} context A context to use. If not set, it looks for the context of the passed model
-   * @returns {ApiCustomDomainProperty[]} The list of custom domain properties.
+   * @param object 
+   * @param context A context to use. If not set, it looks for the context of the passed model
+   * @returns The list of custom domain properties.
    */
-  customDomainProperties(object, context) {
-    const result = /** @type ApiCustomDomainProperty[] */ ([]);
+  customDomainProperties(object: DomainElement, context?: Record<string, string>): ApiCustomDomainProperty[] {
+    const result: ApiCustomDomainProperty[] = [];
     const objectContext = context || object['@context'];
     const ids = this._getLinkValues(object, this.ns.aml.vocabularies.document.customDomainProperties, objectContext);
     if (Array.isArray(ids) && ids.length) {
       ids.forEach((id) => {
         const key = `amf://id${id}`;
-        let value = /** @type DomainElement */ (object[id] || object[key]);
+        let value = ((object as any)[id] || (object as any)[key]) as DomainElement;
         if (!value) {
           return;
         }
@@ -1350,11 +1129,11 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
           [value] = value;
         }
         const extension = this.unknownDataNode(value, objectContext);
-        const name = this._getValue(value, this.ns.aml.vocabularies.core.extensionName, objectContext);
+        const name = this._getValue(value, this.ns.aml.vocabularies.core.extensionName, objectContext) as string;
         if (!name || !extension) {
           return;
         }
-        const cdp = /** @type ApiCustomDomainProperty */ ({
+        const cdp: ApiCustomDomainProperty = ({
           id: key,
           name,
           extension,
@@ -1366,13 +1145,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {EndPoint} object The EndPoint to serialize.
-   * @param {Record<string, string>=} context
-   * @returns {ApiEndPoint} Serialized EndPoint
+   * @param object The EndPoint to serialize.
+   * @returns Serialized EndPoint
    */
-  endPoint(object, context) {
+  endPoint(object: EndPoint, context?: Record<string, string>): ApiEndPoint {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiEndPoint */ ({
+    const result: ApiEndPoint = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1404,7 +1182,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     }
     const operations = this[getArrayItems](object, ns.aml.vocabularies.apiContract.supportedOperation, objectContext);
     if (Array.isArray(operations) && operations.length) {
-      result.operations = operations.map(i => this.operation(/** @type Operation */ (i), objectContext));
+      result.operations = operations.map(i => this.operation((i as Operation), objectContext));
     }
     const parameters = this[getArrayItems](object, ns.aml.vocabularies.apiContract.parameter, objectContext);
     if (Array.isArray(parameters) && parameters.length) {
@@ -1412,7 +1190,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     }
     const payloads = this[getArrayItems](object, ns.aml.vocabularies.apiContract.payload, objectContext);
     if (Array.isArray(payloads) && payloads.length) {
-      result.payloads = payloads.map(i => this.payload(/** @type Payload */(i), objectContext));
+      result.payloads = payloads.map(i => this.payload(/** @type  */(i as Payload), objectContext));
     }
     const servers = this[getArrayItems](object, ns.aml.vocabularies.apiContract.server, objectContext);
     if (Array.isArray(servers) && servers.length) {
@@ -1441,13 +1219,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {Operation} object The Operation to serialize.
-   * @param {Record<string, string>=} context
-   * @returns {ApiOperation} Serialized Operation
+   * @param object The Operation to serialize.
+   * @returns Serialized Operation
    */
-  operation(object, context) {
+  operation(object: Operation, context?: Record<string, string>): ApiOperation {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiOperation */ ({
+    const result: ApiOperation = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1489,54 +1266,54 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (operationId && typeof operationId === 'string') {
       result.operationId = operationId;
     }
-    const accepts = /** @type string[] */ (this._getValueArray(object, ns.aml.vocabularies.apiContract.accepts, objectContext));
+    const accepts = (this._getValueArray(object, ns.aml.vocabularies.apiContract.accepts, objectContext)) as string[];
     if (Array.isArray(accepts)) {
       result.accepts = accepts;
     }
-    const schemes = /** @type string[] */ (this._getValueArray(object, ns.aml.vocabularies.apiContract.scheme, objectContext));
+    const schemes = (this._getValueArray(object, ns.aml.vocabularies.apiContract.scheme, objectContext)) as string[];
     if (Array.isArray(schemes)) {
       result.schemes = schemes;
     }
-    const contentType = /** @type string[] */ (this._getValueArray(object, ns.aml.vocabularies.apiContract.contentType, objectContext));
+    const contentType = (this._getValueArray(object, ns.aml.vocabularies.apiContract.contentType, objectContext)) as string[];
     if (Array.isArray(contentType)) {
       result.contentType = contentType;
     }
 
-    let expects = object[this._getAmfKey(ns.aml.vocabularies.apiContract.expects, objectContext)];
+    let expects = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.expects, objectContext) as string];
     if (expects) {
       if (Array.isArray(expects)) {
         [expects] = expects;
       }
       result.request = this.request(expects, objectContext);
     }
-    let documentation = object[this._getAmfKey(ns.aml.vocabularies.core.documentation, objectContext)];
+    let documentation = (object as any)[this._getAmfKey(ns.aml.vocabularies.core.documentation, objectContext) as string];
     if (documentation) {
       if (Array.isArray(documentation)) {
         [documentation] = documentation;
       }
       result.documentation = this.documentation(documentation, objectContext);
     }
-    const responses = object[this._getAmfKey(ns.aml.vocabularies.apiContract.returns, objectContext)];
+    const responses = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.returns, objectContext) as string];
     if (Array.isArray(responses)) {
       result.responses = responses.map(r => this.response(r, objectContext));
     }
-    const callbacks = object[this._getAmfKey(ns.aml.vocabularies.apiContract.callback, objectContext)];
+    const callbacks = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.callback, objectContext) as string];
     if (Array.isArray(callbacks)) {
       result.callbacks = callbacks.map(c => this.callback(c, objectContext));
     }
-    const servers = object[this._getAmfKey(ns.aml.vocabularies.apiContract.server, objectContext)];
+    const servers = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.server, objectContext) as string];
     if (Array.isArray(servers)) {
       result.servers = servers.map(s => this.server(s));
     }
-    const security = object[this._getAmfKey(ns.aml.vocabularies.security.security, objectContext)];
+    const security = (object as any)[this._getAmfKey(ns.aml.vocabularies.security.security, objectContext) as string];
     if (Array.isArray(security)) {
       result.security = security.map(s => this.securityRequirement(s, objectContext));
     }
-    const tags = object[this._getAmfKey(ns.aml.vocabularies.apiContract.tag, objectContext)];
+    const tags = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.tag, objectContext) as string];
     if (Array.isArray(tags) && tags.length) {
       result.tags = tags.map(s => this.tag(s, objectContext));
     }
-    const traits = object[this._getAmfKey(ns.aml.vocabularies.document.extends, objectContext)];
+    const traits = (object as any)[this._getAmfKey(ns.aml.vocabularies.document.extends, objectContext) as string];
     if (Array.isArray(traits) && traits.length) {
       result.extends = traits.map(t => this.parametrizedTrait(t, objectContext));
     }
@@ -1544,13 +1321,13 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {Tag} object 
+   * @param object 
    * @param {Record<string, string>=} context
-   * @returns {ApiTag}
+   * @returns {}
    */
-  tag(object, context) {
+  tag(object: Tag, context?: Record<string, string>): ApiTag {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiTag */ ({
+    const result: ApiTag = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1565,14 +1342,9 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {Callback} object
-   * @param {Record<string, string>=} context
-   * @returns {ApiCallback}
-   */
-  callback(object, context) {
+  callback(object: Callback, context?: Record<string, string>): ApiCallback {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiCallback */ ({
+    const result: ApiCallback = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1587,7 +1359,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (expression && typeof expression === 'string') {
       result.expression = expression;
     }
-    let endpoint = object[this._getAmfKey(ns.aml.vocabularies.apiContract.endpoint, objectContext)];
+    let endpoint = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.endpoint, objectContext) as string];
     if (endpoint) {
       if (Array.isArray(endpoint)) {
         [endpoint] = endpoint;
@@ -1598,13 +1370,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {Request} object The API request to serialize.
-   * @param {Record<string, string>=} context
-   * @returns {ApiRequest} Serialized API request
+   * @param object The API request to serialize.
+   * @returns Serialized API request
    */
-  request(object, context) {
+  request(object: Request, context?: Record<string, string>): ApiRequest {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiRequest */ ({
+    const result: ApiRequest = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1625,7 +1396,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (required && typeof required === 'boolean') {
       result.required = required;
     }
-    let queryString = object[this._getAmfKey(ns.aml.vocabularies.apiContract.queryString, objectContext)];
+    let queryString = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.queryString, objectContext) as string];
     if (queryString) {
       if (Array.isArray(queryString)) {
         [queryString] = queryString;
@@ -1650,19 +1421,19 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     }
     const payloads = this[getArrayItems](object, ns.aml.vocabularies.apiContract.payload, objectContext);
     if (Array.isArray(payloads) && payloads.length) {
-      result.payloads = payloads.map(p => this.payload(/** @type Payload */ (p), objectContext));
+      result.payloads = payloads.map(p => this.payload((p as Payload), objectContext));
     }
     return result;
   }
 
   /**
-   * @param {Response} object The Response to serialize.
+   * @param object The Response to serialize.
    * @param {Record<string, string>=} context
-   * @returns {ApiResponse} Serialized Response
+   * @returns Serialized Response
    */
-  response(object, context) {
+  response(object: Response, context?: Record<string, string>): ApiResponse {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiResponse */ ({
+    const result: ApiResponse = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1691,13 +1462,13 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     }
     const payloads = this[getArrayItems](object, ns.aml.vocabularies.apiContract.payload, objectContext);
     if (Array.isArray(payloads) && payloads.length) {
-      result.payloads = payloads.map(p => this.payload(/** @type Payload */(p), objectContext));
+      result.payloads = payloads.map(p => this.payload((p as Payload), objectContext));
     }
-    const examples = object[this._getAmfKey(ns.aml.vocabularies.apiContract.examples, objectContext)];
+    const examples = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.examples, objectContext) as string];
     if (Array.isArray(examples) && examples.length) {
       result.examples = examples.map(e => this.example(e, objectContext));
     }
-    const links = object[this._getAmfKey(ns.aml.vocabularies.apiContract.link, objectContext)];
+    const links = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.link, objectContext) as string];
     if (Array.isArray(links) && links.length) {
       result.links = links.map(p => this.templatedLink(p, objectContext));
     }
@@ -1705,13 +1476,13 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {Payload} object The Payload to serialize.
+   * @param object The Payload to serialize.
    * @param {Record<string, string>=} context
-   * @returns {ApiPayload} Serialized Payload
+   * @returns Serialized Payload
    */
-  payload(object, context) {
+  payload(object: Payload, context?: Record<string, string>): ApiPayload {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiPayload */ ({
+    const result: ApiPayload = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1728,7 +1499,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (mediaType && typeof mediaType === 'string') {
       result.mediaType = mediaType;
     }
-    let schema = object[this._getAmfKey(ns.aml.vocabularies.shapes.schema, objectContext)];
+    let schema = (object as any)[this._getAmfKey(ns.aml.vocabularies.shapes.schema, objectContext) as string];
     if (schema) {
       if (Array.isArray(schema)) {
         [schema] = schema;
@@ -1737,7 +1508,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
         trackedId: result.id,
       }, objectContext);
     }
-    const examples = object[this._getAmfKey(ns.aml.vocabularies.apiContract.examples, objectContext)];
+    const examples = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.examples, objectContext) as string];
     if (Array.isArray(examples) && examples.length) {
       result.examples = examples.map(e => this.example(e, objectContext));
     }
@@ -1748,13 +1519,13 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {TemplatedLink} object The TemplatedLink to serialize.
+   * @param object The TemplatedLink to serialize.
    * @param {Record<string, string>=} context
-   * @returns {ApiTemplatedLink} Serialized TemplatedLink
+   * @returns Serialized TemplatedLink
    */
-  templatedLink(object, context) {
+  templatedLink(object: TemplatedLink, context?: Record<string, string>): ApiTemplatedLink {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiTemplatedLink */ ({
+    const result: ApiTemplatedLink = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1774,14 +1545,14 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (operationId && typeof operationId === 'string') {
       result.operationId = operationId;
     }
-    let server = object[this._getAmfKey(ns.aml.vocabularies.apiContract.server, objectContext)];
+    let server = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.server, objectContext) as string] as Server | undefined;
     if (server) {
       if (Array.isArray(server)) {
         [server] = server;
       }
-      result.server = this.server(server, objectContext);
+      result.server = this.server(server as Server, objectContext);
     }
-    let mapping = /** @type IriTemplateMapping[] */ (object[this._getAmfKey(ns.aml.vocabularies.apiContract.mapping, objectContext)]);
+    let mapping = ((object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.mapping, objectContext) as string]) as IriTemplateMapping[] | undefined;
     if (mapping) {
       if (mapping && !Array.isArray(mapping)) {
         mapping = [mapping];
@@ -1800,13 +1571,13 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {IriTemplateMapping} object 
+   * @param object 
    * @param {Record<string, string>=} context
-   * @returns {ApiIriTemplateMapping}
+   * @returns {}
    */
-  iriTemplateMapping(object, context) {
+  iriTemplateMapping(object: IriTemplateMapping, context?: Record<string, string>): ApiIriTemplateMapping {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiIriTemplateMapping */ ({
+    const result: ApiIriTemplateMapping = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1825,13 +1596,13 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {ParametrizedSecurityScheme} object The ParametrizedSecurityScheme to serialize.
+   * @param object The ParametrizedSecurityScheme to serialize.
    * @param {Record<string, string>=} context
-   * @returns {ApiParametrizedSecurityScheme} Serialized ParametrizedSecurityScheme
+   * @returns Serialized ParametrizedSecurityScheme
    */
-  parametrizedSecurityScheme(object, context) {
+  parametrizedSecurityScheme(object: ParametrizedSecurityScheme, context?: Record<string, string>): ApiParametrizedSecurityScheme {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiParametrizedSecurityScheme */ ({
+    const result: ApiParametrizedSecurityScheme = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1842,32 +1613,30 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (name && typeof name === 'string') {
       result.name = name;
     }
-    let scheme = object[this._getAmfKey(ns.aml.vocabularies.security.scheme, objectContext)];
+    let scheme = (object as any)[this._getAmfKey(ns.aml.vocabularies.security.scheme, objectContext) as string] as SecurityScheme | undefined;
     if (scheme) {
       if (Array.isArray(scheme)) {
         [scheme] = scheme;
       }
-      result.scheme = this.securityScheme(scheme, objectContext);
+      result.scheme = this.securityScheme(scheme as SecurityScheme, objectContext);
     }
-    let settings = object[this._getAmfKey(ns.aml.vocabularies.security.settings, objectContext)];
+    let settings = (object as any)[this._getAmfKey(ns.aml.vocabularies.security.settings, objectContext) as string] as Settings | undefined;
     if (settings) {
       if (Array.isArray(settings)) {
         [settings] = settings;
       }
-      result.settings = this.securitySettings(settings, objectContext);
+      result.settings = this.securitySettings(settings as Settings, objectContext);
     }
     return result;
   }
 
   /**
-   * @param {SecurityScheme} object The SecurityScheme to serialize as a list item.
-   * @param {Record<string, string>=} context
-   * @returns {ApiSecuritySchemeListItem} Serialized SecurityScheme
+   * @param object The SecurityScheme to serialize as a list item.
+   * @returns Serialized SecurityScheme
    */
-  securitySchemeListItem(object, context) {
+  securitySchemeListItem(object: SecurityScheme, context?: Record<string, string>): ApiSecuritySchemeListItem {
     const objectContext = context || object['@context'];
-    
-    const result = /** @type ApiSecuritySchemeListItem */ ({
+    const result: ApiSecuritySchemeListItem = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       type: '',
@@ -1889,13 +1658,13 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {SecurityScheme} object The SecurityScheme to serialize.
+   * @param object The SecurityScheme to serialize.
    * @param {Record<string, string>=} context
-   * @returns {ApiSecurityScheme} Serialized SecurityScheme
+   * @returns Serialized SecurityScheme
    */
-  securityScheme(object, context) {
+  securityScheme(object: SecurityScheme, context?: Record<string, string>): ApiSecurityScheme {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiSecurityScheme */ ({
+    const result: ApiSecurityScheme = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1921,19 +1690,19 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (type && typeof type === 'string') {
       result.type = type;
     }
-    let settings = object[this._getAmfKey(ns.aml.vocabularies.security.settings, objectContext)];
+    let settings = (object as any)[this._getAmfKey(ns.aml.vocabularies.security.settings, objectContext) as string] as Settings | undefined;
     if (settings) {
       if (Array.isArray(settings)) {
         [settings] = settings;
       }
-      result.settings = this.securitySettings(settings, objectContext);
+      result.settings = this.securitySettings(settings as Settings, objectContext);
     }
-    let queryString = object[this._getAmfKey(ns.aml.vocabularies.apiContract.queryString, objectContext)];
+    let queryString = (object as any)[this._getAmfKey(ns.aml.vocabularies.apiContract.queryString, objectContext) as string] as Shape | undefined;
     if (queryString) {
       if (Array.isArray(queryString)) {
         [queryString] = queryString;
       }
-      result.queryString = this.unknownShape(queryString, undefined, objectContext);
+      result.queryString = this.unknownShape(queryString as Shape, undefined, objectContext);
     }
     const headers = this[getArrayItems](object, ns.aml.vocabularies.apiContract.header, objectContext);
     if (Array.isArray(headers) && headers.length) {
@@ -1945,19 +1714,18 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     }
     const responses = this[getArrayItems](object, ns.aml.vocabularies.apiContract.response, objectContext);
     if (Array.isArray(responses) && responses.length) {
-      result.responses = responses.map(p => this.response(/** @type Response */ (p), objectContext));
+      result.responses = responses.map(p => this.response(/** @type */ (p as Response), objectContext));
     }
     return result;
   }
 
   /**
-   * @param {SecurityRequirement} object The SecurityRequirement to serialize.
-   * @param {Record<string, string>=} context
-   * @returns {ApiSecurityRequirement} Serialized SecurityRequirement
+   * @param object The SecurityRequirement to serialize.
+   * @returns Serialized SecurityRequirement
    */
-  securityRequirement(object, context) {
+  securityRequirement(object: SecurityRequirement, context?: Record<string, string>): ApiSecurityRequirement {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiSecurityRequirement */ ({
+    const result: ApiSecurityRequirement = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -1969,48 +1737,39 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (name && typeof name === 'string') {
       result.name = name;
     }
-    const schemes = /** @type ParametrizedSecurityScheme[] */ (object[this._getAmfKey(ns.aml.vocabularies.security.schemes, objectContext)]);
+    const schemes = ((object as any)[this._getAmfKey(ns.aml.vocabularies.security.schemes, objectContext) as string]) as ParametrizedSecurityScheme[] | undefined;
     if (Array.isArray(schemes) && schemes.length) {
       result.schemes = schemes.map(p => this.parametrizedSecurityScheme(p, objectContext));
     }
     return result;
   }
 
-  /**
-   * @param {Settings} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiSecuritySettingsUnion}
-   */
-  securitySettings(object, context) {
+  securitySettings(object: Settings, context?: Record<string, string>): ApiSecuritySettingsUnion {
     const objectContext = context || object['@context'];
     const { ns } = this;
     const types = this.readTypes(object['@type'], objectContext);
     if (types.includes(ns.aml.vocabularies.security.OAuth1Settings)) {
-      return this.oAuth1Settings(/** @type OAuth1Settings */ (object), objectContext);
+      return this.oAuth1Settings((object as OAuth1Settings), objectContext);
     }
     if (types.includes(ns.aml.vocabularies.security.OAuth2Settings)) {
-      return this.oAuth2Settings(/** @type OAuth2Settings */ (object), objectContext);
+      return this.oAuth2Settings((object as OAuth2Settings), objectContext);
     }
     if (types.includes(ns.aml.vocabularies.security.ApiKeySettings)) {
-      return this.apiKeySettings(/** @type ApiKeySettings */ (object), objectContext);
+      return this.apiKeySettings((object as ApiKeySettings), objectContext);
     }
     if (types.includes(ns.aml.vocabularies.security.HttpSettings)) {
-      return this.httpSettings(/** @type HttpSettings */ (object), objectContext);
+      return this.httpSettings((object as HttpSettings), objectContext);
     }
     if (types.includes(ns.aml.vocabularies.security.OpenIdConnectSettings)) {
-      return this.openIdConnectSettings(/** @type OpenIdConnectSettings */ (object), objectContext);
+      return this.openIdConnectSettings((object as OpenIdConnectSettings), objectContext);
     }
     return this.settings(object, objectContext);
   }
 
-  /**
-   * @param {Settings} object
-   * @param {Record<string, string>=} context
-   * @returns {ApiSecuritySettings}
-   */
-  settings(object, context) {
+
+  settings(object: Settings, context?: Record<string, string>): ApiSecuritySettings {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiSecuritySettings */ ({
+    const result: ApiSecuritySettings = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -2022,14 +1781,9 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {OAuth1Settings} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiSecurityOAuth1Settings}
-   */
-  oAuth1Settings(object, context) {
+  oAuth1Settings(object: OAuth1Settings, context?: Record<string, string>): ApiSecurityOAuth1Settings {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiSecurityOAuth1Settings */ (this.settings(object, objectContext));
+    const result = (this.settings(object, objectContext)) as ApiSecurityOAuth1Settings;
     const { ns } = this;
     const authorizationUri = this._getValue(object, ns.aml.vocabularies.security.authorizationUri, objectContext);
     if (authorizationUri && typeof authorizationUri === 'string') {
@@ -2043,7 +1797,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (tokenCredentialsUri && typeof tokenCredentialsUri === 'string') {
       result.tokenCredentialsUri = tokenCredentialsUri;
     }
-    const signatures = /** @type string[] */ (this._getValueArray(object, ns.aml.vocabularies.security.signature, objectContext));
+    const signatures = (this._getValueArray(object, ns.aml.vocabularies.security.signature, objectContext)) as string[] | undefined;
     if (Array.isArray(signatures) && signatures.length) {
       result.signatures = signatures;
     } else {
@@ -2052,22 +1806,18 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {OAuth2Settings} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiSecurityOAuth2Settings}
-   */
-  oAuth2Settings(object, context) {
+
+  oAuth2Settings(object: OAuth2Settings, context?: Record<string, string>): ApiSecurityOAuth2Settings {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiSecurityOAuth2Settings */ (this.settings(object, objectContext));
+    const result = (this.settings(object, objectContext)) as ApiSecurityOAuth2Settings;
     const { ns } = this;
-    const grants = /** @type string[] */ (this._getValueArray(object, ns.aml.vocabularies.security.authorizationGrant, objectContext));
+    const grants = (this._getValueArray(object, ns.aml.vocabularies.security.authorizationGrant, objectContext)) as string[] | undefined;
     if (Array.isArray(grants) && grants.length) {
       result.authorizationGrants = grants;
     } else {
       result.authorizationGrants = [];
     }
-    const flows = /** @type OAuth2Flow[] */ (object[this._getAmfKey(ns.aml.vocabularies.security.flows, objectContext)]);
+    const flows = ((object as any)[this._getAmfKey(ns.aml.vocabularies.security.flows, objectContext) as string]) as OAuth2Flow[] | undefined;
     if (Array.isArray(flows) && flows.length) {
       result.flows = flows.map((p) => this.oAuth2Flow(p, objectContext));
     } else {
@@ -2076,14 +1826,9 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {OAuth2Flow} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiSecurityOAuth2Flow}
-   */
-  oAuth2Flow(object, context) {
+  oAuth2Flow(object: OAuth2Flow, context?: Record<string, string>): ApiSecurityOAuth2Flow {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiSecurityOAuth2Flow */ ({
+    const result: ApiSecurityOAuth2Flow = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -2107,21 +1852,17 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (refreshUri && typeof refreshUri === 'string') {
       result.refreshUri = refreshUri;
     }
-    const scopes = object[this._getAmfKey(ns.aml.vocabularies.security.scope, objectContext)];
+    const scopes = (object as any)[this._getAmfKey(ns.aml.vocabularies.security.scope, objectContext) as string] as Scope[] | undefined;
     if (Array.isArray(scopes) && scopes.length) {
       result.scopes = scopes.map((p) => this.scope(p, objectContext));
     }
     return result;
   }
 
-  /**
-   * @param {Scope} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiSecurityScope}
-   */
-  scope(object, context) {
+
+  scope(object: Scope, context?: Record<string, string>): ApiSecurityScope {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiSecurityScope */ ({
+    const result: ApiSecurityScope = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -2139,14 +1880,9 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {ApiKeySettings} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiSecurityApiKeySettings}
-   */
-  apiKeySettings(object, context) {
+  apiKeySettings(object: ApiKeySettings, context?: Record<string, string>): ApiSecurityApiKeySettings {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiSecurityApiKeySettings */ (this.settings(object, objectContext));
+    const result = (this.settings(object, objectContext)) as ApiSecurityApiKeySettings;
     const { ns } = this;
     const name = this._getValue(object, ns.aml.vocabularies.core.name, objectContext);
     if (name && typeof name === 'string') {
@@ -2159,14 +1895,9 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {HttpSettings} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiSecurityHttpSettings}
-   */
-  httpSettings(object, context) {
+  httpSettings(object: HttpSettings, context?: Record<string, string>): ApiSecurityHttpSettings {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiSecurityHttpSettings */ (this.settings(object, objectContext));
+    const result = (this.settings(object, objectContext)) as ApiSecurityHttpSettings;
     const { ns } = this;
     const scheme = this._getValue(object, ns.aml.vocabularies.security.scheme, objectContext);
     if (scheme && typeof scheme === 'string') {
@@ -2179,14 +1910,9 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {OpenIdConnectSettings} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiSecurityOpenIdConnectSettings}
-   */
-  openIdConnectSettings(object, context) {
+  openIdConnectSettings(object: OpenIdConnectSettings, context?: Record<string, string>): ApiSecurityOpenIdConnectSettings {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiSecurityOpenIdConnectSettings */ (this.settings(object, objectContext));
+    const result = (this.settings(object, objectContext)) as ApiSecurityOpenIdConnectSettings;
     const { ns } = this;
     const url = this._getValue(object, ns.aml.vocabularies.security.openIdConnectUrl, objectContext);
     if (url && typeof url === 'string') {
@@ -2197,74 +1923,65 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
 
   /**
    * Serializes source maps, when available.
-   * @param {DocumentSourceMaps} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiDocumentSourceMaps|undefined}
    */
-  sourceMap(object, context) {
+  sourceMap(object: DocumentSourceMaps, context?: Record<string, string>): ApiDocumentSourceMaps|undefined {
     const objectContext = context || object['@context'];
     const { ns } = this;
-    let sm = object[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.sources, objectContext)];
+    let sm = (object as any)[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.sources, objectContext) as string];
     if (!sm) {
       return undefined;
     }
     if (Array.isArray(sm)) {
       [sm] = sm;
     }
-    const result = /** @type ApiDocumentSourceMaps */ ({
+    const result: ApiDocumentSourceMaps = ({
       id: sm['@id'],
       types: this.readTypes(sm['@type']),
     });
-    const synthesizedField = sm[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.synthesizedField, objectContext)];
+    const synthesizedField = (sm as any)[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.synthesizedField, objectContext) as string];
     if (Array.isArray(synthesizedField) && synthesizedField.length) {
       result.synthesizedField = synthesizedField.map(i => this.synthesizedField(i, objectContext));
     }
-    const lexical = sm[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.lexical, objectContext)];
+    const lexical = sm[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.lexical, objectContext) as string];
     if (Array.isArray(lexical) && lexical.length) {
       result.lexical = lexical.map(i => this.synthesizedField(i, objectContext))
     }
-    const trackedElement = sm[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.trackedElement, objectContext)];
+    const trackedElement = sm[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.trackedElement, objectContext) as string];
     if (Array.isArray(trackedElement) && trackedElement.length) {
       result.trackedElement = this.synthesizedField(trackedElement[0], objectContext);
     }
-    const autoName = sm[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.autoGeneratedName, objectContext)];
+    const autoName = sm[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.autoGeneratedName, objectContext) as string];
     if (Array.isArray(autoName) && autoName.length) {
       result.autoGeneratedName = autoName.map(i => this.synthesizedField(i, objectContext))
     }
-    const jsonSchema = sm[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.parsedJsonSchema, objectContext)];
+    const jsonSchema = sm[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.parsedJsonSchema, objectContext) as string];
     if (Array.isArray(jsonSchema) && jsonSchema.length) {
       result.parsedJsonSchema = this.synthesizedField(jsonSchema[0], objectContext);
     }
-    const declaredElement = sm[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.declaredElement, objectContext)];
+    const declaredElement = sm[this._getAmfKey(ns.aml.vocabularies.docSourceMaps.declaredElement, objectContext) as string];
     if (Array.isArray(declaredElement) && declaredElement.length) {
       result.declaredElement = this.synthesizedField(declaredElement[0], objectContext);
     }
     return result;
   }
 
-  /**
-   * @param {SynthesizedField} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiSynthesizedField}
-   */
-  synthesizedField(object, context) {
+  synthesizedField(object: SynthesizedField, context?: Record<string, string>): ApiSynthesizedField {
     const objectContext = context || object['@context'];
     // compact model
     if (typeof object === 'string') {
-      return /** @type ApiSynthesizedField */ ({
+      return ({
         id: 'synthesizedField/generated',
         value: object,
-      });
+      }) as ApiSynthesizedField;
     }
-    const result = /** @type ApiSynthesizedField */ ({
+    const result: ApiSynthesizedField = {
       id: object['@id'],
-    });
-    // @ts-ignore
+      value: '',
+    };
     const element = this._getValue(object, this.ns.aml.vocabularies.docSourceMaps.element, objectContext);
     if (typeof element === 'string') {
       result.element = element;
     }
-    // @ts-ignore
     const value = this._getValue(object, this.ns.aml.vocabularies.docSourceMaps.value, objectContext);
     if (typeof value === 'string') {
       result.value = value
@@ -2272,14 +1989,9 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {ParametrizedDeclaration} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiParametrizedDeclaration}
-   */
-  parametrizedDeclaration(object, context) {
+  parametrizedDeclaration(object: ParametrizedDeclaration, context?: Record<string, string>): ApiParametrizedDeclaration {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiParametrizedDeclaration */ ({
+    const result: ApiParametrizedDeclaration = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       variables: [],
@@ -2291,13 +2003,13 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (name && typeof name === 'string') {
       result.name = name;
     }
-    const variables = object[this._getAmfKey(ns.aml.vocabularies.document.variable, objectContext)];
+    const variables = (object as any)[this._getAmfKey(ns.aml.vocabularies.document.variable, objectContext) as string];
     if (Array.isArray(variables)) {
       variables.forEach((item) => {
         result.variables.push(this.variableValue(item, objectContext));
       });
     }
-    const targets = object[this._getAmfKey(ns.aml.vocabularies.document.target, objectContext)];
+    const targets = (object as any)[this._getAmfKey(ns.aml.vocabularies.document.target, objectContext) as string];
     if (Array.isArray(targets) && targets.length) {
       const [target] = targets;
       result.target = this.abstractDeclaration(target, objectContext);
@@ -2305,45 +2017,31 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     return result;
   }
 
-  /**
-   * @param {ParametrizedTrait} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiParametrizedTrait}
-   */
-  parametrizedTrait(object, context) {
+  parametrizedTrait(object: ParametrizedTrait, context?: Record<string, string>): ApiParametrizedTrait {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiParametrizedTrait */ (this.parametrizedDeclaration(object, objectContext));
+    const result = (this.parametrizedDeclaration(object, objectContext)) as ApiParametrizedTrait;
     return result;
   }
 
-  /**
-   * @param {ParametrizedResourceType} object
-   * @param {Record<string, string>=} context 
-   * @returns {ApiParametrizedResourceType}
-   */
-  parametrizedResourceType(object, context) {
+
+  parametrizedResourceType(object: ParametrizedResourceType, context?: Record<string, string>): ApiParametrizedResourceType {
     const objectContext = context || object['@context'];
-    const result = /** @type ApiParametrizedResourceType */ (this.parametrizedDeclaration(object, objectContext));
+    const result = (this.parametrizedDeclaration(object, objectContext)) as ApiParametrizedResourceType;
     return result;
   }
 
-  /**
-   * @param {VariableValue} object 
-   * @param {Record<string, string>=} context
-   * @returns {ApiVariableValue}
-   */
-  variableValue(object, context) {
+  variableValue(object: VariableValue, context?: Record<string, string>): ApiVariableValue {
     const objectContext = context || object['@context'];
     const { ns } = this;
-    const name = this._getValue(object, ns.aml.vocabularies.core.name, objectContext);
-    const result = /** @type ApiVariableValue */ ({
+    const name = this._getValue(object, ns.aml.vocabularies.core.name, objectContext) as string;
+    const result: ApiVariableValue = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
       sourceMaps: this.sourceMap(object, objectContext),
       name,
     });
-    const values = object[this._getAmfKey(ns.aml.vocabularies.document.value, objectContext)];
+    const values = (object as any)[this._getAmfKey(ns.aml.vocabularies.document.value, objectContext) as string];
     if (Array.isArray(values)) {
       const [item] = values;
       result.value = this.unknownDataNode(item, objectContext);
@@ -2352,15 +2050,15 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {AbstractDeclaration} object 
+   * @param object 
    * @param {Record<string, string>=} context
-   * @returns {ApiAbstractDeclaration}
+   * @returns {}
    */
-  abstractDeclaration(object, context) {
+  abstractDeclaration(object: AbstractDeclaration, context?: Record<string, string>): ApiAbstractDeclaration {
     const objectContext = context || object['@context'];
     const { ns } = this;
-    const name = this._getValue(object, ns.aml.vocabularies.core.name, objectContext);
-    const result = /** @type ApiAbstractDeclaration */ ({
+    const name = this._getValue(object, ns.aml.vocabularies.core.name, objectContext) as string;
+    const result: ApiAbstractDeclaration = ({
       id: object['@id'],
       types: this.readTypes(object['@type'], objectContext),
       customDomainProperties: this.customDomainProperties(object, objectContext),
@@ -2368,7 +2066,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
       name,
       variables: [],
     });
-    const variables = /** @type string[] */ (this._getValueArray(object, ns.aml.vocabularies.document.variable, objectContext));
+    const variables = (this._getValueArray(object, ns.aml.vocabularies.document.variable, objectContext)) as string[];
     if (Array.isArray(variables)) {
       result.variables = variables;
     }
@@ -2376,7 +2074,7 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
     if (description && typeof description === 'string') {
       result.description = description;
     }
-    const dataNode = object[this._getAmfKey(ns.aml.vocabularies.document.dataNode, objectContext)];
+    const dataNode = (object as any)[this._getAmfKey(ns.aml.vocabularies.document.dataNode, objectContext) as string];
     if (Array.isArray(dataNode)) {
       const [item] = dataNode;
       result.dataNode = this.unknownDataNode(item, objectContext);
@@ -2385,22 +2083,22 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {EndPoint} object The EndPoint to serialize as a list item.
-   * @param {Record<string, string>=} context A context to use. If not set, it looks for the context of the passed model
-   * @returns {ApiEndPointWithOperationsListItem} Serialized EndPoint as a list item.
+   * @param object The EndPoint to serialize as a list item.
+   * @param context A context to use. If not set, it looks for the context of the passed model
+   * @returns Serialized EndPoint as a list item.
    */
-  endPointWithOperationsListItem(object, context) {
+  endPointWithOperationsListItem(object: EndPoint, context?: Record<string, string>): ApiEndPointWithOperationsListItem {
     const { ns } = this;
-    const path = this._getValue(object, ns.aml.vocabularies.apiContract.path, context);
+    const path = this._getValue(object, ns.aml.vocabularies.apiContract.path, context) as string;
 
-    const result = /** @type ApiEndPointWithOperationsListItem */ ({
+    const result: ApiEndPointWithOperationsListItem = ({
       id: object['@id'],
       path,
       operations: [],
     });
     const operations = this[getArrayItems](object, ns.aml.vocabularies.apiContract.supportedOperation, context);
     if (Array.isArray(operations) && operations.length) {
-      result.operations = operations.map(i => this.operationListItem(/** @type Operation */ (i), context));
+      result.operations = operations.map(i => this.operationListItem((i as Operation), context));
     }
     const name = this._getValue(object, ns.aml.vocabularies.core.name, context);
     if (name && typeof name === 'string') {
@@ -2410,12 +2108,12 @@ export class AmfSerializer extends AmfHelperMixin(Object) {
   }
 
   /**
-   * @param {Operation} object The Operation to serialize as a list item.
-   * @param {Record<string, string>=} context A context to use. If not set, it looks for the context of the passed model
-   * @returns {ApiOperationListItem} Serialized Operation as a list item.
+   * @param object The Operation to serialize as a list item.
+   * @param context A context to use. If not set, it looks for the context of the passed model
+   * @returns Serialized Operation as a list item.
    */
-  operationListItem(object, context) {
-    const result = /** @type ApiOperationListItem */ ({
+  operationListItem(object: Operation, context?: Record<string, string>): ApiOperationListItem {
+    const result: ApiOperationListItem = ({
       id: object['@id'],
       method: '',
     });

@@ -1,13 +1,13 @@
-/** @typedef {import('@api-client/context-menu').ContextMenuCommand} ContextMenuCommand */
-/** @typedef {import('../elements/ApiNavigationElement').default} ApiNavigationElement */
+import { ContextMenuCommand } from '@api-client/context-menu';
+import ApiNavigationElement from '../elements/ApiNavigationElement.js';
 
 
-const commands = /** @type ContextMenuCommand[] */ ([
+const commands: ContextMenuCommand[] = [
   {
     target: 'all',
     label: 'Expand all',
     execute: (ctx) => {
-      const menu = /** @type ApiNavigationElement */ (ctx.root);
+      const menu = ctx.root as ApiNavigationElement;
       menu.expandAll();
     },
   },
@@ -15,7 +15,7 @@ const commands = /** @type ContextMenuCommand[] */ ([
     target: 'all',
     label: 'Collapse all',
     execute: (ctx) => {
-      const menu = /** @type ApiNavigationElement */ (ctx.root);
+      const menu = ctx.root as ApiNavigationElement;
       menu.collapseAll();
     },
   },
@@ -23,7 +23,7 @@ const commands = /** @type ContextMenuCommand[] */ ([
     target: 'endpoints',
     label: 'Expand all endpoints',
     execute: (ctx) => {
-      const menu = /** @type ApiNavigationElement */ (ctx.root);
+      const menu = ctx.root as ApiNavigationElement;
       menu.expandAllEndpoints();
     },
   },
@@ -31,9 +31,9 @@ const commands = /** @type ContextMenuCommand[] */ ([
     target: 'endpoints',
     label: 'Collapse all endpoints',
     execute: (ctx) => {
-      const menu = /** @type ApiNavigationElement */ (ctx.root);
+      const menu = ctx.root as ApiNavigationElement;
       menu.collapseAllEndpoints();
     },
   },
-]);
+];
 export default commands;

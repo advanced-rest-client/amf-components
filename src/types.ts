@@ -37,7 +37,7 @@ export declare interface ApiConsoleResponse {
 export declare interface ApiConsoleHTTPResponse {
   status: number;
   statusText?: string;
-  payload?: any;
+  payload?: unknown;
   headers?: string;
 }
 
@@ -117,7 +117,7 @@ export interface ShapeTemplateOptions extends ParameterRenderOptions {
   nillable?: boolean;
   arrayItem?: boolean;
   index?: number;
-  value?: any;
+  value?: unknown;
 }
 
 export interface ComputeBaseUriOptions {
@@ -257,6 +257,7 @@ export interface ApiEndpointsTreeItem extends ApiEndPointWithOperationsListItem 
 
 export interface ApiSecuritySchemeListItem {
   id: string;
+  types: string[];
   type: string;
   name?: string;
   displayName?: string;
