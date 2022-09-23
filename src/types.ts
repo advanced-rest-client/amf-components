@@ -1,8 +1,8 @@
-import { HTTPRequest, RequestAuthorization } from '@advanced-rest-client/events/src/request/ArcRequest';
-import { ApiParameter, ApiShapeUnion, ApiSecurityRequirement, ApiServer, ApiEndPoint, ApiExample, ApiDocumentation } from './helpers/api.js';
+import { ApiDefinitions, AmfShapes } from '@api-client/core/build/browser.js';
+import { HTTPRequest, RequestAuthorization } from '@api-client/core/build/legacy.js';
 import XhrSimpleRequestTransportElement from './elements/XhrSimpleRequestTransportElement.js';
 
-export declare interface ApiConsoleRequest extends HTTPRequest {
+export interface ApiConsoleRequest extends HTTPRequest {
   /**
    * The authorization settings.
    * Some of them are already applied to the request object.
@@ -22,7 +22,7 @@ export declare interface ApiConsoleRequest extends HTTPRequest {
   timeout?: number;
 }
 
-export declare interface ApiConsoleResponse {
+export interface ApiConsoleResponse {
   /**
    * The id of the request generated when the Api request event is dispatched.
    */
@@ -34,14 +34,14 @@ export declare interface ApiConsoleResponse {
   loadingTime: number;
 }
 
-export declare interface ApiConsoleHTTPResponse {
+export interface ApiConsoleHTTPResponse {
   status: number;
   statusText?: string;
   payload?: unknown;
   headers?: string;
 }
 
-export declare interface AbortRequestEventDetail {
+export interface AbortRequestEventDetail {
   /**
    * The URL of the request
    */
@@ -52,13 +52,13 @@ export declare interface AbortRequestEventDetail {
   id: string;
 }
 
-export declare interface XHRQueueItem {
+export interface XHRQueueItem {
   startTime: number;
   request: ApiConsoleRequest;
   xhr: XhrSimpleRequestTransportElement;
 }
 
-export declare interface PopulationInfo {
+export interface PopulationInfo {
   annotationName: string;
   annotationValue: string;
   fieldValue: string;
@@ -75,11 +75,11 @@ export interface OperationParameter {
    * The parameter definition transformed from the AMF graph model.
    * This is set for path, query, and header parameters.
    */
-  parameter: ApiParameter;
+  parameter: ApiDefinitions.IApiParameter;
   /**
    * The schema associated with the parameter. Determines the shape of the user input control.
    */
-  schema?: ApiShapeUnion;
+  schema?: AmfShapes.IShapeUnion;
   /**
    * Link to `parameter.id`.
    */
@@ -101,7 +101,7 @@ export interface OperationParameter {
 export interface SecuritySelectorListItem {
   types: (string | undefined)[];
   labels: (string | undefined)[];
-  security: ApiSecurityRequirement;
+  security: ApiDefinitions.IApiSecurityRequirement;
 }
 
 export interface ParameterRenderOptions {
@@ -130,12 +130,12 @@ export interface ComputeBaseUriOptions {
    * When the `baseUri` is set this value is ignored.
    * When both are missing then the URL computations ignores the base URI part and reads the path only.
    */
-  server?: ApiServer;
+  server?: ApiDefinitions.IApiServer;
   /**
    * The endpoint definition used to compute path of the URL.
    * When not set it ignores the path part.
    */
-  endpoint?: ApiEndPoint;
+  endpoint?: ApiDefinitions.IApiEndPoint;
   /**
    * The protocols to use with the computation of the URL.
    * When the server has no protocol (http or https) defined on the base URI
@@ -155,7 +155,7 @@ export interface ComputeBaseUriOptions {
 }
 
 // export interface OperationParameter {
-//   parameter: ApiParameter;
+//   parameter: ApiDefinitions.IApiParameter;
 //   schema?: ApiShapeUnion;
 //   paramId: string;
 //   schemaId?: string;
@@ -276,7 +276,7 @@ export declare interface EndpointItem extends ApiEndpointsTreeItem, SelectableMe
 export declare interface OperationItem extends ApiOperationListItem, SelectableMenuItem, EditableMenuItem {}
 export declare interface NodeShapeItem extends ApiNodeShapeListItem, SelectableMenuItem, EditableMenuItem {}
 export declare interface SecurityItem extends ApiSecuritySchemeListItem, SelectableMenuItem {}
-export declare interface DocumentationItem extends ApiDocumentation, SelectableMenuItem, EditableMenuItem {}
+export declare interface DocumentationItem extends ApiDefinitions.IApiDocumentation, SelectableMenuItem, EditableMenuItem {}
 export declare type SchemaAddType = 'scalar'|'object'|'file'|'array'|'union';
 
 export declare interface TargetModel {
@@ -288,7 +288,7 @@ export declare interface TargetModel {
   _basePaths?: string[];
 }
 
-export declare interface SchemaExample extends ApiExample {
+export declare interface SchemaExample extends AmfShapes.IApiDataExample {
   /**
    * The value to render as the example value.
    */

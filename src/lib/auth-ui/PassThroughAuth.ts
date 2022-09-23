@@ -1,12 +1,11 @@
 /* eslint-disable class-methods-use-this */
 import { html, TemplateResult } from 'lit';
 import { AuthUiInit } from '@advanced-rest-client/base/api.js';
+import { AmfNamespace, ApiDefinitions, AmfShapes } from '@api-client/core/build/browser.js';
 import '@advanced-rest-client/highlight/arc-marked.js';
 import { PassThroughAuthorization } from '@advanced-rest-client/events/src/authorization/Authorization.js';
-import { ns } from '../../helpers/Namespace.js';
 import ApiUiBase from './ApiUiBase.js';
 import * as InputCache from '../InputCache.js';
-import { ApiNodeShape, ApiParameter, ApiShapeUnion } from '../../helpers/api.js';
 
 export default class PassThroughAuth extends ApiUiBase {
   schemeName?: string;
@@ -36,7 +35,7 @@ export default class PassThroughAuth extends ApiUiBase {
     if (!security) {
       return;
     }
-    if (!security.types.includes(ns.aml.vocabularies.security.ParametrizedSecurityScheme)) {
+    if (!security.types.includes(AmfNamespace.aml.vocabularies.security.ParametrizedSecurityScheme)) {
       return;
     }
     const { scheme } = security;
@@ -59,8 +58,8 @@ export default class PassThroughAuth extends ApiUiBase {
     this.requestUpdate();
   }
 
-  appendQueryString(queryString: ApiShapeUnion): void {
-    const object = queryString as ApiNodeShape;
+  appendQueryString(queryString: AmfShapes.IShapeUnion): void {
+    const object = queryString as AmfShapes.IApiNodeShape;
     if (!object.properties || !object.properties.length) {
       return;
     }
@@ -73,10 +72,10 @@ export default class PassThroughAuth extends ApiUiBase {
         name,
         examples: [],
         payloads: [],
-        types: [ns.aml.vocabularies.apiContract.Parameter],
+        types: [AmfNamespace.aml.vocabularies.apiContract.Parameter],
         required: minCount > 0,
         customDomainProperties: [],
-      } as ApiParameter;
+      } as ApiDefinitions.IApiParameter;
     });
     this.appendToParams(list, 'query', true);
   }
@@ -87,7 +86,7 @@ export default class PassThroughAuth extends ApiUiBase {
    * @param source
    * @param clear When set it clears the previously set parameters
    */
-  appendToParams(list: ApiParameter[], source: string, clear=false): void {
+  appendToParams(list: ApiDefinitions.IApiParameter[], source: string, clear=false): void {
     let params = this.parametersValue;
     if (clear) {
       params = params.filter(p => p.source !== source);

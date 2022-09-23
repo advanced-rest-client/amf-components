@@ -4,29 +4,28 @@
 /* eslint-disable class-methods-use-this */
 import { html, TemplateResult } from 'lit';
 import Oauth2, { oauth2GrantTypes } from '@advanced-rest-client/base/src/elements/authorization/ui/OAuth2.js'
-import { OAuth2CustomParameter } from '@advanced-rest-client/oauth';
+import { AmfNamespace, ApiDefinitions, AmfShapes, IOAuth2CustomParameter } from '@api-client/core/build/browser.js';
+import { IApiCustomDomainProperty } from '@api-client/core/build/src/amf/definitions/Base.js';
 import { OAuth2Authorization, OAuth2DeliveryMethod, Oauth2GrantType } from '@advanced-rest-client/events/src/authorization/Authorization.js';
-import { ns } from '../../helpers/Namespace.js';
 import * as InputCache from '../InputCache.js';
 import { AmfInputParser, BindingType } from '../AmfInputParser.js';
 import { Oauth2RamlCustomData } from '../Oauth2RamlCustomData.js';
 import { AmfParameterMixin } from '../AmfParameterMixin.js';
-import { ApiArrayNode, ApiCustomDomainProperty, ApiDataNodeUnion, ApiObjectNode, ApiParameter, ApiParametrizedSecurityScheme, ApiScalarNode, ApiSecurityOAuth2Flow, ApiSecurityOAuth2Settings, ApiSecurityScheme, ApiSecurityScope } from '../../helpers/api.js';
 import { OperationParameter } from '../../types.js';
 
 const securityValue = Symbol("securityValue");
 const gtValue = Symbol("gtValue");
 
 export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
-  [securityValue]?: ApiParametrizedSecurityScheme;
+  [securityValue]?: ApiDefinitions.IApiParametrizedSecurityScheme;
 
   [gtValue]?: string;
 
-  get security(): ApiParametrizedSecurityScheme | undefined {
+  get security(): ApiDefinitions.IApiParametrizedSecurityScheme | undefined {
     return this[securityValue];
   }
 
-  set security(value: ApiParametrizedSecurityScheme | undefined) {
+  set security(value: ApiDefinitions.IApiParametrizedSecurityScheme | undefined) {
     const old = this[securityValue];
     if (old === value) {
       return;
@@ -76,7 +75,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
       return;
     }
     this.setupOAuthDeliveryMethod(scheme);
-    const config = scheme.settings as ApiSecurityOAuth2Settings;
+    const config = scheme.settings as ApiDefinitions.IApiSecurityOAuth2Settings;
     if (!config) {
       return;
     }
@@ -115,7 +114,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
     return result;
   }
 
-  setupOAuthDeliveryMethod(scheme?: ApiSecurityScheme): void {
+  setupOAuthDeliveryMethod(scheme?: ApiDefinitions.IApiSecurityScheme): void {
     const info = this.getOauth2DeliveryMethod(scheme);
     if (this.oauthDeliveryMethod !== info.method) {
       this.oauthDeliveryMethod = info.method as OAuth2DeliveryMethod;
@@ -136,7 +135,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    *
    * @param info Security AMF model
    */
-  getOauth2DeliveryMethod(info?: ApiSecurityScheme): { method: string, name: string } {
+  getOauth2DeliveryMethod(info?: ApiDefinitions.IApiSecurityScheme): { method: string, name: string } {
     const result = {
       method: 'header',
       name: 'authorization'
@@ -237,7 +236,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    * @param flows List of current flows loaded with the AMF model.
    * @returns True if current model should be treated as RAML's model.
    */
-  isRamlFlow(flows: ApiSecurityOAuth2Flow[]): boolean {
+  isRamlFlow(flows: ApiDefinitions.IApiSecurityOAuth2Flow[]): boolean {
     if (!Array.isArray(flows)) {
       return true;
     }
@@ -258,7 +257,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    * @param model AMF model describing settings of the security
    * scheme
    */
-  preFillAmfData(model: ApiSecurityOAuth2Settings): void {
+  preFillAmfData(model: ApiDefinitions.IApiSecurityOAuth2Settings): void {
     if (!model) {
       return;
     }
@@ -297,12 +296,12 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    * @param model AMF model describing settings of the security scheme
    * @returns The extension definition or null
    */
-  findOauth2CustomSettings(model: ApiSecurityOAuth2Settings): ApiCustomDomainProperty | undefined {
+  findOauth2CustomSettings(model: ApiDefinitions.IApiSecurityOAuth2Settings): IApiCustomDomainProperty | undefined {
     const { customDomainProperties = [] } = model;
     const properties = ['accessTokenSettings', 'authorizationGrants', 'authorizationSettings'];
     return customDomainProperties.find((property) => {
-      const node = (property.extension as ApiObjectNode);
-      if (!node.properties || !node.types.includes(ns.aml.vocabularies.data.Object)) {
+      const node = (property.extension as AmfShapes.IApiObjectNode);
+      if (!node.properties || !node.types.includes(AmfNamespace.aml.vocabularies.data.Object)) {
         return false;
       }
       return Object.keys(node.properties).some(name => properties.includes(name));
@@ -317,21 +316,21 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    * @param customProperty The domain extension with the custom data
    * @returns The list of authorization grants to apply to the current operation.
    */
-  computeGrants(grans: string[] = [], customProperty?: ApiCustomDomainProperty): string[] {
-    if (!customProperty || !customProperty.extension || !customProperty.extension.types.includes(ns.aml.vocabularies.data.Object)) {
+  computeGrants(grans: string[] = [], customProperty?: IApiCustomDomainProperty): string[] {
+    if (!customProperty || !customProperty.extension || !customProperty.extension.types.includes(AmfNamespace.aml.vocabularies.data.Object)) {
       return grans;
     }
-    const typed = customProperty.extension as ApiObjectNode;
+    const typed = customProperty.extension as AmfShapes.IApiObjectNode;
     if (!typed.properties.authorizationGrants) {
       return grans;
     }
-    const array = typed.properties.authorizationGrants as ApiArrayNode;
+    const array = typed.properties.authorizationGrants as AmfShapes.IApiArrayNode;
     const addedGrants: string[] = [];
     array.members.forEach((g) => {
-      if (!g.types.includes(ns.aml.vocabularies.data.Scalar)) {
+      if (!g.types.includes(AmfNamespace.aml.vocabularies.data.Scalar)) {
         return;
       }
-      const scalar = g as ApiScalarNode;
+      const scalar = g as AmfShapes.IApiScalarNode;
       if (scalar.value) {
         addedGrants.push(scalar.value);
       }
@@ -356,7 +355,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    *
    * @param flows List of flows in the authorization description.
    */
-  preFillFlowData(flows: ApiSecurityOAuth2Flow[]): void {
+  preFillFlowData(flows: ApiDefinitions.IApiSecurityOAuth2Flow[]): void {
     // first step is to select the right flow.
     // If the user already selected a grant type before then it this looks
     // for a flow for already selected grant type. If its not present then
@@ -376,7 +375,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    * @param flows List of flows to search in.
    * @param type Grant type
    */
-  flowForType(flows: ApiSecurityOAuth2Flow[], type?: string): any | undefined {
+  flowForType(flows: ApiDefinitions.IApiSecurityOAuth2Flow[], type?: string): any | undefined {
     if (!type) {
       return undefined;
     }
@@ -402,7 +401,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    * @param flow A flow to process.
    * @returns List of scopes required by an endpoint / API.
    */
-  readFlowScopes(flow: ApiSecurityOAuth2Flow): string[] | undefined {
+  readFlowScopes(flow: ApiDefinitions.IApiSecurityOAuth2Flow): string[] | undefined {
     const { security } = this;
     let scopes = this.readSecurityScopes(flow.scopes);
     if (scopes || !security) {
@@ -410,7 +409,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
     }
     // if scopes are not defined in the operation then they may be defined in
     // security settings.
-    const config = security.scheme && security.scheme.settings as ApiSecurityOAuth2Settings | undefined;
+    const config = security.scheme && security.scheme.settings as ApiDefinitions.IApiSecurityOAuth2Settings | undefined;
     if (!config || !config.flows) {
       return undefined;
     }
@@ -427,7 +426,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    * @param flows List of flows to process.
    * @returns Grant types supported by this authorization.
    */
-  readFlowsTypes(flows: ApiSecurityOAuth2Flow[]): string[] {
+  readFlowsTypes(flows: ApiDefinitions.IApiSecurityOAuth2Flow[]): string[] {
     const grants: string[] = [];
     flows.forEach((flow) => {
       let type = flow.flow;
@@ -460,7 +459,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
     if (!security || !security.scheme || !security.scheme.settings) {
       return;
     }
-    const config = security.scheme.settings as ApiSecurityOAuth2Settings;
+    const config = security.scheme.settings as ApiDefinitions.IApiSecurityOAuth2Settings;
     const { flows } = config;
     if (!Array.isArray(flows) || this.isRamlFlow(flows)) {
       return;
@@ -480,7 +479,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
   /**
    * Extracts scopes list from the security definition
    */
-  readSecurityScopes(scopes: ApiSecurityScope[]): string[] | undefined {
+  readSecurityScopes(scopes: ApiDefinitions.IApiSecurityScope[]): string[] | undefined {
     if (!scopes) {
       return undefined;
     }
@@ -497,7 +496,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    * @param model Model for the security settings
    * @returns True if the security settings are annotated with PKCE extension
    */
-  readPkceValue(model: ApiSecurityOAuth2Settings): boolean | undefined {
+  readPkceValue(model: ApiDefinitions.IApiSecurityOAuth2Settings): boolean | undefined {
     const { customDomainProperties } = model;
     if (!Array.isArray(customDomainProperties) || !customDomainProperties.length) {
       return undefined;
@@ -506,8 +505,8 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
     if (!pkce) {
       return undefined;
     }
-    const info = pkce.extension as ApiScalarNode;
-    if (info.dataType === ns.w3.xmlSchema.boolean) {
+    const info = pkce.extension as AmfShapes.IApiScalarNode;
+    if (info.dataType === AmfNamespace.w3.xmlSchema.boolean) {
       return info.value === 'true';
     }
     return undefined;
@@ -576,25 +575,25 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    *
    * @param customProperty Annotation applied to the OAuth settings
    */
-  setupAnnotationParameters(customProperty?: ApiCustomDomainProperty): void {
+  setupAnnotationParameters(customProperty?: IApiCustomDomainProperty): void {
     this.parametersValue = [];
     /* istanbul ignore if */
     if (!customProperty || !customProperty.extension) {
       return;
     }
-    const typed = customProperty.extension as ApiObjectNode;
-    const authSettings = (typed.properties.authorizationSettings as ApiObjectNode | undefined);
-    const tokenSettings = (typed.properties.accessTokenSettings as ApiObjectNode | undefined);
+    const typed = customProperty.extension as AmfShapes.IApiObjectNode;
+    const authSettings = (typed.properties.authorizationSettings as AmfShapes.IApiObjectNode | undefined);
+    const tokenSettings = (typed.properties.accessTokenSettings as AmfShapes.IApiObjectNode | undefined);
     if (authSettings) {
-      const qp = (authSettings.properties.queryParameters as ApiObjectNode | undefined);
+      const qp = (authSettings.properties.queryParameters as AmfShapes.IApiObjectNode | undefined);
       if (qp && qp.properties) {
         this.setupAuthRequestQueryParameters(qp.properties);
       }
     }
     if (tokenSettings) {
-      const qp = (tokenSettings.properties.queryParameters as ApiObjectNode | undefined);
-      const headerParams = (tokenSettings.properties.headers as ApiObjectNode | undefined);
-      const bodyParams = (tokenSettings.properties.body as ApiObjectNode | undefined);
+      const qp = (tokenSettings.properties.queryParameters as AmfShapes.IApiObjectNode | undefined);
+      const headerParams = (tokenSettings.properties.headers as AmfShapes.IApiObjectNode | undefined);
+      const bodyParams = (tokenSettings.properties.body as AmfShapes.IApiObjectNode | undefined);
       if (qp && qp.properties) {
         this.setupTokenRequestQueryParameters(qp.properties);
       }
@@ -610,7 +609,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
   /**
    * Appends a list of parameters to the list of rendered parameters
    */
-  appendToParams(list: ApiParameter[], source: string): void {
+  appendToParams(list: ApiDefinitions.IApiParameter[], source: string): void {
     const params = this.parametersValue;
     if (Array.isArray(list)) {
       list.forEach((param) => {
@@ -631,7 +630,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    *
    * @param properties List of parameters from the annotation.
    */
-  setupAuthRequestQueryParameters(properties: { [key: string]: ApiDataNodeUnion }): void {
+  setupAuthRequestQueryParameters(properties: { [key: string]: AmfShapes.IApiDataNodeUnion }): void {
     const source = 'authQuery';
     this.parametersValue = this.parametersValue.filter(item => item.source !== source);
     const factory = new Oauth2RamlCustomData();
@@ -644,7 +643,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    *
    * @param properties List of parameters from the annotation.
    */
-  setupTokenRequestQueryParameters(properties: { [key: string]: ApiDataNodeUnion }): void {
+  setupTokenRequestQueryParameters(properties: { [key: string]: AmfShapes.IApiDataNodeUnion }): void {
     const source = 'tokenQuery';
     this.parametersValue = this.parametersValue.filter(item => item.source !== source);
     const factory = new Oauth2RamlCustomData();
@@ -657,7 +656,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    *
    * @param properties params List of parameters from the annotation.
    */
-  setupTokenRequestHeaders(properties: { [key: string]: ApiDataNodeUnion }): void {
+  setupTokenRequestHeaders(properties: { [key: string]: AmfShapes.IApiDataNodeUnion }): void {
     const source = 'tokenHeader';
     this.parametersValue = this.parametersValue.filter(item => item.source !== source);
     const factory = new Oauth2RamlCustomData();
@@ -670,7 +669,7 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    *
    * @param properties params List of parameters from the annotation.
    */
-  setupTokenRequestBody(properties: { [key: string]: ApiDataNodeUnion }): void {
+  setupTokenRequestBody(properties: { [key: string]: AmfShapes.IApiDataNodeUnion }): void {
     const source = 'tokenBody';
     this.parametersValue = this.parametersValue.filter(item => item.source !== source);
     const factory = new Oauth2RamlCustomData();
@@ -688,8 +687,8 @@ export default class OAuth2Auth extends AmfParameterMixin(Oauth2) {
    * @param reportKey The key name in the report.
    * @returns Array of objects with `name` and `value` properties or undefined if `params` is empty or no values are available.
    */
-  computeCustomParameters(params: OperationParameter[], reportKey: keyof BindingType): OAuth2CustomParameter[] {
-    const result: OAuth2CustomParameter[] = [];
+  computeCustomParameters(params: OperationParameter[], reportKey: keyof BindingType): IOAuth2CustomParameter[] {
+    const result: IOAuth2CustomParameter[] = [];
     const report = AmfInputParser.reportRequestInputs(params.map(p => p.parameter), InputCache.getStore(this.target, this.globalCache), this.nilValues);
     const values = report[reportKey];
     if (!values) {

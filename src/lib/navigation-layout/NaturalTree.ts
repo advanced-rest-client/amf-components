@@ -1,8 +1,8 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-plusplus */
-/** @typedef {import('../../types').ApiEndPointWithOperationsListItem} ApiEndPointWithOperationsListItem */
-/** @typedef {import('../../types').ApiEndpointsTreeItem} ApiEndpointsTreeItem */
+
+import { ApiEndpointsTreeItem, ApiEndPointWithOperationsListItem } from "../../types.js";
 
 /**
  * A class that transforms the list of endpoints and methods into
@@ -10,30 +10,26 @@
  * This is consistent with the legacy API navigation element sorting.
  */
 export class NaturalTree {
+  result: ApiEndpointsTreeItem[];
+
+  basePaths: string[];
+
   constructor() {
-    /** 
-     * @type ApiEndpointsTreeItem[] 
-     */
     this.result = [];
-    /** @type string[] */
     this.basePaths = [];
   }
 
   /**
-   * @param {ApiEndPointWithOperationsListItem[]} list The list of endpoints as they appear in the API.
-   * @returns {ApiEndpointsTreeItem[]}
+   * @param list The list of endpoints as they appear in the API.
    */
-  create(list) {
+  create(list: ApiEndPointWithOperationsListItem[]): ApiEndpointsTreeItem[] {
     list.forEach((item) => this.appendEndpointItem(item));
     return this.result;
   }
 
-  /**
-   * @param {ApiEndPointWithOperationsListItem} item
-   */
-  appendEndpointItem(item) {
+  appendEndpointItem(item: ApiEndPointWithOperationsListItem): void {
     const { path, name, id, operations,  } = item;
-    const result = /** @type ApiEndpointsTreeItem */ ({
+    const result: ApiEndpointsTreeItem = ({
       path,
       label: name,
       name,
@@ -46,7 +42,7 @@ export class NaturalTree {
 
     let tmpPath = path;
     if (tmpPath[0] === '/') {
-      tmpPath = tmpPath.substr(1);
+      tmpPath = tmpPath.substring(1);
     }
     const parts = tmpPath.split('/');
     let indent = 0;
@@ -82,12 +78,11 @@ export class NaturalTree {
   /**
    * Computes label for an endpoint when name is missing and the endpoint
    * is indented, hence name should be truncated.
-   * @param {string} currentPath Endpoint's path
-   * @param {string[]} parts Path parts
-   * @param {number} indent Endpoint indentation
-   * @returns {string} 
+   * @param currentPath Endpoint's path
+   * @param parts Path parts
+   * @param indent Endpoint indentation
    */
-   computePathName(currentPath, parts, indent) {
+   computePathName(currentPath: string, parts: string[], indent: number): string {
     const { basePaths } = this;
     let path = '';
     

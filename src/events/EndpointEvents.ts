@@ -1,3 +1,4 @@
+import { ApiDefinitions } from '@api-client/core/build/browser.js';
 import { EventTypes } from './EventTypes.js';
 import { ApiStoreContextEvent, ApiStoreReadEvent } from './BaseEvents.js';
 
@@ -7,35 +8,32 @@ import { ApiStoreContextEvent, ApiStoreReadEvent } from './BaseEvents.js';
 export const EndpointEvents = {
   /**
    * Reads the endpoint model from the store.
-   * @param {EventTarget} target The node on which to dispatch the event
-   * @param {string} id The domain id of the endpoint.
-   * @returns {Promise<ApiEndPoint>}
+   * @param target The node on which to dispatch the event
+   * @param id The domain id of the endpoint.
    */
-  get: async (target, id) => {
+  get: async (target: EventTarget, id: string): Promise<ApiDefinitions.IApiEndPoint> => {
     const e = new ApiStoreReadEvent(EventTypes.Endpoint.get, id);
     target.dispatchEvent(e);
-    return e.detail.result;
+    return e.detail.result as Promise<ApiDefinitions.IApiEndPoint>;
   },
   /**
    * Reads the endpoint model from the store by the path value.
-   * @param {EventTarget} target The node on which to dispatch the event
-   * @param {string} path The path of the endpoint.
-   * @returns {Promise<ApiEndPoint>}
+   * @param target The node on which to dispatch the event
+   * @param path The path of the endpoint.
    */
-  byPath: async (target, path) => {
+  byPath: async (target: EventTarget, path: string): Promise<ApiDefinitions.IApiEndPoint> => {
     const e = new ApiStoreReadEvent(EventTypes.Endpoint.byPath, path);
     target.dispatchEvent(e);
-    return e.detail.result;
+    return e.detail.result as Promise<ApiDefinitions.IApiEndPoint>;
   },
   /**
    * Lists all endpoints with operations included into the result.
-   * @param {EventTarget} target The node on which to dispatch the event
-   * @returns {Promise<ApiEndPointWithOperationsListItem[]>}
+   * @param target The node on which to dispatch the event
    */
-  list: async (target) => {
+  list: async (target: EventTarget): Promise<ApiDefinitions.IApiEndPointWithOperationsListItem[]> => {
     const e = new ApiStoreContextEvent(EventTypes.Endpoint.list);
     target.dispatchEvent(e);
-    return e.detail.result;
+    return e.detail.result as Promise<ApiDefinitions.IApiEndPointWithOperationsListItem[]>;
   },
 };
 

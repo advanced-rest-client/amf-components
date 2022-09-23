@@ -1,11 +1,11 @@
-import { html } from 'lit-html';
+import { html } from 'lit';
 import { DemoPage } from "@advanced-rest-client/arc-demo-helper";
 import { MonacoLoader } from "@advanced-rest-client/monaco-support";
-import '@anypoint-web-components/awc/anypoint-dropdown-menu.js';
-import '@anypoint-web-components/awc/anypoint-listbox.js';
-import '@anypoint-web-components/awc/anypoint-item.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-dropdown-menu.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-listbox.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-item.js';
 import { EventTypes as ArcEventTypes } from '@advanced-rest-client/events';
-import { OAuth2Authorization, OidcAuthorization } from '@advanced-rest-client/oauth';
+import { OAuth2Authorization, OidcAuthorization } from '@api-client/core/build/browser.js';
 import { DomEventsAmfStore } from "../../src/store/DomEventsAmfStore.js";
 import { AmfHelperMixin } from "../../src/helpers/AmfHelperMixin.js";
 import { EventTypes } from '../../src/events/EventTypes.js';
@@ -103,7 +103,7 @@ export class AmfDemoBase extends AmfHelperMixin(DemoPage) {
      * @type {string}
      */
     this.selectedFile = undefined;
-    this.redirectUri = `${window.location.origin}/node_modules/@advanced-rest-client/oauth/oauth-popup.html`;
+    this.redirectUri = `${window.location.origin}/demo/oauth-popup.html`;
     window.addEventListener(ArcEventTypes.Authorization.OAuth2.authorize, this.oauth2authorizeHandler.bind(this));
     window.addEventListener(ArcEventTypes.Authorization.Oidc.authorize, this.oidcAuthorizeHandler.bind(this));
 

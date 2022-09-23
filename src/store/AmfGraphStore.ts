@@ -1,5 +1,5 @@
-import { v4 } from '@advanced-rest-client/uuid';
-import { DomainElement } from '../helpers/amf.js';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { AmfDefinitions, uuidV4 } from '@api-client/core/build/browser.js';
 import { AmfStore } from './AmfStore.js';
 
 /**
@@ -26,8 +26,8 @@ export class AmfGraphStore {
    * @param graph The graph model to use to initialize the store.
    * @returns The store id to be used to reference when querying the store.
    */
-  async add(graph: DomainElement): Promise<string> {
-    const id = v4();
+  async add(graph: AmfDefinitions.IAmfDomainElement): Promise<string> {
+    const id = uuidV4();
     const instance = new AmfStore(this.target, graph);
     this.apis.set(id, instance);
     return id;

@@ -2,29 +2,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
 /* eslint-disable class-methods-use-this */
-import { AmfDocument } from '../helpers/amf.js';
-import { AmfSerializer } from '../helpers/AmfSerializer.js';
-import { ApiSummary, ApiEndPoint, ApiOperation, ServersQueryOptions, ApiServer, ApiDocumentation, ApiSecurityScheme, ApiSecurityRequirement, ApiRequest, ApiResponse, ApiPayload, ApiShapeUnion } from '../helpers/api.js';
+import { AmfDefinitions, AmfSerializer, ApiDefinitions, AmfShapes } from '@api-client/core/build/browser.js';
+import { ServersQueryOptions } from '@api-client/core/build/src/amf/AmfMixin.js';
 import { DocumentMeta, ApiEndPointWithOperationsListItem, ApiSecuritySchemeListItem, ApiNodeShapeListItem } from '../types.js';
-
-/** @typedef {import('../helpers/amf').AmfDocument} AmfDocument */
-/** @typedef {import('../helpers/amf').DomainElement} DomainElement */
-/** @typedef {import('../helpers/api').ApiSummary} ApiSummary */
-/** @typedef {import('../helpers/api').ApiEndPoint} ApiEndPoint */
-/** @typedef {import('../helpers/api').ApiOperation} ApiOperation */
-/** @typedef {import('../helpers/api').ServersQueryOptions} ServersQueryOptions */
-/** @typedef {import('../helpers/api').ApiServer} ApiServer */
-/** @typedef {import('../helpers/api').ApiDocumentation} ApiDocumentation */
-/** @typedef {import('../helpers/api').ApiSecurityScheme} ApiSecurityScheme */
-/** @typedef {import('../helpers/api').ApiSecurityRequirement} ApiSecurityRequirement */
-/** @typedef {import('../helpers/api').ApiRequest} ApiRequest */
-/** @typedef {import('../helpers/api').ApiResponse} ApiResponse */
-/** @typedef {import('../helpers/api').ApiPayload} ApiPayload */
-/** @typedef {import('../helpers/api').ApiShapeUnion} ApiShapeUnion */
-/** @typedef {import('../types').ApiEndPointWithOperationsListItem} ApiEndPointWithOperationsListItem */
-/** @typedef {import('../types').ApiSecuritySchemeListItem} ApiSecuritySchemeListItem */
-/** @typedef {import('../types').ApiNodeShapeListItem} ApiNodeShapeListItem */
-/** @typedef {import('../types').DocumentMeta} DocumentMeta */
 
 /**
  * An abstract base class for the store implementation that works with API Components.
@@ -43,7 +23,7 @@ export class AmfStore {
   /**
    * @param target The event target to dispatch the events on.
    */
-  constructor(target: EventTarget = window, graph?: AmfDocument) {
+  constructor(target: EventTarget = window, graph?: AmfDefinitions.IAmfDocument) {
     this.readonly = true;
     this.target = target;
     let amf = graph;
@@ -74,7 +54,7 @@ export class AmfStore {
   /**
    * @returns API summary for the summary view.
    */
-  async apiSummary(): Promise<ApiSummary | null> {
+  async apiSummary(): Promise<ApiDefinitions.IApiSummary | null> {
     throw new Error('Not implemented');
   }
 
@@ -96,7 +76,7 @@ export class AmfStore {
    * Reads an endpoint by its id.
    * @param id The domain id of the endpoint.
    */
-  async getEndpoint(id: string): Promise<ApiEndPoint | null> {
+  async getEndpoint(id: string): Promise<ApiDefinitions.IApiEndPoint | null> {
     throw new Error('Not implemented');
   }
 
@@ -104,7 +84,7 @@ export class AmfStore {
    * Reads an endpoint by its path.
    * @param path The path value of the endpoint or channel name.
    */
-  async getEndpointByPath(path: string): Promise<ApiEndPoint | null> {
+  async getEndpointByPath(path: string): Promise<ApiDefinitions.IApiEndPoint | null> {
     throw new Error('Not implemented');
   }
 
@@ -120,7 +100,7 @@ export class AmfStore {
    * @param query Server query options
    * @returns The list of servers for given query.
    */
-  async queryServers(query?: ServersQueryOptions): Promise<ApiServer[]> {
+  async queryServers(query?: ServersQueryOptions): Promise<ApiDefinitions.IApiServer[]> {
     throw new Error('Not implemented');
   }
 
@@ -129,7 +109,7 @@ export class AmfStore {
    * @param operationId The domain id of the operation to read.
    * @param endpointId Optional endpoint id. When not set it searches through all endpoints.
    */
-  async getOperation(operationId: string, endpointId?: string): Promise<ApiOperation | undefined> {
+  async getOperation(operationId: string, endpointId?: string): Promise<ApiDefinitions.IApiOperation | undefined> {
     throw new Error('Not implemented');
   }
 
@@ -137,14 +117,14 @@ export class AmfStore {
    * Finds an endpoint that has the operation.
    * @param id Method name or the domain id of the operation to find
    */
-  async getOperationParent(id: string): Promise<ApiEndPoint | undefined> {
+  async getOperationParent(id: string): Promise<ApiDefinitions.IApiEndPoint | undefined> {
     throw new Error('Not implemented');
   }
 
   /**
    * Lists the documentation definitions for the API.
    */
-  async listDocumentations(): Promise<ApiDocumentation[] | undefined> {
+  async listDocumentations(): Promise<ApiDefinitions.IApiDocumentation[] | undefined> {
     throw new Error('Not implemented');
   }
 
@@ -153,7 +133,7 @@ export class AmfStore {
    * @param id The domain id of the documentation object
    * @returns The read documentation.
    */
-  async getDocumentation(id: string): Promise<ApiDocumentation | undefined> {
+  async getDocumentation(id: string): Promise<ApiDefinitions.IApiDocumentation | undefined> {
     throw new Error('Not implemented');
   }
 
@@ -161,7 +141,7 @@ export class AmfStore {
    * Reads the SecurityScheme object from the graph.
    * @param id The domain id of the SecurityScheme
    */
-  async getSecurityScheme(id: string): Promise<ApiSecurityScheme | undefined> {
+  async getSecurityScheme(id: string): Promise<ApiDefinitions.IApiSecurityScheme | undefined> {
     throw new Error('Not implemented');
   }
 
@@ -169,7 +149,7 @@ export class AmfStore {
    * Reads the SecurityRequirement object from the graph.
    * @param id The domain id of the SecurityRequirement
    */
-  async getSecurityRequirement(id: string): Promise<ApiSecurityRequirement | undefined> {
+  async getSecurityRequirement(id: string): Promise<ApiDefinitions.IApiSecurityRequirement | undefined> {
     throw new Error('Not implemented');
   }
 
@@ -184,7 +164,7 @@ export class AmfStore {
    * Reads the Request object from the graph.
    * @param id The domain id of the Request
    */
-  async getRequest(id: string): Promise<ApiRequest | undefined> {
+  async getRequest(id: string): Promise<ApiDefinitions.IApiRequest | undefined> {
     throw new Error('Not implemented');
   }
 
@@ -192,7 +172,7 @@ export class AmfStore {
    * Reads the response data from the graph.
    * @param id The domain id of the response.
    */
-  async getResponse(id: string): Promise<ApiResponse | undefined> {
+  async getResponse(id: string): Promise<ApiDefinitions.IApiResponse | undefined> {
     throw new Error('Not implemented');
   }
 
@@ -200,7 +180,7 @@ export class AmfStore {
    * Reads Payload data from the graph
    * @param id The domain id of the payload
    */
-  async getPayload(id: string): Promise<ApiPayload | undefined> {
+  async getPayload(id: string): Promise<ApiDefinitions.IApiPayload | undefined> {
     throw new Error('Not implemented');
   }
 
@@ -214,7 +194,7 @@ export class AmfStore {
   /**
    * @param id The domain id of the API type (schema).
    */
-  async getType(id: string): Promise<ApiShapeUnion | undefined> {
+  async getType(id: string): Promise<AmfShapes.IShapeUnion | undefined> {
     throw new Error('Not implemented');
   }
 }

@@ -1,15 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable class-methods-use-this */
 import { dedupeMixin } from '@open-wc/dedupe-mixin';
 import { EventsTargetMixin } from  '@anypoint-web-components/awc';
 import { EventTypes } from '../../events/EventTypes.js';
 
-
 export const eventHandler = Symbol('eventHandler');
 
-/**
- * @type {Record<string, { target: string, args?: string[], eventProperties?: boolean, passDetail?: boolean }>}
- */
-const eventsMap = {
+const eventsMap: Record<string, { target: string, args?: string[], eventProperties?: boolean, passDetail?: boolean }> = {
   [EventTypes.Api.summary]: { target: 'apiSummary' },
   [EventTypes.Api.protocols]: { target: 'apiProtocols' },
   [EventTypes.Api.version]: { target: 'apiVersion' },
@@ -32,55 +30,76 @@ const eventsMap = {
   [EventTypes.Type.get]: { args: ['id'], target: 'getType' },
 };
 
+type Constructor<T = {}> = new (...args: any[]) => T;
+
 /**
- * @param {*} base
+ * This mixin adds events listeners for DOM events related to the AMF store.
+ * It does not provide implementations for the functions called by each handler.
+ * This to be mixed in with an instance of the `AmfStoreService`.
+ * 
+ * The implementation by default listens on the `window` object.
+ * Set `eventsTarget` property to listen to the events on a specific node.
+ * 
+ * @mixin
  */
-const mxFunction = base => {
-  class AmfStoreDomEventsMixin extends EventsTargetMixin(base) {
+export interface AmfStoreDomEventsMixinInterface {
+  [eventHandler](e: CustomEvent): void;
+  /**
+   * Listens for the store DOM events.
+   */
+  listen(node?: EventTarget): void;
+
+  /**
+   * Removes store's DOM events.
+   */
+  unlisten(node?: EventTarget): void;
+}
+
+/**
+ * This mixin adds events listeners for DOM events related to the AMF store.
+ * It does not provide implementations for the functions called by each handler.
+ * This to be mixed in with an instance of the `AmfStoreService`.
+ * 
+ * The implementation by default listens on the `window` object.
+ * Set `eventsTarget` property to listen to the events on a specific node.
+ * 
+ * @mixin
+ */
+export const AmfStoreDomEventsMixin = dedupeMixin(<T extends Constructor<any>>(superClass: T): Constructor<AmfStoreDomEventsMixinInterface> & T => {
+  class AmfStoreDomEventsMixinClass extends EventsTargetMixin(superClass) {
     /**
-     * @param {...any} args Base class arguments
+     * @param args Base class arguments
      */
-    constructor(...args) {
+     constructor(...args: any[]) {
       super(...args);
       this[eventHandler] = this[eventHandler].bind(this);
     }
 
     /**
      * Listens for the store DOM events.
-     * @param {EventTarget} node
      */
-    listen(node=window) {
-      Object.keys(eventsMap).forEach(type => node.addEventListener(type, this[eventHandler]));
+    listen(node: EventTarget = window): void {
+      Object.keys(eventsMap).forEach(type => node.addEventListener(type, this[eventHandler] as EventListener));
     }
 
     /**
      * Removes store's DOM events.
-     * @param {EventTarget} node
      */
-    unlisten(node=window) {
-      Object.keys(eventsMap).forEach(type => node.removeEventListener(type, this[eventHandler]));
+    unlisten(node: EventTarget = window): void {
+      Object.keys(eventsMap).forEach(type => node.removeEventListener(type, this[eventHandler] as EventListener));
     }
 
-    /**
-     * @param {EventTarget} node
-     */
-    _attachListeners(node) {
+    _attachListeners(node: EventTarget): void {
       super._attachListeners(node);
       this.listen(node);
     }
 
-    /**
-     * @param {EventTarget} node
-     */
-    _detachListeners(node) {
+    _detachListeners(node: EventTarget): void {
       super._detachListeners(node);
       this.unlisten(node);
     }
 
-    /**
-     * @param {CustomEvent} e 
-     */
-    [eventHandler](e) {
+    [eventHandler](e: CustomEvent): void {
       if (e.defaultPrevented) {
         return;
       }
@@ -98,26 +117,14 @@ const mxFunction = base => {
       } else if (!Array.isArray(args) || !args.length) {
         e.detail.result = this[target]();
       } else {
-        const params = [];
+        const params: any[] = [];
         args.forEach(n => {
-          const value = info.eventProperties ? e[n] : e.detail[n];
+          const value = info.eventProperties ? (e as any)[n] : e.detail[n];
           params.push(value);
         });
         e.detail.result = this[target](...params);
       }
     }
   }
-  return AmfStoreDomEventsMixin;
-}
-
-/**
- * This mixin adds events listeners for DOM events related to the AMF store.
- * It does not provide implementations for the functions called by each handler.
- * This to be mixed in with an instance of the `AmfStoreService`.
- * 
- * The implementation by default listens on the `window` object.
- * Set `eventsTarget` property to listen to the events on a specific node.
- * 
- * @mixin
- */
-export const AmfStoreDomEventsMixin = dedupeMixin(mxFunction);
+  return AmfStoreDomEventsMixinClass as Constructor<AmfStoreDomEventsMixinInterface> & T;
+});

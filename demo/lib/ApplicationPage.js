@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { EventTypes as ArcEventTypes } from '@advanced-rest-client/events';
-import { OAuth2Authorization, OidcAuthorization } from '@advanced-rest-client/oauth';
+import { OAuth2Authorization, OidcAuthorization } from '@api-client/core/build/browser.js';
 import { ReactiveMixin } from './mixins/ReactiveMixin.js';
 import { RenderableMixin } from './mixins/RenderableMixin.js';
 
@@ -34,7 +34,7 @@ export class ApplicationPage extends RenderableMixin(ReactiveMixin(EventTarget))
      * True when the app should render mobile friendly view.
      */
     this.isMobile = false;
-    this.redirectUri = `${window.location.origin}/node_modules/@advanced-rest-client/oauth/oauth-popup.html`;
+    this.redirectUri = `${window.location.origin}/demo/oauth-popup.html`;
     window.addEventListener(ArcEventTypes.Authorization.OAuth2.authorize, this.oauth2authorizeHandler.bind(this));
     window.addEventListener(ArcEventTypes.Authorization.Oidc.authorize, this.oidcAuthorizeHandler.bind(this));
     this.initMediaQueries();

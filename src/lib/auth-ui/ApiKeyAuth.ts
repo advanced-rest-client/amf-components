@@ -1,10 +1,9 @@
 /* eslint-disable class-methods-use-this */
 import { html, TemplateResult } from 'lit';
+import { AmfNamespace, ApiDefinitions, AmfShapes } from '@api-client/core/build/browser.js';
 import { ApiKeyAuthorization } from '@advanced-rest-client/events/src/authorization/Authorization.js';
-import { ns } from '../../helpers/Namespace.js';
 import ApiUiBase from './ApiUiBase.js';
 import * as InputCache from '../InputCache.js';
-import { ApiParameter, ApiSecurityApiKeySettings, ApiShapeUnion } from '../../helpers/api.js';
 
 export default class ApiKeyAuth extends ApiUiBase {
   async initializeApiModel(): Promise<void> {
@@ -16,7 +15,7 @@ export default class ApiKeyAuth extends ApiUiBase {
     if (!security) {
       return;
     }
-    if (!security.types.includes(ns.aml.vocabularies.security.ParametrizedSecurityScheme)) {
+    if (!security.types.includes(AmfNamespace.aml.vocabularies.security.ParametrizedSecurityScheme)) {
       return;
     }
     const { scheme } = security;
@@ -27,7 +26,7 @@ export default class ApiKeyAuth extends ApiUiBase {
     if (!type || !type.startsWith('Api Key')) {
       return;
     }
-    const config = scheme.settings as ApiSecurityApiKeySettings | undefined;
+    const config = scheme.settings as ApiDefinitions.IApiSecurityApiKeySettings | undefined;
     if (!config) {
       return;
     }
@@ -39,10 +38,10 @@ export default class ApiKeyAuth extends ApiUiBase {
     params.push({
       binding,
       paramId: id,
-      parameter: { ... (config as ApiParameter), binding },
+      parameter: { ... (config as ApiDefinitions.IApiParameter), binding },
       source: 'settings',
       schemaId: scheme.id,
-      schema: (scheme as unknown as ApiShapeUnion),
+      schema: (scheme as unknown as AmfShapes.IShapeUnion),
     });
     
     await this.requestUpdate();

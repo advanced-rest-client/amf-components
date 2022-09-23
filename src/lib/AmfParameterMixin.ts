@@ -15,16 +15,14 @@ import '@anypoint-web-components/awc/dist/define/anypoint-checkbox.js';
 import '@anypoint-web-components/awc/dist/define/anypoint-button.js';
 import '@anypoint-web-components/awc/dist/define/anypoint-icon-button.js';
 import '@anypoint-web-components/awc/dist/define/anypoint-switch.js';
-import { AnypointListboxElement, SupportedInputTypes, AnypointCheckboxElement, AnypointSwitchElement } from '@anypoint-web-components/awc';
+import { AnypointListboxElement, SupportedInputTypes, AnypointCheckboxElement } from '@anypoint-web-components/awc';
+import { ApiSchemaValues, AmfNamespace, ApiDefinitions, AmfShapes } from '@api-client/core/build/browser.js';
 import '@advanced-rest-client/icons/arc-icon.js';
 import { ifDefined } from 'lit/directives/if-defined.js'
 import { classMap } from 'lit/directives/class-map.js';
-import { ApiSchemaValues } from '../schema/ApiSchemaValues.js';
-import { ns } from '../helpers/Namespace.js';
 import * as InputCache from './InputCache.js';
 import { readLabelValue } from './Utils.js';
 import { OperationParameter, ShapeTemplateOptions, ParameterRenderOptions } from '../types.js';
-import { ApiAnyShape, ApiArrayShape, ApiParameter, ApiScalarNode, ApiScalarShape, ApiShapeUnion, ApiTupleShape, ApiUnionShape } from '../helpers/api.js';
 
 type Constructor<T = {}> = new (...args: any[]) => T;
 
@@ -83,7 +81,7 @@ export interface AmfParameterMixinInterface {
    * @param isArray Whether the value should be read for an array.
    * @returns The value to set on the input. Note, it is not cast to the type.
    */
-  readInputValue(parameter: ApiParameter, schema: ApiScalarShape, isArray?: boolean): any;
+  readInputValue(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiScalarShape, isArray?: boolean): any;
   paramChangeHandler(e: Event): void;
   booleanHandler(e: Event): void;
   /**
@@ -103,20 +101,20 @@ export interface AmfParameterMixinInterface {
   /**
    * @returns The template for the request parameter form control.
    */
-  parameterSchemaTemplate(parameter: ApiParameter, schema: ApiShapeUnion, userOpts?: ParameterRenderOptions, opts?: ShapeTemplateOptions): TemplateResult | string;
+  parameterSchemaTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IShapeUnion, userOpts?: ParameterRenderOptions, opts?: ShapeTemplateOptions): TemplateResult | string;
 
   /**
    * @returns The template for the schema parameter.
    */
-  scalarShapeTemplate(parameter: ApiParameter, schema: ApiScalarShape, userOpts?: ParameterRenderOptions, opts?: ShapeTemplateOptions): TemplateResult | string;
+  scalarShapeTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiScalarShape, userOpts?: ParameterRenderOptions, opts?: ShapeTemplateOptions): TemplateResult | string;
 
   /**
    * @return A template for an input form item for the given type and schema
    */
-  textInputTemplate(parameter: ApiParameter, schema: ApiScalarShape, type?: SupportedInputTypes, userOpts?: ParameterRenderOptions, opts?: ShapeTemplateOptions): TemplateResult;
+  textInputTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiScalarShape, type?: SupportedInputTypes, userOpts?: ParameterRenderOptions, opts?: ShapeTemplateOptions): TemplateResult;
 
   /**
-   * @param paramId The ApiParameter id.
+   * @param paramId The ApiDefinitions.IApiParameter id.
    * @param arrayIndex When this is an array item, the index on the array.
    * @returns The template for the param remove button. 
    */
@@ -125,17 +123,17 @@ export interface AmfParameterMixinInterface {
   /**
    * @returns The template for the enum input.
    */
-  enumTemplate(parameter: ApiParameter, schema: ApiScalarShape, userOpts?: ParameterRenderOptions, opts?: ShapeTemplateOptions): TemplateResult;
+  enumTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiScalarShape, userOpts?: ParameterRenderOptions, opts?: ShapeTemplateOptions): TemplateResult;
 
   /**
    * @returns The template for the checkbox input.
    */
-  booleanTemplate(parameter: ApiParameter, schema: ApiScalarShape, opts?: ShapeTemplateOptions): TemplateResult;
+  booleanTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiScalarShape, opts?: ShapeTemplateOptions): TemplateResult;
 
   /**
    * @returns The template for the nil checkbox input.
    */
-  nillInputTemplate(parameter: ApiParameter): TemplateResult;
+  nillInputTemplate(parameter: ApiDefinitions.IApiParameter): TemplateResult;
 
   /**
    * or now we do not support union shapes. There's no way to learn how to serialize
@@ -147,7 +145,7 @@ export interface AmfParameterMixinInterface {
   /**
    * @returns The template for the union shape.
    */
-  unionShapeTemplate(parameter: ApiParameter, schema: ApiUnionShape): TemplateResult | string;
+  unionShapeTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiUnionShape): TemplateResult | string;
 
   /**
    * This situation makes not sense as there's no mechanism to describe how to 
@@ -166,17 +164,17 @@ export interface AmfParameterMixinInterface {
   /**
    * @returns The template for the array shape.
    */
-  arrayShapeTemplate(parameter: ApiParameter, schema: ApiArrayShape): TemplateResult | string;
+  arrayShapeTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiArrayShape): TemplateResult | string;
 
   /**
    * @returns The template for the tuple shape.
    */
-  tupleShapeTemplate(parameter: ApiParameter, schema: ApiTupleShape): TemplateResult | string;
+  tupleShapeTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiTupleShape): TemplateResult | string;
 
   /**
    * @returns The template for the Any shape.
    */
-  anyShapeTemplate(parameter: ApiParameter, schema: ApiAnyShape): TemplateResult | string;
+  anyShapeTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiAnyShape): TemplateResult | string;
 
   /**
    * @param {string} id The id of the parameter to add the value to.
@@ -195,8 +193,6 @@ export interface AmfParameterMixinInterface {
  * @mixin
  */
 export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superClass: T): Constructor<AmfParameterMixinInterface> & T => {
-  
-
   class AmfParameterMixinClass extends superClass {
 
     parametersValue: OperationParameter[];
@@ -259,7 +255,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
      * @param isArray Whether the value should be read for an array.
      * @returns The value to set on the input. Note, it is not cast to the type.
      */
-    readInputValue(parameter: ApiParameter, schema: ApiScalarShape, isArray=false): any {
+    readInputValue(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiScalarShape, isArray=false): any {
       const { id } = parameter;
       if (InputCache.has(this.target, id, this.globalCache)) {
         return InputCache.get(this.target, id, this.globalCache);
@@ -291,7 +287,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
         return;
       }
       // sets cached value of the input.
-      const typed = ApiSchemaValues.parseUserInput(value, param.schema as ApiShapeUnion);
+      const typed = ApiSchemaValues.parseUserInput(value, param.schema as AmfShapes.IShapeUnion);
       InputCache.set(this.target, domainId, typed, this.globalCache, isArray === 'true', index ? Number(index) : undefined);
       this.notifyChange();
       this.paramChanged(domainId);
@@ -351,9 +347,9 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
       if (!param) {
         return;
       }
-      const enumValues = ((param.schema as ApiShapeUnion).values as ApiScalarNode[]);
+      const enumValues = ((param.schema as AmfShapes.IShapeUnion).values as AmfShapes.IApiScalarNode[]);
       const { value } = enumValues[list.selected as number];
-      const typed = ApiSchemaValues.parseUserInput(value, param.schema as ApiShapeUnion);
+      const typed = ApiSchemaValues.parseUserInput(value, param.schema as AmfShapes.IShapeUnion);
       InputCache.set(this.target, domainId, typed, this.globalCache, isArray === 'true', index ? Number(index) : undefined);
       this.notifyChange();
       this.paramChanged(domainId);
@@ -405,30 +401,30 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
      * @param opts Internal Process options
      * @returns The template for the request parameter form control.
      */
-    parameterSchemaTemplate(parameter: ApiParameter, schema: ApiShapeUnion, opts: ShapeTemplateOptions={}): TemplateResult | string {
+    parameterSchemaTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IShapeUnion, opts: ShapeTemplateOptions={}): TemplateResult | string {
       const { types } = schema;
-      if (types.includes(ns.aml.vocabularies.shapes.ScalarShape)) {
-        return this.scalarShapeTemplate(parameter, schema as ApiScalarShape, opts);
+      if (types.includes(AmfNamespace.aml.vocabularies.shapes.ScalarShape)) {
+        return this.scalarShapeTemplate(parameter, schema as AmfShapes.IApiScalarShape, opts);
       }
-      if (types.includes(ns.w3.shacl.NodeShape)) {
+      if (types.includes(AmfNamespace.w3.shacl.NodeShape)) {
         return this.nodeShapeTemplate();
       }
-      if (types.includes(ns.aml.vocabularies.shapes.UnionShape)) {
-        return this.unionShapeTemplate(parameter, schema as ApiUnionShape);
+      if (types.includes(AmfNamespace.aml.vocabularies.shapes.UnionShape)) {
+        return this.unionShapeTemplate(parameter, schema as AmfShapes.IApiUnionShape);
       }
-      if (types.includes(ns.aml.vocabularies.shapes.FileShape)) {
+      if (types.includes(AmfNamespace.aml.vocabularies.shapes.FileShape)) {
         return this.fileShapeTemplate();
       }
-      if (types.includes(ns.aml.vocabularies.shapes.SchemaShape)) {
+      if (types.includes(AmfNamespace.aml.vocabularies.shapes.SchemaShape)) {
         return this.schemaShapeTemplate();
       }
-      if (types.includes(ns.aml.vocabularies.shapes.ArrayShape) || types.includes(ns.aml.vocabularies.shapes.MatrixShape)) {
-        return this.arrayShapeTemplate(parameter, schema as ApiArrayShape);
+      if (types.includes(AmfNamespace.aml.vocabularies.shapes.ArrayShape) || types.includes(AmfNamespace.aml.vocabularies.shapes.MatrixShape)) {
+        return this.arrayShapeTemplate(parameter, schema as AmfShapes.IApiArrayShape);
       }
-      if (types.includes(ns.aml.vocabularies.shapes.TupleShape)) {
-        return this.tupleShapeTemplate(parameter, schema as ApiTupleShape);
+      if (types.includes(AmfNamespace.aml.vocabularies.shapes.TupleShape)) {
+        return this.tupleShapeTemplate(parameter, schema as AmfShapes.IApiTupleShape);
       }
-      return this.anyShapeTemplate(parameter, schema as ApiAnyShape);
+      return this.anyShapeTemplate(parameter, schema as AmfShapes.IApiAnyShape);
     }
 
     /**
@@ -437,7 +433,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
      * @param opts
      * @returns The template for the schema parameter.
      */
-    scalarShapeTemplate(parameter: ApiParameter, schema: ApiScalarShape, opts: ShapeTemplateOptions={}): TemplateResult | string {
+    scalarShapeTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiScalarShape, opts: ShapeTemplateOptions={}): TemplateResult | string {
       const { readOnly, values, dataType='text' } = schema;
       if (readOnly) {
         return '';
@@ -456,11 +452,11 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
      * Corrects the `http://www.w3.org/2001/XMLSchema#dateTime` schema with the `date-time` or `rfc3339` formats
      * to remove the last `.ZZZ` part which is not recognizable by the `<input>` element.
      */
-    [correctDateTimeParameter](schema: ApiScalarShape, value: any): any {
+    [correctDateTimeParameter](schema: AmfShapes.IApiScalarShape, value: any): any {
       if (!value) {
         return value;
       }
-      if (schema.dataType === ns.w3.xmlSchema.dateTime) {
+      if (schema.dataType === AmfNamespace.w3.xmlSchema.dateTime) {
         if (['date-time', 'rfc3339'].includes(schema.format || '')) {
           return String(value).replace(/(\.\d\d\d)Z/, '$1');
         }
@@ -475,7 +471,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
      * @param opts
      * @returns A template for an input form item for the given type and schema
      */
-    textInputTemplate(parameter: ApiParameter, schema: ApiScalarShape, type?: SupportedInputTypes, opts: ShapeTemplateOptions={}): TemplateResult {
+    textInputTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiScalarShape, type?: SupportedInputTypes, opts: ShapeTemplateOptions={}): TemplateResult {
       const { id, binding, } = parameter;
       const { pattern, minimum, minLength, maxLength, maximum, multipleOf } = schema;
       let required = false;
@@ -543,7 +539,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
     }
 
     /**
-     * @param paramId The ApiParameter id.
+     * @param paramId The ApiDefinitions.IApiParameter id.
      * @param arrayIndex When this is an array item, the index on the array.
      * @returns The template for the param remove button. 
      */
@@ -570,7 +566,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
      * @param opts
      * @returns The template for the enum input.
      */
-    enumTemplate(parameter: ApiParameter, schema: ApiScalarShape, opts: ShapeTemplateOptions={}): TemplateResult | string {
+    enumTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiScalarShape, opts: ShapeTemplateOptions={}): TemplateResult | string {
       const { anypoint } = this;
       let required = false;
       if (typeof opts.required === 'boolean') {
@@ -579,7 +575,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
         required = parameter.required || false;
       }
       const label = readLabelValue(parameter, schema);
-      const enumValues = (schema.values || []) as ApiScalarNode[];
+      const enumValues = (schema.values || []) as AmfShapes.IApiScalarNode[];
       const selectedValue = this.readInputValue(parameter, schema);
       const selected = enumValues.findIndex(i => i.value === selectedValue);
       const { id, binding } = parameter;
@@ -625,12 +621,12 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
     /**
      * @returns The template for the checkbox input.
      */
-    booleanTemplate(parameter: ApiParameter, schema: ApiScalarShape, opts: ShapeTemplateOptions={}): TemplateResult | string {
+    booleanTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiScalarShape, opts: ShapeTemplateOptions={}): TemplateResult | string {
       const label = readLabelValue(parameter, schema);
       const { id } = parameter;
       let value: boolean;
       if (opts.arrayItem) {
-        value = opts.value || '';
+        value = opts.value as boolean || false;
       } else {
         value = this.readInputValue(parameter, schema);
       }
@@ -666,7 +662,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
     /**
      * @returns The template for the nil checkbox input.
      */
-    nillInputTemplate(parameter: ApiParameter): TemplateResult | string {
+    nillInputTemplate(parameter: ApiDefinitions.IApiParameter): TemplateResult | string {
       return html`
       <anypoint-checkbox 
         class="nil-option"
@@ -690,22 +686,22 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
     /**
      * @returns The template for the union shape.
      */
-    unionShapeTemplate(parameter: ApiParameter, schema: ApiUnionShape): TemplateResult | string {
+    unionShapeTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiUnionShape): TemplateResult | string {
       const { anyOf } = schema;
       if (!anyOf || !anyOf.length) {
         return '';
       }
-      const nil = anyOf.find(shape => shape.types.includes(ns.aml.vocabularies.shapes.NilShape));
+      const nil = anyOf.find(shape => shape.types.includes(AmfNamespace.aml.vocabularies.shapes.NilShape));
       if (nil && anyOf.length === 2) {
         // this is a case where a scalar is marked as nillable instead of not required
         // (which for some reason is a common practice among RAML developers).
-        const scalar = anyOf.find(shape => shape !== nil) as ApiShapeUnion;
+        const scalar = anyOf.find(shape => shape !== nil) as AmfShapes.IShapeUnion;
         return this.parameterSchemaTemplate(parameter, scalar, {
           nillable: true,
         });
       }
-      const hasComplex = anyOf.some(i => !i.types.includes(ns.aml.vocabularies.shapes.ScalarShape));
-      const hasScalar = anyOf.some(i => i.types.includes(ns.aml.vocabularies.shapes.ScalarShape));
+      const hasComplex = anyOf.some(i => !i.types.includes(AmfNamespace.aml.vocabularies.shapes.ScalarShape));
+      const hasScalar = anyOf.some(i => i.types.includes(AmfNamespace.aml.vocabularies.shapes.ScalarShape));
       if (hasComplex && !hasScalar) {
         // We quit here as this is the same problem as with the Node shape - unclear how to serialize the types
         return '';
@@ -741,7 +737,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
     /**
      * @returns The template for the array shape.
      */
-    arrayShapeTemplate(parameter: ApiParameter, schema: ApiArrayShape): TemplateResult | string {
+    arrayShapeTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiArrayShape): TemplateResult | string {
       const { items } = schema;
       if (!items) {
         return '';
@@ -768,7 +764,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
     /**
      * @returns The template for the tuple shape.
      */
-    tupleShapeTemplate(parameter: ApiParameter, schema: ApiTupleShape): TemplateResult | string {
+    tupleShapeTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiTupleShape): TemplateResult | string {
       const { items } = schema;
       if (!items) {
         return '';
@@ -780,7 +776,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
     /**
      * @returns The template for the Any shape.
      */
-    anyShapeTemplate(parameter: ApiParameter, schema: ApiAnyShape): TemplateResult | string {
+    anyShapeTemplate(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiAnyShape): TemplateResult | string {
       return this.textInputTemplate(parameter, schema, 'text');
     }
 

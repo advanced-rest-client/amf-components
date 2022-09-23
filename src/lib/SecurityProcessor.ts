@@ -1,5 +1,4 @@
-/* eslint-disable no-continue */
-import { ArcHeaders, UrlParser, AuthorizationUtils } from '@advanced-rest-client/base/api.js';
+import { Headers, UrlParser, AuthorizationUtils, ApiDefinitions } from '@api-client/core/build/browser.js';
 import { BasicAuthorization, OidcAuthorization, OAuth2Authorization, BearerAuthorization, RamlCustomAuthorization, ApiKeyAuthorization, PassThroughAuthorization } from '@advanced-rest-client/events/src/authorization/Authorization.js';
 import { RequestAuthorization } from '@advanced-rest-client/events/src/request/ArcRequest.js';
 import {
@@ -7,7 +6,6 @@ import {
   METHOD_PASS_THROUGH,
   METHOD_API_KEY,
 } from '../elements/ApiAuthorizationMethodElement.js';
-import { ApiSecurityRequirement } from '../helpers/api.js';
 import { ApiConsoleRequest, SecuritySelectorListItem } from '../types.js';
 
 /**
@@ -50,7 +48,7 @@ function applyHeaders(request: ApiConsoleRequest, headers?: Record<string, strin
   if (!keys.length) {
     return;
   }
-  const parser = new ArcHeaders(request.headers || '');
+  const parser = new Headers(request.headers || '');
   keys.forEach((name) => {
     const value = headers[name];
     parser.append(name, value);
@@ -59,7 +57,7 @@ function applyHeaders(request: ApiConsoleRequest, headers?: Record<string, strin
 }
 
 export class SecurityProcessor {
-  static readSecurityList(security: ApiSecurityRequirement[]): SecuritySelectorListItem[] {
+  static readSecurityList(security: ApiDefinitions.IApiSecurityRequirement[]): SecuritySelectorListItem[] {
     const result: SecuritySelectorListItem[] = []
     if (!Array.isArray(security) || !security.length) {
       return result;
@@ -74,7 +72,7 @@ export class SecurityProcessor {
     return result;
   }
 
-  static readSecurityListItem(item: ApiSecurityRequirement): SecuritySelectorListItem {
+  static readSecurityListItem(item: ApiDefinitions.IApiSecurityRequirement): SecuritySelectorListItem {
     const { schemes } = item;
     const result: SecuritySelectorListItem = {
       types: [],
@@ -158,7 +156,7 @@ export class SecurityProcessor {
     }
     const value = btoa(`${username}:${password || ''}`);
 
-    const headers = new ArcHeaders(request.headers || '');
+    const headers = new Headers(request.headers || '');
     headers.append('authorization', `Basic ${value}`);
     request.headers = headers.toString();
   }
@@ -173,7 +171,7 @@ export class SecurityProcessor {
     }
     const value = `${tokenType} ${accessToken}`;
     if (deliveryMethod === 'header') {
-      const headers = new ArcHeaders(request.headers || '');
+      const headers = new Headers(request.headers || '');
       headers.append(deliveryName, value);
       request.headers = headers.toString();
     } else if (deliveryMethod === 'query') {
@@ -207,7 +205,7 @@ export class SecurityProcessor {
     const { token } = config;
     const value = `Bearer ${token}`;
 
-    const headers = new ArcHeaders(request.headers || '');
+    const headers = new Headers(request.headers || '');
     headers.append('authorization', value);
     request.headers = headers.toString();
   }

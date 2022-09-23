@@ -14,20 +14,20 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import { html, LitElement } from 'lit-element';
-import { classMap } from 'lit-html/directives/class-map.js';
+import { html, LitElement } from 'lit';
+import { classMap } from 'lit/directives/class-map.js';
+import { uuidV4, Headers } from '@api-client/core/build/browser.js';
 import { EventsTargetMixin } from '@anypoint-web-components/awc';
 import { RequestEventTypes } from '@advanced-rest-client/events';
-import { v4 } from '@advanced-rest-client/uuid';
-import { HeadersParser, ifProperty } from '@advanced-rest-client/base';
-import '@anypoint-web-components/awc/anypoint-dropdown-menu.js';
-import '@anypoint-web-components/awc/anypoint-listbox.js';
-import '@anypoint-web-components/awc/anypoint-item.js';
-import '@anypoint-web-components/awc/anypoint-item-body.js';
-import '@anypoint-web-components/awc/anypoint-radio-button.js';
-import '@anypoint-web-components/awc/anypoint-radio-group.js';
-import '@anypoint-web-components/awc/anypoint-icon-button.js';
-import '@anypoint-web-components/awc/anypoint-switch.js';
+import { ifProperty } from '@advanced-rest-client/base';
+import '@anypoint-web-components/awc/dist/define/anypoint-dropdown-menu.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-listbox.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-item.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-item-body.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-radio-button.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-radio-group.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-icon-button.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-switch.js';
 import '@advanced-rest-client/base/define/body-formdata-editor.js';
 import '@advanced-rest-client/base/define/body-multipart-editor.js';
 import '@advanced-rest-client/base/define/body-raw-editor.js';
@@ -1063,7 +1063,7 @@ export default class ApiRequestEditorElement extends AmfParameterMixin(EventsTar
    */
   execute() {
     const request = this.serialize();
-    const uuid = v4();
+    const uuid = uuidV4();
     this[requestIdValue] = uuid;
     request.id = uuid;
     this[loadingRequestValue] = true;
@@ -1152,7 +1152,9 @@ export default class ApiRequestEditorElement extends AmfParameterMixin(EventsTar
         }
       }
       if (body instanceof FormData) {
-        request.headers = /** @type string */ (HeadersParser.replace(request.headers, 'content-type', null));
+        const parser = new Headers(request.headers);
+        parser.delete('content-type');
+        request.headers = parser.toString();
       } else if (payload) {
         request.headers = ensureContentType(request.headers, payload.mediaType);
       }
@@ -1332,7 +1334,7 @@ export default class ApiRequestEditorElement extends AmfParameterMixin(EventsTar
     if (!['query', 'header'].includes(type)) {
       return;
     }
-    const id = v4();
+    const id = uuidV4();
     const param = /** @type OperationParameter */ ({
       binding: type,
       source: 'custom',

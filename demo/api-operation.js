@@ -32,7 +32,7 @@ class ComponentPage extends AmfDemoBase {
     this.renderSecurity = true;
     this.renderCodeSnippets = true;
     this.componentName = 'api-operation-document';
-    this.redirectUri = `${window.location.origin}/node_modules/@advanced-rest-client/oauth/oauth-popup.html`;
+    this.redirectUri = `${window.location.origin}/demo/oauth-popup.html`;
   }
 
   get baseUri() {

@@ -1,11 +1,8 @@
-import { ApiType } from '@advanced-rest-client/events/src/models/ApiTypes.js';
-import { ApiAnyShape, ApiPayload } from '../helpers/api.js';
-import { ApiExampleGenerator } from '../schema/ApiExampleGenerator.js';
-import { ApiMonacoSchemaGenerator } from '../schema/ApiMonacoSchemaGenerator.js';
-import { ApiSchemaGenerator } from '../schema/ApiSchemaGenerator.js';
+import { ApiDefinitions, AmfShapes, ApiExampleGenerator, ApiMonacoSchemaGenerator, ApiSchemaGenerator } from '@api-client/core/build/browser.js';
+import { ApiType } from '@api-client/core/build/legacy.js';
 
 export interface PayloadInfo {
-  value: string|FormData|Blob;
+  value: string | FormData | Blob;
   model?: ApiType[];
   schemas?: any;
 }
@@ -17,11 +14,11 @@ export interface PayloadInfo {
 
 const cache: Map<string, PayloadInfo> = new Map();
 
-export function getPayloadValue(payload: ApiPayload): PayloadInfo {
+export function getPayloadValue(payload: ApiDefinitions.IApiPayload): PayloadInfo {
   if (cache.has(payload.id)) {
     return cache.get(payload.id) as PayloadInfo;
   }
-  const { id, mediaType='text/plain', schema } = payload;
+  const { id, mediaType = 'text/plain', schema } = payload;
 
   if (mediaType === 'multipart/form-data') {
     // schema generators don't support this yet,
@@ -34,12 +31,12 @@ export function getPayloadValue(payload: ApiPayload): PayloadInfo {
     cache.set(id, info);
     return info;
   }
-  
+
   const schemaFactory = new ApiMonacoSchemaGenerator();
   const monacoSchemes = schemaFactory.generate(schema, id);
   let { examples } = payload;
   if (!Array.isArray(examples) || !examples.length) {
-    examples = (schema as ApiAnyShape).examples;
+    examples = (schema as AmfShapes.IApiAnyShape).examples;
   }
   if (Array.isArray(examples) && examples.length) {
     const [example] = examples;
@@ -61,7 +58,7 @@ export function getPayloadValue(payload: ApiPayload): PayloadInfo {
     cache.set(id, info);
     return info;
   }
-  const info = { value: result.renderValue, schemas: monacoSchemes };
+  const info = { value: result.renderValue, schemas: monacoSchemes } as PayloadInfo;
   cache.set(id, info);
   return info;
 }

@@ -2,9 +2,7 @@
 /* eslint-disable no-continue */
 /* eslint-disable no-param-reassign */
 /* eslint-disable class-methods-use-this */
-import { ApiSchemaValues } from '../schema/ApiSchemaValues.js';
-import { ns } from '../helpers/Namespace.js';
-import { ApiArrayShape, ApiParameter, ApiScalarShape, ApiShapeUnion, ApiUnionShape } from '../helpers/api.js';
+import { ApiSchemaValues, AmfNamespace, ApiDefinitions, AmfShapes } from '@api-client/core/build/browser.js';
 
 export interface ParametersSerializationReport {
   valid: boolean;
@@ -35,7 +33,7 @@ export class AmfInputParser {
    * @param nillable The list of parameter ids that are marked as nil values.
    * @param defaultNil The nil value to insert when the parameter is in the nillable list.
    */
-  static reportRequestInputs(parameters: ApiParameter[], values: Map<string, any>, nillable: string[]=[], defaultNil: any=null): ParametersSerializationReport {
+  static reportRequestInputs(parameters: ApiDefinitions.IApiParameter[], values: Map<string, any>, nillable: string[]=[], defaultNil: any=null): ParametersSerializationReport {
     const report: ParametersSerializationReport = {
       valid: true,
       invalid: [],
@@ -65,8 +63,8 @@ export class AmfInputParser {
         return;
       }
       if (jsType === 'undefined') {
-        if (schema && schema.types.includes(ns.aml.vocabularies.shapes.ScalarShape)) {
-          value = ApiSchemaValues.readInputValue(param, schema as ApiScalarShape);
+        if (schema && schema.types.includes(AmfNamespace.aml.vocabularies.shapes.ScalarShape)) {
+          value = ApiSchemaValues.readInputValue(param, schema as AmfShapes.IApiScalarShape);
         }
       }
       if (!schema) {
@@ -99,16 +97,16 @@ export class AmfInputParser {
    * @param required Whether the parameter is required.
    * @returns `true` when the parameter is valid and `false` otherwise.
    */
-  static addReportItem(reportGroup: Record<string, any>, name: string, schema: ApiShapeUnion, value: any, required?: boolean): boolean {
+  static addReportItem(reportGroup: Record<string, any>, name: string, schema: AmfShapes.IShapeUnion, value: any, required?: boolean): boolean {
     const { types } = schema;
-    if (types.includes(ns.aml.vocabularies.shapes.ScalarShape)) {
-      return AmfInputParser.addReportScalarItem(reportGroup, name, value, (schema as ApiScalarShape), required);
+    if (types.includes(AmfNamespace.aml.vocabularies.shapes.ScalarShape)) {
+      return AmfInputParser.addReportScalarItem(reportGroup, name, value, (schema as AmfShapes.IApiScalarShape), required);
     }
-    if (types.includes(ns.aml.vocabularies.shapes.ArrayShape) || types.includes(ns.aml.vocabularies.shapes.MatrixShape)) {
-      return AmfInputParser.addReportArrayItem(reportGroup, name, value, (schema as ApiArrayShape), required);
+    if (types.includes(AmfNamespace.aml.vocabularies.shapes.ArrayShape) || types.includes(AmfNamespace.aml.vocabularies.shapes.MatrixShape)) {
+      return AmfInputParser.addReportArrayItem(reportGroup, name, value, (schema as AmfShapes.IApiArrayShape), required);
     }
-    if (types.includes(ns.aml.vocabularies.shapes.UnionShape)) {
-      return AmfInputParser.addReportUnionItem(reportGroup, name, value, (schema as ApiUnionShape), required);
+    if (types.includes(AmfNamespace.aml.vocabularies.shapes.UnionShape)) {
+      return AmfInputParser.addReportUnionItem(reportGroup, name, value, (schema as AmfShapes.IApiUnionShape), required);
     }
     // ignored parameters are valid (from the form POV).
     return true;
@@ -118,7 +116,7 @@ export class AmfInputParser {
    * @param required Whether the parameter is required.
    * @returns `true` when the parameter is valid and `false` otherwise.
    */
-  static addReportScalarItem(reportGroup: Record<string, any>, name: string, value: any, schema: ApiScalarShape, required?: boolean): boolean {
+  static addReportScalarItem(reportGroup: Record<string, any>, name: string, value: any, schema: AmfShapes.IApiScalarShape, required?: boolean): boolean {
     const type = typeof value;
     const isScalar = type !== 'undefined' && type !== 'object' && value !== null;
     reportGroup[name] = isScalar ? ApiSchemaValues.parseScalarInput(value, schema) : value;
@@ -133,7 +131,7 @@ export class AmfInputParser {
    * @param required Whether the parameter is required.
    * @returns `true` when the parameter is valid and `false` otherwise.
    */
-  static addReportArrayItem(reportGroup: Record<string, any>, name: string, value: any, schema: ApiArrayShape, required?: boolean): boolean {
+  static addReportArrayItem(reportGroup: Record<string, any>, name: string, value: any, schema: AmfShapes.IApiArrayShape, required?: boolean): boolean {
     if (!Array.isArray(reportGroup[name])) {
       reportGroup[name] = [];
     }
@@ -171,22 +169,22 @@ export class AmfInputParser {
    * @param required Whether the parameter is required.
    * @returns `true` when the parameter is valid and `false` otherwise.
    */
-  static addReportUnionItem(reportGroup: Record<string, any>, name: string, value: any, schema: ApiUnionShape, required?: boolean): boolean {
+  static addReportUnionItem(reportGroup: Record<string, any>, name: string, value: any, schema: AmfShapes.IApiUnionShape, required?: boolean): boolean {
     const { anyOf } = schema;
     if (!anyOf || !anyOf.length) {
       return !required;
     }
-    const nil = anyOf.find(shape => shape.types.includes(ns.aml.vocabularies.shapes.NilShape));
+    const nil = anyOf.find(shape => shape.types.includes(AmfNamespace.aml.vocabularies.shapes.NilShape));
     if (nil && anyOf.length === 2) {
       // this item is not marked as nil (or we wouldn't get to this line) so use the only schema left.
       const scalar = anyOf.find(shape => shape !== nil);
-      return AmfInputParser.addReportScalarItem(reportGroup, name, value, scalar as ApiScalarShape);
+      return AmfInputParser.addReportScalarItem(reportGroup, name, value, scalar as AmfShapes.IApiScalarShape);
     }
     // we are iterating over each schema in the union. Ignoring non-scalar schemas it parses user input
     // for each schema and if the result is set (non-undefined) then this value is used.
     for (let i = 0, len = anyOf.length; i < len; i += 1) {
       const option = anyOf[i];
-      if (!option.types.includes(ns.aml.vocabularies.shapes.ScalarShape)) {
+      if (!option.types.includes(AmfNamespace.aml.vocabularies.shapes.ScalarShape)) {
         continue;
       }
       const result = ApiSchemaValues.parseUserInput(value, option);

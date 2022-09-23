@@ -1,21 +1,5 @@
-import { HeadersParser } from '@advanced-rest-client/base/api.js';
+import { AmfNamespace, ApiDefinitions, AmfShapes, Headers } from '@api-client/core/build/browser.js';
 import sanitizer from 'dompurify';
-import { ApiArrayShape, ApiNodeShape, ApiParameter, ApiParametrizedDeclaration, ApiScalarShape, ApiShapeUnion, ApiTupleShape, ApiUnionShape } from '../helpers/api.js';
-import { ns } from '../helpers/Namespace.js';
-
-/** @typedef {import('../helpers/api').ApiShapeUnion} ApiShapeUnion */
-/** @typedef {import('../helpers/api').ApiScalarShape} ApiScalarShape */
-/** @typedef {import('../helpers/api').ApiArrayShape} ApiArrayShape */
-/** @typedef {import('../helpers/api').ApiTupleShape} ApiTupleShape */
-/** @typedef {import('../helpers/api').ApiUnionShape} ApiUnionShape */
-/** @typedef {import('../helpers/api').ApiParameter} ApiParameter */
-/** @typedef {import('../helpers/api').ApiPropertyShape} ApiPropertyShape */
-/** @typedef {import('../helpers/api').ApiNodeShape} ApiNodeShape */
-/** @typedef {import('../helpers/api').ApiAnyShape} ApiAnyShape */
-/** @typedef {import('../helpers/api').ApiServer} ApiServer */
-/** @typedef {import('../helpers/api').ApiParametrizedDeclaration} ApiParametrizedDeclaration */
-/** @typedef {import('../types').OperationParameter} OperationParameter */
-
 /**
  * Stops an event and cancels it.
  * @param e The event to stop
@@ -30,7 +14,7 @@ export function cancelEvent(e: Event): void {
  * @param types Shape's types
  */
 export function isScalarType(types: string[] = []): boolean {
-  const { shapes } = ns.aml.vocabularies;
+  const { shapes } = AmfNamespace.aml.vocabularies;
   return types.includes(shapes.ScalarShape) || 
     types.includes(shapes.NilShape) ||
     types.includes(shapes.FileShape);
@@ -58,28 +42,28 @@ export function schemaToType(value: string): string {
  * @param isArray Used internally
  * @returns Computed label for a shape.
  */
-export function readPropertyTypeLabel(schema: ApiShapeUnion, isArray=false): string|undefined {
+export function readPropertyTypeLabel(schema: AmfShapes.IShapeUnion, isArray=false): string|undefined {
   if (!schema) {
     return undefined;
   }
   const { types } = schema;
-  if (types.includes(ns.aml.vocabularies.shapes.NilShape)) {
+  if (types.includes(AmfNamespace.aml.vocabularies.shapes.NilShape)) {
     return 'Nil';
   }
-  if (types.includes(ns.aml.vocabularies.shapes.ScalarShape)) {
-    const scalar = schema as ApiScalarShape;
+  if (types.includes(AmfNamespace.aml.vocabularies.shapes.ScalarShape)) {
+    const scalar = schema as AmfShapes.IApiScalarShape;
     return schemaToType(scalar.dataType || '');
   }
-  if (types.includes(ns.aml.vocabularies.shapes.TupleShape)) {
-    const array = schema as ApiTupleShape;
+  if (types.includes(AmfNamespace.aml.vocabularies.shapes.TupleShape)) {
+    const array = schema as AmfShapes.IApiTupleShape;
     if (!array.items || !array.items.length) {
       return undefined;
     }
     const label = readPropertyTypeLabel(array.items[0], true);
     return `List of ${label}`;
   }
-  if (types.includes(ns.aml.vocabularies.shapes.ArrayShape)) {
-    const array = schema as ApiArrayShape;
+  if (types.includes(AmfNamespace.aml.vocabularies.shapes.ArrayShape)) {
+    const array = schema as AmfShapes.IApiArrayShape;
     if (!array.items) {
       return undefined;
     }
@@ -89,12 +73,12 @@ export function readPropertyTypeLabel(schema: ApiShapeUnion, isArray=false): str
     }
     return `List of ${label}`;
   }
-  if (types.includes(ns.w3.shacl.NodeShape)) {
-    let { name } = schema as ApiNodeShape;
-    const { properties } = schema as ApiNodeShape;
+  if (types.includes(AmfNamespace.w3.shacl.NodeShape)) {
+    let { name } = schema as AmfShapes.IApiNodeShape;
+    const { properties } = schema as AmfShapes.IApiNodeShape;
     if (isArray && properties && properties.length === 1) {
-      const potentialScalar = properties[0].range as ApiScalarShape;
-      if (potentialScalar.types.includes(ns.aml.vocabularies.shapes.ScalarShape)) {
+      const potentialScalar = properties[0].range as AmfShapes.IApiScalarShape;
+      if (potentialScalar.types.includes(AmfNamespace.aml.vocabularies.shapes.ScalarShape)) {
         return schemaToType(potentialScalar.dataType || '');
       }
     }
@@ -104,12 +88,12 @@ export function readPropertyTypeLabel(schema: ApiShapeUnion, isArray=false): str
     }
     return name || 'Object';
   }
-  if (types.includes(ns.aml.vocabularies.shapes.UnionShape)) {
-    const union = schema as ApiUnionShape;
+  if (types.includes(AmfNamespace.aml.vocabularies.shapes.UnionShape)) {
+    const union = schema as AmfShapes.IApiUnionShape;
     const items = union.anyOf.map(i => readPropertyTypeLabel(i));
     return items.join(' or ');
   }
-  if (types.includes(ns.aml.vocabularies.shapes.FileShape)) {
+  if (types.includes(AmfNamespace.aml.vocabularies.shapes.FileShape)) {
     return 'File';
   }
   return schema.name || 'Unknown';
@@ -119,7 +103,7 @@ export function readPropertyTypeLabel(schema: ApiShapeUnion, isArray=false): str
  * @param shapes
  * @returns true when all of passed shapes are scalar.
  */
-function isAllScalar(shapes: ApiShapeUnion[] = []): boolean {
+function isAllScalar(shapes: AmfShapes.IShapeUnion[] = []): boolean {
   return !shapes.some(i => !isScalarType(i.types));
 }
 
@@ -127,7 +111,7 @@ function isAllScalar(shapes: ApiShapeUnion[] = []): boolean {
  * @param shape
  * @returns true when the passed union type consists of scalar values only. Nil counts as scalar.
  */
-export function isScalarUnion(shape: ApiUnionShape): boolean {
+export function isScalarUnion(shape: AmfShapes.IApiUnionShape): boolean {
   const { anyOf=[], or=[], and=[], xone=[] } = shape;
   if (anyOf.length) {
     return isAllScalar(anyOf);
@@ -155,11 +139,12 @@ export function sanitizeHTML(HTML: string): string {
     return result;
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   return result.toString();
 }
 
-export function joinTraitNames(traits: ApiParametrizedDeclaration[]): string {
+export function joinTraitNames(traits: ApiDefinitions.IApiParametrizedDeclaration[]): string {
   const names = traits.map(trait => trait.name).filter(i => !!i);
   let value = '';
   if (names.length === 2) {
@@ -174,7 +159,7 @@ export function joinTraitNames(traits: ApiParametrizedDeclaration[]): string {
   return value;
 }
 
-export function generateHeaders(params: Record<string, any>): string {
+export function generateHeaders(params: Record<string, unknown>): string {
   if (typeof params !== 'object') {
     return '';
   }
@@ -188,7 +173,7 @@ export function generateHeaders(params: Record<string, any>): string {
       value = String(value);
     }
     let result = `${name}: `;
-    value = value.split('\n').join(' ');
+    value = (value as string).split('\n').join(' ');
     result += value;
     return result;
   });
@@ -204,12 +189,12 @@ export function ensureContentType(headers: string, mime: string): string {
   if (!mime) {
     return headers;
   }
-  const list = HeadersParser.toJSON(headers);
-  const current = HeadersParser.contentType(list);
+  const parsed = new Headers(headers);
+  const current = parsed.get('content-type');
   if (!current && mime) {
-    list.push({ name: 'content-type', value: mime, enabled: true });
+    parsed.set('content-type', mime);
   }
-  return HeadersParser.toString(list);
+  return parsed.toString();
 }
 
 /**
@@ -217,7 +202,7 @@ export function ensureContentType(headers: string, mime: string): string {
  * @param schema
  * @returns The name to use in the input.
  */
-export function readLabelValue(parameter: ApiParameter, schema: ApiShapeUnion): string {
+export function readLabelValue(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IShapeUnion): string {
   let label = parameter.paramName || schema.displayName || parameter.name ||  schema.name || '';
   const { required } = parameter;
   if (required) {

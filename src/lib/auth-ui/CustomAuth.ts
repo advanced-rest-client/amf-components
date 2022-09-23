@@ -1,12 +1,11 @@
 /* eslint-disable class-methods-use-this */
 import { html, TemplateResult } from 'lit';
+import { AmfNamespace, ApiDefinitions, AmfShapes } from '@api-client/core/build/browser.js';
 import '@advanced-rest-client/highlight/arc-marked.js';
 import { RamlCustomAuthorization } from '@advanced-rest-client/events/src/authorization/Authorization.js';
 import { AuthUiInit } from '@advanced-rest-client/base/api.js';
-import { ns } from '../../helpers/Namespace.js';
 import ApiUiBase from './ApiUiBase.js';
 import * as InputCache from '../InputCache.js';
-import { ApiNodeShape, ApiParameter, ApiPropertyShape, ApiShapeUnion } from '../../helpers/api.js';
 import { OperationParameter } from '../../types.js';
 
 export default class CustomAuth extends ApiUiBase {
@@ -46,7 +45,7 @@ export default class CustomAuth extends ApiUiBase {
     if (!security) {
       return;
     }
-    if (!security.types.includes(ns.aml.vocabularies.security.ParametrizedSecurityScheme)) {
+    if (!security.types.includes(AmfNamespace.aml.vocabularies.security.ParametrizedSecurityScheme)) {
       return;
     }
     const { scheme } = security;
@@ -88,7 +87,7 @@ export default class CustomAuth extends ApiUiBase {
       });
     }
     if (!addedParameters && queryString) {
-      const shape = queryString as ApiNodeShape;
+      const shape = queryString as AmfShapes.IApiNodeShape;
       const { properties } = shape;
       const binding = 'query';
       if (!properties) {
@@ -105,16 +104,16 @@ export default class CustomAuth extends ApiUiBase {
     this.notifyChange();
   }
 
-  createParameterFromSchema(shape: ApiShapeUnion, binding: string, source: string): OperationParameter {
+  createParameterFromSchema(shape: AmfShapes.IShapeUnion, binding: string, source: string): OperationParameter {
     const { id, name } = shape;
-    const constructed: ApiParameter = {
+    const constructed: ApiDefinitions.IApiParameter = {
       id,
       binding,
       schema: shape,
       name,
       examples: [],
       payloads: [],
-      types: [ns.aml.vocabularies.apiContract.Parameter],
+      types: [AmfNamespace.aml.vocabularies.apiContract.Parameter],
       required: false,
       customDomainProperties: [],
     };
@@ -128,16 +127,16 @@ export default class CustomAuth extends ApiUiBase {
     };
   }
 
-  createParameterFromProperty(property: ApiPropertyShape, binding: string, source: string): OperationParameter {
+  createParameterFromProperty(property: AmfShapes.IApiPropertyShape, binding: string, source: string): OperationParameter {
     const { id, range, name, minCount=0 } = property;
-    const constructed: ApiParameter = {
+    const constructed: ApiDefinitions.IApiParameter = {
       id,
       binding,
       schema: range,
       name,
       examples: [],
       payloads: [],
-      types: [ns.aml.vocabularies.apiContract.Parameter],
+      types: [AmfNamespace.aml.vocabularies.apiContract.Parameter],
       required: minCount > 0,
       customDomainProperties: [],
     };
@@ -147,7 +146,7 @@ export default class CustomAuth extends ApiUiBase {
       parameter: constructed,
       source,
       schemaId: property.id,
-      schema: property as ApiShapeUnion,
+      schema: property as AmfShapes.IShapeUnion,
     };
   }
 

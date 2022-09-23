@@ -1,27 +1,27 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
+import { ApiDefinitions } from '@api-client/core/build/browser.js';
 import AuthUiBase from "@advanced-rest-client/base/src/elements/authorization/ui/AuthUiBase.js";
-import '@anypoint-web-components/awc/anypoint-dropdown-menu.js';
-import '@anypoint-web-components/awc/anypoint-listbox.js';
-import '@anypoint-web-components/awc/anypoint-item.js';
-import '@anypoint-web-components/awc/anypoint-input.js';
-import '@anypoint-web-components/awc/anypoint-checkbox.js';
-import '@anypoint-web-components/awc/anypoint-button.js';
-import '@anypoint-web-components/awc/anypoint-icon-button.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-dropdown-menu.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-listbox.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-item.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-input.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-checkbox.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-button.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-icon-button.js';
 import '@advanced-rest-client/icons/arc-icon.js';
 import { AmfParameterMixin } from '../AmfParameterMixin.js';
-import { ApiParametrizedSecurityScheme } from "../../helpers/api.js";
 
 const securityValue = Symbol("securityValue");
 
 export default class ApiUiBase extends AmfParameterMixin(AuthUiBase) {
-  [securityValue]?: ApiParametrizedSecurityScheme;
+  [securityValue]?: ApiDefinitions.IApiParametrizedSecurityScheme;
   
-  get security(): ApiParametrizedSecurityScheme | undefined {
+  get security(): ApiDefinitions.IApiParametrizedSecurityScheme | undefined {
     return this[securityValue];
   }
 
-  set security(value: ApiParametrizedSecurityScheme | undefined) {
+  set security(value: ApiDefinitions.IApiParametrizedSecurityScheme | undefined) {
     const old = this[securityValue];
     if (old === value) {
       return;

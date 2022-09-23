@@ -27,15 +27,6 @@ export * as UrlLib from './lib/UrlUtils.js';
 export * as Utils from './lib/Utils.js';
 export { SecurityProcessor } from './lib/SecurityProcessor.js';
 export * from './types.js'
-export { AmfHelperMixin } from './helpers/AmfHelperMixin.js';
-export { AmfSerializer } from './helpers/AmfSerializer.js';
-export { ns } from './helpers/Namespace.js';
-export * as Amf from './helpers/amf.js';
-export * as Api from './helpers/api.js';
-export { ApiExampleGenerator } from './schema/ApiExampleGenerator.js';
-export { ApiMonacoSchemaGenerator } from './schema/ApiMonacoSchemaGenerator.js';
-export { ApiSchemaValues } from './schema/ApiSchemaValues.js';
-export { ApiSchemaGenerator } from './schema/ApiSchemaGenerator.js';
 export { EventTypes as ApiEventTypes } from './events/EventTypes.js';
 export { Events as ApiEvents } from './events/Events.js';
 export { ApiNavigationEventDetail } from './events/NavigationEvents.js';

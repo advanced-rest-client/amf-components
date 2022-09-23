@@ -13,11 +13,10 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import { LitElement } from 'lit-element';
-import { HeadersParser } from '@advanced-rest-client/base/api.js';
-
-/** @typedef {import('@advanced-rest-client/events').FormTypes.FormItem} FormItem */
-/** @typedef {import('../types').ApiConsoleRequest} ApiConsoleRequest */
+import { LitElement } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import { Headers } from '@api-client/core/build/browser.js';
+import { ApiConsoleRequest } from '../types.js';
 
 /**
  * `xhr-simple-request`
@@ -29,99 +28,97 @@ import { HeadersParser } from '@advanced-rest-client/base/api.js';
  * It also handles custom events related to request flow.
  */
 export default class XhrSimpleRequestTransportElement extends LitElement {
-  static get properties() {
-    return {
-      /**
-       * A reference to the XMLHttpRequest instance used to generate the
-       * network request.
-       */
-      _xhr: { type: Object },
-
-      /**
-       * A reference to the parsed response body, if the `xhr` has completely
-       * resolved.
-       */
-      _response: { type: Object },
-
-      /**
-       * A reference to response headers, if the `xhr` has completely
-       * resolved.
-       * @default undefined
-       */
-      _headers: { type: Object },
-
-      /**
-       * A reference to the status code, if the `xhr` has completely resolved.
-       */
-      _status: { type: Number },
-
-      /**
-       * A reference to the status text, if the `xhr` has completely resolved.
-       */
-      _statusText: { type: String },
-      /**
-       * A promise that resolves when the `xhr` response comes back, or rejects
-       * if there is an error before the `xhr` completes.
-       * The resolve callback is called with the original request as an argument.
-       * By default, the reject callback is called with an `Error` as an argument.
-       * If `rejectWithRequest` is true, the reject callback is called with an
-       * object with two keys: `request`, the original request, and `error`, the
-       * error object.
-       */
-      _completes: { type: Object },
-
-      /**
-       * Aborted will be true if an abort of the request is attempted.
-       */
-      _aborted: { type: Boolean },
-
-      /**
-       * It is true when the browser fired an error event from the
-       * XHR object (mainly network errors).
-       */
-      _error: { type: Boolean },
-
-      /**
-       * TimedOut will be true if the XHR threw a timeout event.
-       */
-      _timedOut: { type: Boolean },
-      /**
-       * Appends headers to each request handled by this component.
-       *
-       * Example
-       *
-       * ```html
-       * <xhr-simple-request
-       *  append-headers="x-token: 123\nx-api-demo: true"></xhr-simple-request>
-       * ```
-       */
-      appendHeaders: { type: String },
-      /**
-       * If set every request made from the console will be proxied by the service provided in this
-       * value.
-       * It will prefix entered URL with the proxy value. so the call to
-       * `http://domain.com/path/?query=some+value` will become
-       * `https://proxy.com/path/http://domain.com/path/?query=some+value`
-       *
-       * If the proxy require a to pass the URL as a query parameter define value as follows:
-       * `https://proxy.com/path/?url=`. In this case be sure to set `proxy-encode-url`
-       * attribute.
-       */
-      proxy: { type: String },
-      /**
-       * If `proxy` is set, it will URL encode the request URL before appending it to the proxy URL.
-       * `http://domain.com/path/?query=some+value` will become
-       * `https://proxy.com/?url=http%3A%2F%2Fdomain.com%2Fpath%2F%3Fquery%3Dsome%2Bvalue`
-       */
-      proxyEncodeUrl: { type: Boolean }
-    };
-  }
+  /**
+   * A reference to the XMLHttpRequest instance used to generate the
+   * network request.
+   */
+  @state() _xhr: XMLHttpRequest;
 
   /**
    * A reference to the parsed response body, if the `xhr` has completely
    * resolved.
    */
-  get response() {
+  @state() _response?: string | null | undefined;
+
+  /**
+   * A reference to response headers, if the `xhr` has completely resolved.
+   */
+  @state() _headers?: string;
+
+  /**
+   * A reference to the status code, if the `xhr` has completely resolved.
+   */
+  @state() _status?: number;
+
+  /**
+   * A reference to the status text, if the `xhr` has completely resolved.
+   */
+  @state() _statusText?: string;
+
+  /**
+   * A promise that resolves when the `xhr` response comes back, or rejects
+   * if there is an error before the `xhr` completes.
+   * The resolve callback is called with the original request as an argument.
+   * By default, the reject callback is called with an `Error` as an argument.
+   * If `rejectWithRequest` is true, the reject callback is called with an
+   * object with two keys: `request`, the original request, and `error`, the
+   * error object.
+   */
+  @state() _completes: Promise<{ response: string | null | undefined, headers: string | undefined }>;
+
+  /**
+   * Aborted will be true if an abort of the request is attempted.
+   */
+  @state() _aborted?: boolean;
+
+  /**
+   * It is true when the browser fired an error event from the
+   * XHR object (mainly network errors).
+   */
+  @state() _error?: boolean;
+
+  /**
+   * TimedOut will be true if the XHR threw a timeout event.
+   */
+  @state() _timedOut?: boolean;
+
+  /**
+   * Appends headers to each request handled by this component.
+   *
+   * Example
+   *
+   * ```html
+   * <xhr-simple-request
+   *  append-headers="x-token: 123\nx-api-demo: true"></xhr-simple-request>
+   * ```
+   */
+  @property({ type: String }) appendHeaders?: string;
+
+  /**
+   * If set every request made from the console will be proxied by the service provided in this
+   * value.
+   * It will prefix entered URL with the proxy value. so the call to
+   * `http://domain.com/path/?query=some+value` will become
+   * `https://proxy.com/path/http://domain.com/path/?query=some+value`
+   *
+   * If the proxy require a to pass the URL as a query parameter define value as follows:
+   * `https://proxy.com/path/?url=`. In this case be sure to set `proxy-encode-url`
+   * attribute.
+   */
+  @property({ type: String }) proxy?: string;
+
+  /**
+   * If `proxy` is set, it will URL encode the request URL before appending it to the proxy URL.
+   * `http://domain.com/path/?query=some+value` will become
+   * `https://proxy.com/?url=http%3A%2F%2Fdomain.com%2Fpath%2F%3Fquery%3Dsome%2Bvalue`
+   */
+  @property({ type: Boolean }) proxyEncodeUrl?: boolean;
+  
+  /**
+   * A reference to the parsed response body, if the `xhr` has completely
+   * resolved.
+   */
+  get response(): string | null | undefined {
     return this._response;
   }
 
@@ -129,20 +126,18 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
    * A reference to response headers, if the `xhr` has completely
    * resolved.
    */
-  get headers() {
+  get headers(): string | undefined {
     return this._headers;
   }
 
   /**
    * A reference to the status code, if the `xhr` has completely resolved.
-   *
-   * @returns {number}
    */
-  get status() {
+  get status(): number | undefined {
     return this._status;
   }
 
-  get statusText() {
+  get statusText(): string | undefined {
     return this._statusText;
   }
 
@@ -154,10 +149,8 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
    * If `rejectWithRequest` is true, the reject callback is called with an
    * object with two keys: `request`, the original request, and `error`, the
    * error object.
-   *
-   * @return {Promise}
    */
-  get completes() {
+  get completes(): Promise<{ response: string | null | undefined, headers: string | undefined }> {
     return this._completes;
   }
 
@@ -165,9 +158,8 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
    * Aborted will be true if an abort of the request is attempted.
    *
    * @default false
-   * @return {boolean}
    */
-  get aborted() {
+  get aborted(): boolean | undefined {
     return this._aborted;
   }
 
@@ -175,16 +167,20 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
    * Error will be true if the browser fired an error event from the
    * XHR object (mainly network errors).
    */
-  get error() {
+  get error(): boolean | undefined {
     return this._error;
   }
 
   /**
    * Aborted will be true if an abort of the request is attempted.
    */
-  get timedOut() {
+  get timedOut(): boolean | undefined {
     return this._timedOut;
   }
+
+  resolveCompletes?: (value: { response: string | null | undefined, headers: string | undefined }) => void;
+
+  rejectCompletes?: (err: { request: XMLHttpRequest, headers?: string | undefined, error: Error | ProgressEvent }) => void;
 
   constructor() {
     super();
@@ -193,7 +189,7 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
     this._status = 0;
     this._statusText = '';
     this.appendHeaders = undefined;
-    this._completes = new Promise((resolve, reject) => {
+    this._completes = new Promise<{ response: string | null | undefined, headers: string | undefined }>((resolve, reject) => {
       this.resolveCompletes = resolve;
       this.rejectCompletes = reject;
     });
@@ -204,7 +200,7 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
     this.proxyEncodeUrl = false;
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     super.connectedCallback();
     this.setAttribute('aria-hidden', 'true');
   }
@@ -216,14 +212,12 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
    *
    * The status code 0 is accepted as a success because some schemes - e.g.
    * file:// - don't provide status codes.
-   *
-   * @return {boolean}
    */
-  get succeeded() {
+  get succeeded(): boolean {
     if (this.error || this.aborted || this.timedOut) {
       return false;
     }
-    const status = this._xhr.status || 0;
+    const status = this._xhr?.status || 0;
 
     // Note: if we are using the file:// protocol, the status code will be 0
     // for all outcomes (successful or otherwise).
@@ -233,10 +227,9 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
   /**
    * Sends a request.
    *
-   * @param {ApiConsoleRequest} options API request object
-   * @return {Promise}
+   * @param options API request object
    */
-  send(options) {
+  send(options: ApiConsoleRequest): Promise<{ response: string | null | undefined, headers: string | undefined }> | null {
     const xhr = this._xhr;
     if (xhr.readyState > 0) {
       return null;
@@ -249,12 +242,14 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
     const url = this._appendProxy(options.url);
     xhr.open(options.method || 'GET', url, true);
     this._applyHeaders(xhr, options.headers, options.payload instanceof FormData);
-    xhr.timeout = options.timeout;
+    if (typeof options.timeout === 'number') {
+      xhr.timeout = options.timeout;
+    }
     xhr.withCredentials = !!options.withCredentials;
     try {
       xhr.send(options.payload);
     } catch (e) {
-      this._errorHandler(e);
+      this._errorHandler(e as Error);
     }
     return this.completes;
   }
@@ -262,35 +257,34 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
   /**
    * Applies headers to the XHR object.
    *
-   * @param {XMLHttpRequest} xhr
-   * @param {string|Headers} headers HTTP headers
-   * @param {boolean=} isFormData Prevents setting content-type header for
-   * Multipart requests.
+   * @param xhr
+   * @param headers HTTP headers
+   * @param isFormData Prevents setting content-type header for Multipart requests.
    */
-  _applyHeaders(xhr, headers, isFormData) {
+  _applyHeaders(xhr: XMLHttpRequest, headers?: string | Headers, isFormData?: boolean): void {
     const fixed = this._computeAddHeaders(this.appendHeaders);
-    const fixedNames = [];
-    if (fixed && fixed.length) {
-      fixed.forEach((item) => {
-        fixedNames[fixedNames.length] = item.name;
+    const fixedNames: string[] = [];
+    if (fixed) {
+      fixed.forEach((value, name) => {
+        fixedNames[fixedNames.length] = name;
         try {
-          xhr.setRequestHeader(item.name, item.value);
+          xhr.setRequestHeader(name, value);
         } catch (e) {
           // ..
         }
       });
     }
     if (headers) {
-      const data = HeadersParser.toJSON(headers);
-      data.forEach((item) => {
-        if (fixedNames.indexOf(item.name) !== -1) {
+      const parsed = new Headers(headers);
+      parsed.forEach((value, name) => {
+        if (fixedNames.indexOf(name) !== -1) {
           return;
         }
-        if (isFormData && item.name.toLowerCase() === 'content-type') {
+        if (isFormData && name.toLowerCase() === 'content-type') {
           return;
         }
         try {
-          xhr.setRequestHeader(item.name, item.value);
+          xhr.setRequestHeader(name, value);
         } catch (e) {
           // ..
         }
@@ -298,12 +292,20 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
     }
   }
 
+  _computeAddHeaders(headers?: string): Headers | undefined {
+    if (!headers) {
+      return undefined;
+    }
+    headers = String(headers).replace('\\n', '\n');
+    return new Headers(headers);
+  }
+
   /**
    * Handler for XHR `error` event.
    *
-   * @param {ProgressEvent} error https://xhr.spec.whatwg.org/#event-xhr-error
+   * @param error https://xhr.spec.whatwg.org/#event-xhr-error
    */
-  _errorHandler(error) {
+  _errorHandler(error: ProgressEvent | Error): void {
     if (this.aborted) {
       return;
     }
@@ -315,28 +317,32 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
       request: this._xhr,
       headers: this.headers
     };
-    this.rejectCompletes(response);
+    if (this.rejectCompletes) {
+      this.rejectCompletes(response);
+    }
   }
 
   /**
    * Handler for XHR `timeout` event.
    *
-   * @param {ProgressEvent} error https://xhr.spec.whatwg.org/#event-xhr-timeout
+   * @param error https://xhr.spec.whatwg.org/#event-xhr-timeout
    */
-  _timeoutHandler(error) {
+  _timeoutHandler(error: ProgressEvent): void {
     this._timedOut = true;
     this._updateStatus();
     const response = {
       error,
       request: this._xhr
     };
-    this.rejectCompletes(response);
+    if (this.rejectCompletes) {
+      this.rejectCompletes(response);
+    }
   }
 
   /**
    * Handler for XHR `abort` event.
    */
-  _abortHandler() {
+  _abortHandler(): void {
     this._aborted = true;
     this._updateStatus();
     const error = new Error('Request aborted');
@@ -344,13 +350,15 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
       error,
       request: this._xhr
     };
-    this.rejectCompletes(response);
+    if (this.rejectCompletes) {
+      this.rejectCompletes(response);
+    }
   }
 
   /**
    * Handler for XHR `loadend` event.
    */
-  _loadEndHandler() {
+  _loadEndHandler(): void {
     if (this.aborted || this.timedOut) {
       return;
     }
@@ -364,8 +372,10 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
         request: this._xhr,
         headers: this.headers
       };
-      this.rejectCompletes(response);
-    } else {
+      if (this.rejectCompletes) {
+        this.rejectCompletes(response);
+      }
+    } else if (this.resolveCompletes) {
       this.resolveCompletes({
         response: this.response,
         headers: this.headers
@@ -376,17 +386,17 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
   /**
    * Aborts the request.
    */
-  abort() {
+  abort(): void {
     this._aborted = true;
-    this._xhr.abort();
+    this._xhr?.abort();
   }
 
   /**
    * Updates the status code and status text.
    */
-  _updateStatus() {
-    this._status = this._xhr.status;
-    this._statusText = (this._xhr.statusText === undefined ? '' : this._xhr.statusText);
+  _updateStatus(): void {
+    this._status = this._xhr?.status;
+    this._statusText = (this._xhr?.statusText === undefined ? '' : this._xhr.statusText);
   }
 
   /**
@@ -400,11 +410,10 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
    * it may actually send this information extracted from the AMF model.
    * This function will be ready to handle this case.
    *
-   * @return {*} The parsed response,
-   * or undefined if there was an empty response or parsing failed.
+   * @returns The parsed response, or undefined if there was an empty response or parsing failed.
    */
-  parseResponse() {
-    const xhr = this._xhr;
+  parseResponse(): string | null | undefined {
+    const xhr = this._xhr as XMLHttpRequest;
     const { responseType } = xhr;
     const preferResponseText = !xhr.responseType;
     try {
@@ -439,20 +448,23 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
         }
       }
     } catch (e) {
-      this.rejectCompletes(new Error(`Could not parse response. ${  e.message}`));
+      if (this.rejectCompletes) {
+        this.rejectCompletes({
+          error: new Error(`Could not parse response. ${(e as Error).message}`),
+          request: this._xhr,
+        });
+      }
     }
     return undefined;
   }
 
   /**
    * Collects response headers string from the XHR object.
-   *
-   * @return {string|undefined}
    */
-  collectHeaders() {
-    let data;
+  collectHeaders(): string|undefined {
+    let data: string | undefined;
     try {
-      data = this._xhr.getAllResponseHeaders();
+      data = this._xhr?.getAllResponseHeaders();
     } catch (_) {
       // ...
     }
@@ -460,25 +472,11 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
   }
 
   /**
-   * Computes value for `_addHeaders` property.
-   * A list of headers to add to each request.
-   * @param {string} headers Headers string
-   * @return {FormItem[]|undefined}
-   */
-  _computeAddHeaders(headers) {
-    if (!headers) {
-      return undefined;
-    }
-    headers = String(headers).replace('\\n', '\n');
-    return HeadersParser.toJSON(headers);
-  }
-
-  /**
    * Sets the proxy URL if the `proxy` property is set.
-   * @param {string} url Request URL to alter if needed.
-   * @return {string} The URL to use with request.
+   * @param url Request URL to alter if needed.
+   * @returns The URL to use with request.
    */
-  _appendProxy(url) {
+  _appendProxy(url: string): string {
     const { proxy } = this;
     if (!proxy) {
       return url;
