@@ -56,16 +56,19 @@ export default class ApiRequestElement extends EventsTargetMixin(LitElement) {
    * property. When using `api-navigation` element
    * by setting this property the element listens for navigation events
    * and updates the state
+   * @attribute
    */
   @property({ type: Boolean, reflect: true }) handleNavigationEvents?: boolean;
 
   /**
    * When set it renders the URL input above the URL parameters.
+   * @attribute
    */
   @property({ type: Boolean, reflect: true }) urlEditor?: boolean;
 
   /**
    * When set it renders a label with the computed URL.
+   * @attribute
    */
   @property({ type: Boolean, reflect: true }) urlLabel?: boolean;
   
@@ -74,22 +77,26 @@ export default class ApiRequestElement extends EventsTargetMixin(LitElement) {
    * declaration and this produces invalid URL input. This information
    * is passed to the URL editor that prefixes the URL with `baseUri` value
    * if passed URL is a relative URL.
+   * @attribute
    */
   @property({ type: String }) baseUri?: string;
   
   /**
    * OAuth2 redirect URI.
    * This value **must** be set in order for OAuth 1/2 to work properly.
+   * @attribute
    */
   @property({ type: String }) redirectUri?: string;
 
   /**
    * Enables Anypoint platform styles.
+   * @attribute
    */
   @property({ type: Boolean, reflect: true }) anypoint?: boolean;
 
   /**
    * Enables Material Design outlined style
+   * @attribute
    */
   @property({ type: Boolean, reflect: true }) outlined?: boolean;
 
@@ -126,6 +133,7 @@ export default class ApiRequestElement extends EventsTargetMixin(LitElement) {
    * If the proxy require a to pass the URL as a query parameter define value as follows:
    * `https://proxy.com/path/?url=`. In this case be sure to set `proxy-encode-url`
    * attribute.
+   * @attribute
    */
   @property({ type: String }) proxy?: string;
 
@@ -133,6 +141,7 @@ export default class ApiRequestElement extends EventsTargetMixin(LitElement) {
    * If `proxy` is set, it will URL encode the request URL before appending it to the proxy URL.
    * `http://domain.com/path/?query=some+value` will become
    * `https://proxy.com/?url=http%3A%2F%2Fdomain.com%2Fpath%2F%3Fquery%3Dsome%2Bvalue`
+   * @attribute
    */
   @property({ type: Boolean, reflect: true }) proxyEncodeUrl?: boolean;
   
@@ -150,6 +159,7 @@ export default class ApiRequestElement extends EventsTargetMixin(LitElement) {
   /**
    * If set it computes `hasOptional` property and shows checkbox in the
    * form to show / hide optional properties.
+   * @attribute
    */
   @property({ type: Boolean, reflect: true }) allowHideOptional?: boolean;
 
@@ -157,30 +167,35 @@ export default class ApiRequestElement extends EventsTargetMixin(LitElement) {
    * When set, renders "add custom" item button.
    * If the element is to be used without AMF model this should always
    * be enabled. Otherwise users won't be able to add a parameter.
+   * @attribute
    */
   @property({ type: Boolean, reflect: true }) allowCustom?: boolean;
 
   /**
    * Holds the value of the currently selected server
    * Data type: URI
+   * @attribute
    */
   @property({ type: String }) serverValue?: string;
 
   /**
    * Holds the type of the currently selected server
    * Values: `server` | `slot` | `custom`
+   * @attribute
    */
   @property({ type: String }) serverType?: string;
 
   /**
    * Optional property to set
    * If true, the server selector is not rendered
+   * @attribute
    */
   @property({ type: Boolean, reflect: true }) noServerSelector?: boolean;
 
   /**
    * Optional property to set
    * If true, the server selector custom base URI option is rendered
+   * @attribute
    */
   @property({ type: Boolean, reflect: true }) allowCustomBaseUri?: boolean;
 
@@ -201,6 +216,7 @@ export default class ApiRequestElement extends EventsTargetMixin(LitElement) {
    * 
    * If this property is not set then the application hosting this component should
    * process the authorization data and apply them to the request.
+   * @attribute
    */
   @property({ type: Boolean, reflect: true }) applyAuthorization?: boolean;
 
@@ -217,6 +233,7 @@ export default class ApiRequestElement extends EventsTargetMixin(LitElement) {
    * in generating request data from the cache and not what's in the form inputs and these may not be in sync.
    *
    * These values are stored in memory only. Listen to the `change` event to learn that something changed.
+   * @attribute
    */
   @property({ type: Boolean, reflect: true }) globalCache?: boolean;
 
@@ -405,7 +422,7 @@ export default class ApiRequestElement extends EventsTargetMixin(LitElement) {
   /**
    * Clears response panel when the `domainId` change.
    */
-  [domainIdChanged](id: string): void {
+  [domainIdChanged](id?: string): void {
     if (!id) {
       return;
     }
@@ -415,7 +432,7 @@ export default class ApiRequestElement extends EventsTargetMixin(LitElement) {
   /**
    * Clears response panel.
    */
-  clearResponse() {
+  clearResponse(): void {
     if (this.request) {
       this.request = undefined;
     }
@@ -439,7 +456,7 @@ export default class ApiRequestElement extends EventsTargetMixin(LitElement) {
   /**
    * Retargets the change event from the editor.
    */
-  [changeHandler]() {
+  [changeHandler](): void {
     this.dispatchEvent(new Event('change'));
   }
 
@@ -474,7 +491,7 @@ export default class ApiRequestElement extends EventsTargetMixin(LitElement) {
     return html`
     <api-request-editor
       .redirectUri="${redirectUri}"
-      domainId="${domainId}"
+      .domainId="${domainId}"
       ?urlEditor="${urlEditor}"
       ?urlLabel="${urlLabel}"
       .baseUri="${baseUri}"

@@ -208,7 +208,7 @@ export type SelectionType = 'summary' | 'resource' | 'operation' | 'schema' | 's
  */
 export type NavigationLayout = 'tree' | 'natural' | 'natural-sort' | 'off';
 
-interface SelectableMenuItem {
+export interface SelectableMenuItem {
   /**
    * Whether the item is a selected menu item.
    */
@@ -220,7 +220,7 @@ interface SelectableMenuItem {
   secondarySelected?: boolean;
 }
 
-interface EditableMenuItem {
+export interface EditableMenuItem {
   /**
    * When set the name editor for the item is enabled.
    */

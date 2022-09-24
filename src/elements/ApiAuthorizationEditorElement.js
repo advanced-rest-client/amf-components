@@ -1,6 +1,8 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable class-methods-use-this */
-import { html, LitElement } from 'lit-element';
+import { html, TemplateResult, CSSResult, LitElement } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import { ApiDefinitions } from '@api-client/core/build/browser.js';
 import '@advanced-rest-client/base/define/authorization-method.js';
 import elementStyles from './styles/AuthorizationEditor.js';
 import '../../define/api-authorization-method.js';
@@ -41,7 +43,7 @@ export const createSettings = Symbol('createSettings');
 export const openIdConnectTemplate = Symbol('openIdConnectTemplate');
 
 export default class ApiAuthorizationEditorElement extends LitElement {
-  get styles() {
+  static get styles(): CSSResult[] {
     return elementStyles;
   }
 

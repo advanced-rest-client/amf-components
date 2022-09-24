@@ -57,7 +57,11 @@ export interface AmfParameterMixinInterface {
    * @attribute;
    */
   globalCache: boolean;
+
+  target?: EventTarget;
+
   parametersValue: OperationParameter[];
+
   nilValues: string[];
 
   /**
@@ -199,6 +203,10 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
 
     nilValues: string[];
 
+    target?: EventTarget;
+
+    globalCache: boolean;
+
     constructor(...args: any[]) {
       super(...args);
       this.globalCache = false;
@@ -228,7 +236,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
     clearCache(): void {
       const params = this.parametersValue;
       (params || []).forEach((param) => {
-        InputCache.remove(this.target, param.paramId, this.globalCache)
+        InputCache.remove(this.target as HTMLElement, param.paramId, this.globalCache)
       });
     }
 
@@ -238,10 +246,10 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
       if (!id) {
         return;
       }
-      if (!InputCache.has(this.target, id, this.globalCache)) {
-        InputCache.set(this.target, id, [], this.globalCache);
+      if (!InputCache.has(this.target as HTMLElement, id, this.globalCache)) {
+        InputCache.set(this.target as HTMLElement, id, [], this.globalCache);
       }
-      const items = (InputCache.get(this.target, id, this.globalCache)) as any[];
+      const items = (InputCache.get(this.target as HTMLElement, id, this.globalCache)) as any[];
       items.push(undefined);
       this.requestUpdate();
       this.paramChanged(id);
@@ -257,8 +265,8 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
      */
     readInputValue(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IApiScalarShape, isArray=false): any {
       const { id } = parameter;
-      if (InputCache.has(this.target, id, this.globalCache)) {
-        return InputCache.get(this.target, id, this.globalCache);
+      if (InputCache.has(this.target as HTMLElement, id, this.globalCache)) {
+        return InputCache.get(this.target as HTMLElement, id, this.globalCache);
       }
       let result;
       if (parameter.required) {
@@ -269,7 +277,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
           result = ApiSchemaValues.readInputValue(parameter, schema, opts);
         }
         if (result !== undefined) {
-          InputCache.set(this.target, id, result, this.globalCache);
+          InputCache.set(this.target as HTMLElement, id, result, this.globalCache);
         }
       }
       return result;
@@ -288,7 +296,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
       }
       // sets cached value of the input.
       const typed = ApiSchemaValues.parseUserInput(value, param.schema as AmfShapes.IShapeUnion);
-      InputCache.set(this.target, domainId, typed, this.globalCache, isArray === 'true', index ? Number(index) : undefined);
+      InputCache.set(this.target as HTMLElement, domainId, typed, this.globalCache, isArray === 'true', index ? Number(index) : undefined);
       this.notifyChange();
       this.paramChanged(domainId);
     }
@@ -304,7 +312,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
       if (!param) {
         return;
       }
-      InputCache.set(this.target, domainId, checked, this.globalCache, isArray === 'true', index ? Number(index) : undefined);
+      InputCache.set(this.target as HTMLElement, domainId, checked, this.globalCache, isArray === 'true', index ? Number(index) : undefined);
       this.notifyChange();
       this.paramChanged(domainId);
     }
@@ -325,8 +333,8 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
         this.parametersValue.splice(pIndex, 1);
         forceUpdate = true;
       }
-      if (InputCache.has(this.target, domainId, this.globalCache)) {
-        InputCache.remove(this.target, domainId, this.globalCache, index ? Number(index) : undefined);
+      if (InputCache.has(this.target as HTMLElement, domainId, this.globalCache)) {
+        InputCache.remove(this.target as HTMLElement, domainId, this.globalCache, index ? Number(index) : undefined);
         forceUpdate = true;
       }
       if (forceUpdate) {
@@ -350,7 +358,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
       const enumValues = ((param.schema as AmfShapes.IShapeUnion).values as AmfShapes.IApiScalarNode[]);
       const { value } = enumValues[list.selected as number];
       const typed = ApiSchemaValues.parseUserInput(value, param.schema as AmfShapes.IShapeUnion);
-      InputCache.set(this.target, domainId, typed, this.globalCache, isArray === 'true', index ? Number(index) : undefined);
+      InputCache.set(this.target as HTMLElement, domainId, typed, this.globalCache, isArray === 'true', index ? Number(index) : undefined);
       this.notifyChange();
       this.paramChanged(domainId);
     }
@@ -807,7 +815,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
         }
         param.parameter.name = value;
       } else {
-        InputCache.set(this.target, domainId, value, this.globalCache);
+        InputCache.set(this.target as HTMLElement, domainId, value, this.globalCache);
       }
       this.notifyChange();
       this.paramChanged(domainId);
@@ -818,7 +826,7 @@ export const AmfParameterMixin = dedupeMixin(<T extends Constructor<any>>(superC
      * @returns The template for a custom parameter
      */
     [customParamTemplate](param: OperationParameter): TemplateResult {
-      const value = InputCache.get(this.target, param.paramId, this.globalCache) as string;
+      const value = InputCache.get(this.target as HTMLElement, param.paramId, this.globalCache) as string;
       const classes = {
         'form-item': true,
         'custom-item': true,

@@ -1,8 +1,8 @@
 import { html } from 'lit-html';
 import '@advanced-rest-client/arc-demo-helper/arc-interactive-demo.js';
-import '@anypoint-web-components/awc/anypoint-checkbox.js';
-import '@anypoint-web-components/awc/anypoint-radio-button.js';
-import '@anypoint-web-components/awc/anypoint-radio-group.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-checkbox.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-radio-button.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-radio-group.js';
 import { AmfDemoBase } from './lib/AmfDemoBase.js';
 import { NavigationContextMenu, NavigationContextMenuCommands } from '../index.js';
 import '../define/api-navigation.js';

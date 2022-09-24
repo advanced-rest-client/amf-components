@@ -15,7 +15,7 @@ export function cancelEvent(e: Event): void {
  */
 export function isScalarType(types: string[] = []): boolean {
   const { shapes } = AmfNamespace.aml.vocabularies;
-  return types.includes(shapes.ScalarShape) || 
+  return types.includes(shapes.ScalarShape) ||
     types.includes(shapes.NilShape) ||
     types.includes(shapes.FileShape);
 }
@@ -42,7 +42,7 @@ export function schemaToType(value: string): string {
  * @param isArray Used internally
  * @returns Computed label for a shape.
  */
-export function readPropertyTypeLabel(schema: AmfShapes.IShapeUnion, isArray=false): string|undefined {
+export function readPropertyTypeLabel(schema: AmfShapes.IShapeUnion, isArray = false): string | undefined {
   if (!schema) {
     return undefined;
   }
@@ -112,7 +112,7 @@ function isAllScalar(shapes: AmfShapes.IShapeUnion[] = []): boolean {
  * @returns true when the passed union type consists of scalar values only. Nil counts as scalar.
  */
 export function isScalarUnion(shape: AmfShapes.IApiUnionShape): boolean {
-  const { anyOf=[], or=[], and=[], xone=[] } = shape;
+  const { anyOf = [], or = [], and = [], xone = [] } = shape;
   if (anyOf.length) {
     return isAllScalar(anyOf);
   }
@@ -129,10 +129,10 @@ export function isScalarUnion(shape: AmfShapes.IApiUnionShape): boolean {
 }
 
 export function sanitizeHTML(HTML: string): string {
-  const result = sanitizer.sanitize(HTML, { 
+  const result = sanitizer.sanitize(HTML, {
     ADD_ATTR: ['target', 'href'],
     ALLOWED_TAGS: ['a'],
-    USE_PROFILES: {html: true},
+    USE_PROFILES: { html: true },
   });
 
   if (typeof result === 'string') {
@@ -185,7 +185,7 @@ export function generateHeaders(params: Record<string, unknown>): string {
  * @param headers The generated headers string
  * @param mime The expected by the selected payload media type. If not set then it does nothing.
  */
-export function ensureContentType(headers: string, mime: string): string {
+export function ensureContentType(headers: string, mime?: string): string {
   if (!mime) {
     return headers;
   }
@@ -203,7 +203,7 @@ export function ensureContentType(headers: string, mime: string): string {
  * @returns The name to use in the input.
  */
 export function readLabelValue(parameter: ApiDefinitions.IApiParameter, schema: AmfShapes.IShapeUnion): string {
-  let label = parameter.paramName || schema.displayName || parameter.name ||  schema.name || '';
+  let label = parameter.paramName || schema.displayName || parameter.name || schema.name || '';
   const { required } = parameter;
   if (required) {
     label += '*';

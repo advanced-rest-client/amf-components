@@ -1,8 +1,8 @@
 import { html } from 'lit-html';
 import '@advanced-rest-client/arc-demo-helper/arc-interactive-demo.js';
-import '@anypoint-web-components/awc/anypoint-checkbox.js';
-import '@anypoint-web-components/awc/anypoint-dialog.js';
-import '@anypoint-web-components/awc/anypoint-dialog-scrollable.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-checkbox.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-dialog.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-dialog-scrollable.js';
 import { AmfDemoBase } from './lib/AmfDemoBase.js';
 import '../define/api-request.js';
 import '../define/xhr-simple-request.js';

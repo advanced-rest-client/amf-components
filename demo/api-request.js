@@ -1,5 +1,5 @@
 import { html } from 'lit-html';
-import '@anypoint-web-components/awc/anypoint-checkbox.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-checkbox.js';
 import '@advanced-rest-client/arc-demo-helper/arc-interactive-demo.js';
 import { AmfDemoBase } from './lib/AmfDemoBase.js';
 import '../define/api-navigation.js';

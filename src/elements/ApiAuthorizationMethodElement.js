@@ -46,7 +46,7 @@ export default class ApiAuthorizationMethodElement extends AuthorizationMethod {
   /**
    * @returns {CSSResult}
    */
-  get styles() {
+  static get styles(): CSSResult[] {
     // @ts-ignore
     return [
       super.styles,
@@ -224,7 +224,8 @@ export default class ApiAuthorizationMethodElement extends AuthorizationMethod {
     }
     this[factory] = instance;
     instance.defaults();
-    await this.requestUpdate();
+    this.requestUpdate();
+    await this.updateComplete;
     this.dispatchEvent(new Event('resize', { bubbles: true, composed: true }));
   }
 

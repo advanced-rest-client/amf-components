@@ -91,6 +91,7 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
    * <xhr-simple-request
    *  append-headers="x-token: 123\nx-api-demo: true"></xhr-simple-request>
    * ```
+   * @attribute
    */
   @property({ type: String }) appendHeaders?: string;
 
@@ -104,6 +105,7 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
    * If the proxy require a to pass the URL as a query parameter define value as follows:
    * `https://proxy.com/path/?url=`. In this case be sure to set `proxy-encode-url`
    * attribute.
+   * @attribute
    */
   @property({ type: String }) proxy?: string;
 
@@ -111,6 +113,7 @@ export default class XhrSimpleRequestTransportElement extends LitElement {
    * If `proxy` is set, it will URL encode the request URL before appending it to the proxy URL.
    * `http://domain.com/path/?query=some+value` will become
    * `https://proxy.com/?url=http%3A%2F%2Fdomain.com%2Fpath%2F%3Fquery%3Dsome%2Bvalue`
+   * @attribute
    */
   @property({ type: Boolean }) proxyEncodeUrl?: boolean;
   

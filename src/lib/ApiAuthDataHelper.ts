@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-param-reassign */
 import { AuthUiDataHelper, AuthUiInit } from '@advanced-rest-client/base/api.js';
@@ -5,8 +6,7 @@ import CustomAuth from './auth-ui/CustomAuth.js';
 import ApiKeyAuth from './auth-ui/ApiKeyAuth.js';
 import PassThroughAuth from './auth-ui/PassThroughAuth.js';
 import OAuth2Auth from './auth-ui/OAuth2Auth.js';
-
-/** @typedef {import('../elements/ApiAuthorizationMethodElement').default} ApiAuthorizationElement */
+import ApiAuthorizationElement from '../elements/ApiAuthorizationMethodElement.js';
 
 export class ApiAuthDataHelper extends AuthUiDataHelper {
   static setupCustom(element: ApiAuthorizationElement, init: AuthUiInit): CustomAuth {
