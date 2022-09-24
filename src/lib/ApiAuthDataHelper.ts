@@ -6,10 +6,10 @@ import CustomAuth from './auth-ui/CustomAuth.js';
 import ApiKeyAuth from './auth-ui/ApiKeyAuth.js';
 import PassThroughAuth from './auth-ui/PassThroughAuth.js';
 import OAuth2Auth from './auth-ui/OAuth2Auth.js';
-import ApiAuthorizationElement from '../elements/ApiAuthorizationMethodElement.js';
+import ApiAuthorizationMethodElement from '../elements/ApiAuthorizationMethodElement.js';
 
 export class ApiAuthDataHelper extends AuthUiDataHelper {
-  static setupCustom(element: ApiAuthorizationElement, init: AuthUiInit): CustomAuth {
+  static setupCustom(element: ApiAuthorizationMethodElement, init: AuthUiInit): CustomAuth {
     const i = new CustomAuth(init);
     i.security = element.security;
     i.descriptionOpened = element.descriptionOpened;
@@ -18,22 +18,22 @@ export class ApiAuthDataHelper extends AuthUiDataHelper {
     return i;
   }
 
-  static populateCustom(element: ApiAuthorizationElement, ui: CustomAuth): void {
+  static populateCustom(element: ApiAuthorizationMethodElement, ui: CustomAuth): void {
     // ...
   }
 
-  static setupApiKey(element: ApiAuthorizationElement, init: AuthUiInit): ApiKeyAuth {
+  static setupApiKey(element: ApiAuthorizationMethodElement, init: AuthUiInit): ApiKeyAuth {
     const i = new ApiKeyAuth(init);
     i.security = element.security;
     i.globalCache = element.globalCache;
     return i;
   }
 
-  static populateApiKey(element: ApiAuthorizationElement, ui: ApiKeyAuth): void {
+  static populateApiKey(element: ApiAuthorizationMethodElement, ui: ApiKeyAuth): void {
     // ...
   }
 
-  static setupPassThrough(element: ApiAuthorizationElement, init: AuthUiInit): PassThroughAuth {
+  static setupPassThrough(element: ApiAuthorizationMethodElement, init: AuthUiInit): PassThroughAuth {
     const i = new PassThroughAuth(init);
     i.security = element.security;
     i.descriptionOpened = element.descriptionOpened;
@@ -42,11 +42,11 @@ export class ApiAuthDataHelper extends AuthUiDataHelper {
     return i;
   }
 
-  static populatePassThrough(element: ApiAuthorizationElement, ui: PassThroughAuth): void {
+  static populatePassThrough(element: ApiAuthorizationMethodElement, ui: PassThroughAuth): void {
     // ...
   }
 
-  static setupOauth2(element: ApiAuthorizationElement, init: AuthUiInit): OAuth2Auth {
+  static setupOauth2(element: ApiAuthorizationMethodElement, init: AuthUiInit): OAuth2Auth {
     const i = new OAuth2Auth(init);
     i.security = element.security;
     i.globalCache = element.globalCache;
