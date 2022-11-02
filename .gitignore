@@ -62,3 +62,4 @@ demo/vendor.js
 demo/models/
 
 .idea/
+tsconfig.tsbuildinfo

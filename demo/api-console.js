@@ -1,9 +1,9 @@
 import { html } from 'lit-html';
 import { classMap } from 'lit-html/directives/class-map.js';
-import '@anypoint-web-components/awc/anypoint-icon-button.js';
-import '@anypoint-web-components/awc/anypoint-menu-button.js';
-import '@anypoint-web-components/awc/anypoint-listbox.js';
-import '@anypoint-web-components/awc/anypoint-item.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-icon-button.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-menu-button.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-listbox.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-item.js';
 import '@advanced-rest-client/icons/arc-icon.js';
 import { MonacoLoader } from "@advanced-rest-client/monaco-support";
 import { ApplicationPage } from "./lib/ApplicationPage.js";
